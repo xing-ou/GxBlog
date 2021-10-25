@@ -3,41 +3,8 @@
 
 const lightCodeTheme = require('prism-react-renderer/themes/github');
 const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+const bookConfig = require('./readingbookConfig');
 
-let booksInfo = [
-  {
-    "cover": "https://learning.oreilly.com/covers/urn:orm:book:9781492057604/400w/",
-    "desc": "~",
-    "bookLink": "/docs/wwdc/关于本专题",
-    "readStartTime": "wwdc专辑",
-    "readEndTime": "~",
-    "isReading": true
-  },
-  {
-    "cover": "https://learning.oreilly.com/covers/urn:orm:book:9781492057604/400w/",
-    "desc": "2020年3月",
-    "bookLink": "/docs/wwdc/关于本专题",
-    "readStartTime": "学习开始:2021年10月25日",
-    "readEndTime": "预计结束:2021年11月25日",
-    "isReading": true
-  },
-  {
-    "cover": "https://learning.oreilly.com/covers/urn:orm:book:9781492057604/400w/",
-    "desc": "2020年3月",
-    "bookLink": "/docs/wwdc/关于本专题",
-    "readStartTime": "学习开始:2021年10月25日",
-    "readEndTime": "预计结束:2021年11月25日",
-    "isReading": true
-  },
-  {
-    "cover": "https://learning.oreilly.com/covers/urn:orm:book:9781492057604/400w/",
-    "desc": "2020年3月",
-    "bookLink": "/docs/wwdc/关于本专题",
-    "readStartTime": "学习开始:2021年10月25日",
-    "readEndTime": "预计结束:2021年11月25日",
-    "isReading": true
-  }
-]
 
 
 /** @type {import('@docusaurus/types').Config} */
@@ -119,7 +86,7 @@ const config = {
       ],
     ],
     customFields: {
-      booksInfo: booksInfo
+      booksInfo: bookConfig.booksInfo
     }
 };
 
