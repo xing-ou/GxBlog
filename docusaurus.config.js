@@ -15,13 +15,13 @@ const config = {
   },
   title: 'Gx\'sBlog',
   tagline: 'Dinosaurs are cool',
-  url: 'https://your-docusaurus-test-site.com',
-  baseUrl: '/',
+  url: 'http://xing-ou.github.io/',
+  baseUrl: '/GxBlog/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-  organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  organizationName: 'xing-ou', // Usually your GitHub org/user name.
+  projectName: 'GxBlog', // Usually your repo name.
 
   presets: [
     [
