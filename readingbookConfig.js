@@ -1,7 +1,7 @@
 module.exports = {
     booksInfo: [
     {
-      cover: "/img/bookCover/wwdc.png",
+      cover: "./img/bookCover/wwdc.png",
       desc: "~",
       bookLink: "/docs/wwdc/关于本专题",
       bookDir: "wwdc",
