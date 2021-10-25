@@ -1,0 +1,124 @@
+---
+title: 定位
+description: 定位有5种类型，由`position`控制。
+date: "2021-07-24"
+---
+## 定位
+
+定位有5种类型，由`position`控制。
+
+```css
+position :
+static: 默认值，即生成正常的元素框。
+relative: 相对于正常元素框的位置进行偏移。元素的大小，形状不会改变。
+absolute: 元素从文档流中移除，相对于容纳块进行定位。
+fixed: 类似于absolute，只是相对的是视区进行定位，而不是容纳块。
+sticky: 开始时，位于正常文档流中，当触发了粘滞条件时，从文档流中移除，但是在正常文档流中占据的空间还是会保留。然后相对于容纳块进行absolute定位。但触发粘滞条件失效后，回归到正常文档流。
+```
+
+## 偏移属性
+
+使用偏移属性：指定各边相对于容纳块的偏移
+
+```css
+top <length> | 百分比 | auto
+left
+right
+bottom
+```
+
+从外边距算起。
+
+## 宽度和高度
+
+很多时候元素定位确定后，还需要指定元素的宽高。不指定将自动推算。
+
+```css
+width:
+height:
+```
+
+## 限制宽高
+
+使用min-width,  min-height,  max-width,  max-height可以限制宽高。
+
+## 内容溢出
+
+当内容太多时，会从元素中溢出，我们可以使用overflow属性控制溢出行为。
+
+```css
+overflow: visible| scroll | hidden 
+visible：默认，溢出了，但还是可以看见
+scroll: 不溢出，采用滚动条的方式让用户可以看见
+hidden：溢出部分将被裁减掉
+
+```
+
+## 元素可见性
+
+可以用visibility控制元素的可见性
+
+```css
+visibility: visible | hidden| collapse
+visible: 可见
+hidden: 隐藏，但是还是会影响文档布局。类似于透明度设置为0.
+collapse:在渲染表格时使用。
+```
+
+## 绝对定位
+
+绝对定位从文档流中完全移除，其位置相对于容纳块确定。
+
+绝对定位的容纳块是：postion属性不是static的最近的祖辈元素。通常使用relative，然后不设置偏移。
+
+## 绝对定位元素的位置和尺寸
+
+如果你未指定某个偏移属性，那么默认是auto。
+
+不管怎么样元素的left + right + 两侧margin + 两侧border + 两侧padding + content 要等于容纳块的width。
+
+如果不满足要求，某些约束会被忽略。top永远不会被忽略。bottom和right首先调整。
+
+## z-index
+
+控制元素显示层级。z-index越大，离读者越近。
+
+## 固定定位
+
+之前说过，fixed与absolute类似，只是相对的视区。和absolute一样，fixed定位的元素会从文档流中移除。由于被移除了，fixed的元素会遮挡他后面的内容，因此排版时注意留出距离。
+
+## 相对定位
+
+相对于原来的位置，利用偏移属性进行移动。注意其并没有从文档流移除，因此，偏移后原来的位置会出现空白。
+
+## 粘滞定位
+
+等价于我们的悬浮的sectionheader。
+
+声明position: sticky
+
+偏移属性用于定义相对于容纳块的黏性定位矩形。
+
+```css
+#scrollbox { 
+	overflow:scroll;
+  width:15em;
+  height:18em;
+}
+
+#scrollbox h2 {
+  position:sticky;
+  top:2em;
+  bottom:auto;
+  left:auto;
+  right:auto;
+}
+```
+
+
+
+![图像 2](https://tva1.sinaimg.cn/large/008i3skNgy1gr5ae91u8nj311h0u0k3l.jpg)
+
+
+
+如果有多个h2粘滞了，那么他们会堆叠在一次，最后一个离读者最近。

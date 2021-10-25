@@ -1,0 +1,68 @@
+---
+title: 什么是浮动？
+description: 浮动的元素脱离了文档流，但是仍然对文档流的布局有影响，其他元素将围绕他流动。
+date: "2021-07-24"
+---
+
+## 浮动
+
+```css
+float: left | right | none
+clear: left | right | both | none
+```
+
+浮动的元素脱离了文档流，但是仍然对文档流的布局有影响，其他元素将围绕他流动。
+
+浮动元素四周的外边距不会折叠。
+
+浮动元素的容纳块是最近的块级父辈元素。
+
+多个浮动框永远不会重叠。
+
+
+
+### 定义形状
+
+```css
+shape-outside : none | [<basic-shape> || <shape-box>] | <image>
+
+basic-shape :
+inset() :内凹 inset(top right bottom left)可以简写
+circle() ：圆形 circle(radius at postion)
+ellipse()：椭圆形 ellipse(width height at postion)
+polygon() ：多边形 polygon(x1 y1, x2 y2, x3 y3, x4 y4) 多个点用逗号分隔，自动连接起来
+
+shape-box : 指定容纳shape的box，比如如果shape是内凹，指定margin-box，那么形状就是从margin处内凹，如果是content-box，那么就从content处内凹。
+margin-box
+border-box
+padding-box
+content-box
+
+shape-outside : circle(25px)
+shape-outside : circle(25px at center)
+shape-outside : circle(25px at 50% 50%)
+shape-outside: url("xxx.image") //注意图像必须要有透明度
+shape-outside: inset(10px) border-box
+shape-outside: inset(50px round 20px)
+```
+
+
+
+### 使用透明图像定义形状
+
+之前shape-outside使用<image>时，要求有透明部分，这样才能围绕不透明部分流动。
+
+不过我们可以改变这一行为。shape-image-threshold定义了透明度为多少时允许流入。
+
+```css
+shape-image-threshold: <number>
+默认0.0
+```
+
+### 为形状添加外边距
+
+```css
+shape-margin: <length> | 百分比
+默认 ： 0
+```
+

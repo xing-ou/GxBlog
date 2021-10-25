@@ -1,0 +1,106 @@
+---
+title: css变形
+description: 控制着元素的变形，注意：元素形状可能改变，但是在文档流中占用的空间仍然和变形前保持不变的。
+date: "2021-07-24"
+---
+## transofrm
+
+控制着元素的变形，注意：元素形状可能改变，但是在文档流中占用的空间仍然和变形前保持不变的。
+
+看看语法：
+
+```css
+transform： <transform-list> | none
+接受一个变形函数的列表，依次执行变形函数得到最后的结构。
+
+```
+
+顺序很重要，因为不同顺序得到的结果可能并不一样。
+
+不叠加，重新赋值的transform会覆盖之前的。
+
+不能应用在行内框上。
+
+### 平移相关的变形函数
+
+```css
+translateX( <length> | 百分比 ) 
+translateY(<length> | 百分比)
+translateZ(<length>)
+translate() //x, y的缩写
+translate3D() // x, y, z的缩写
+注意为百分数是是相对自身尺寸计算的，
+```
+
+### 缩放函数
+
+```css
+saleX(<number>)
+saleY(<number>)
+saleZ(<number>)
+sale(<number>)
+sale3d(<number>)
+```
+<!--truncate-->
+### 旋转函数
+
+注意旋转后坐标系也是跟着旋转的。
+
+```css
+rotateX(<angle>)
+rotateY(<angle>)
+rotateZ(<angle>)
+rotate()
+rotate3d()
+```
+
+### 倾斜函数
+
+沿x轴或者y轴倾斜元素
+
+```css
+skewX(<angle>)
+skewY(<angle>)
+```
+
+### 视域函数
+
+```css
+perspective(<length>) 
+```
+
+### 矩阵函数
+
+```css
+matrix()
+matrix3d()
+```
+
+### 移动原点
+
+默认变形的原点在中心，不过我们可以改变这一行为
+
+```css
+transform-origin: top right .... 百分比 <length>
+默认为transform-origin: 50% 50%
+```
+
+### 选择3d变形方式
+
+```css
+transform-style: plain | preserve-3d
+```
+
+### 修改视域
+
+```css
+perspective
+perspective-origin
+```
+
+### 处理背面
+
+```css
+backface-visibility: visible | hidden
+```
+

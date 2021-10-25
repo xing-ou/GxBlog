@@ -1,0 +1,163 @@
+---
+title: css_颜色_背景_渐变
+description: color 前景色。这个就不多介绍了。
+date: "2021-07-24"
+---
+## 颜色
+
+### color
+
+前景色。这个就不多介绍了。
+
+## 背景
+
+背景区域默认是：内容区+padding+border。
+
+你可以为背景设置颜色，图片，多个图片，渐变等
+
+### 背景色
+
+由于padding和Border默认都是0。所以你看到的背景刚好容纳内容区，如果你想让背景大一点，可以加点padding。
+
+```css
+background-color: <color>
+默认是transparent。
+```
+
+### 裁剪背景
+
+背景区域默认是：内容区+padding+border。不过我们有backgound-clip控制背景应该延伸到何处。
+
+```css
+background-clip: [border-box| padding-box|content-box|text]
+
+text:只有firefox支持，但大多浏览器都支持-webkit-background-clip:text
+```
+
+### 背景图
+
+默认行为是平铺，占满背景区域。我们可以设置background-repeat为不平铺
+
+```css
+background-image:<image> | none
+background-image: url("xxx.png")
+```
+
+### 背景定位
+
+```css
+background-position: <position>#
+background-position: left top
+background-position: center
+background-position: 100px 100px
+background-position: 50% 50% （背景图50% 50%处的点 与 背景区域的50% 50%处的点对其）
+
+```
+
+如果为为负数，可以把背景图移动到背景区域外面。
+
+改变偏移边：
+
+Background-position: left 33% bottom 30px 
+
+左边33%   bottom 30px
+
+### 改变定位框
+
+注意背景图的原点始终在padding左上角。不管你的background-clip是content-box，还是border-box。
+
+不过我们可以改变这个行为
+
+```css
+background-origin: [border-box | padding-box | content-box]
+```
+
+### 背景图片重复
+
+之前说过背景图默认是平铺的。不过我们可以通过background-repeat来改变这个行为。
+
+```css
+background-repeat: repeat-x | repeat-y | [repear | no-repeat | space | round]
+```
+
+### 背景粘附
+
+有时文档太长，背景图划过就没有了，于是提供了background-attchment设置背景图的显示方式。
+
+```css
+background-attchment: scroll | fixed | local
+了解就行，不详细讲了
+```
+
+### 背景图尺寸
+
+至此，我们的图片都还是以图片原始大小显示，我们可以通过background-size控制图片显示大小，而不是使用图片本身大小
+
+```css
+background-size: [[<length> | 百分比| auto]{1, 2} | cover | contain]
+百分数是相对于background-origin区域计算的，而不是background-clip.
+cover的效果类似于aspect-fill
+contain的效果类似于aspect-fit
+```
+
+### 简写为一个属性
+
+background  (了解就行，写成一个太复杂了，不推荐)
+
+### 多个背景图
+
+所有的背景属性都可以添加逗号，提供多个值。如果某个属性没有提供足够多的值，那么使用声明的那个补足。
+
+```css
+background-image: url("img1"), url("img2"),url("img3")
+```
+
+## 渐变
+
+渐变是图像。这一点至关重要。
+
+### 线性渐变
+
+```css
+linear-gradient ： [[<angle> | to <side-or-quadrant>],]? [<color-stop>[, <color-hint>]?]#, <color-stop>
+
+解释：开头有一个可选的的方向（默认是从上到下），然后一个起始色，接着又可选的一个或者多个中间色， 最后一个结束色。
+注意<color-stop>的语法如下,一个颜色 加上一个可选的长度或者百分比
+<color-stop>: <color> [<length> | 百分比]?
+```
+
+### 径向渐变
+
+```css
+radial-gradient: [[ <shape> || <size>] [at <position>]? , | at <position> ,]? [<color-stop> [, <color-hint>]?] [, <color-stop>]+
+开头是一个可选的形状(只要circle 和ellipse)或者尺寸， 然后是一个可选的渐变中心点。然后是多个色标，色标之间还可以指定可选的中色点
+语法有点复杂，我们只要会使用简单点的就行
+background-image: radial-gradient(black, white)
+background-image: radial-gradient(50px 100px, black, white)
+background-image: radial-gradient(60% 60%, black, white)
+```
+
+### 循环渐变
+
+repeating-linear-gradient
+
+repeating-radial-gradient
+
+追忆最后一个色标的长度要是整个图案的整体长度。
+
+```css
+background-image: repeating-linear-gradient(45deg, red 0, green 25px,blue 50px);
+```
+
+## 盒子投影
+
+元素框体的阴影。
+
+```css
+box-shadow: none | [inset? &&<length>{2,4}&& <color>?]#
+box-shadow: 10px 10px 10px 10px yellow
+第一个控制横向偏移，正数向下，负数向上， 第二个控制纵向偏移，正数向下，负数向上
+第三个值控制模糊距离
+第四个值控制展开距离，这回改变投影尺寸
+```
+

@@ -1,0 +1,245 @@
+---
+title: css中文本的控制
+description: css中文本控制
+date: "2021-07-24"
+---
+[TOC]
+## css中文本的控制
+
+### text-indent
+
+早期没有这个，人们用一个透明图片放在开头来实现首行缩进，为了更好的支持排版，增加了text-indent属性来实现。
+
+```css
+text-indent : <length> | 百分比
+如果为数值，那么固定偏移这么多, 也可以为负数
+如果为百分比，那么相对于块级元素的宽度
+```
+
+只影响首行。
+
+只能用于块级元素，不能用于行内元素或者置换元素。
+
+行内元素想缩进首行的话可以通过margin或者padding实现。
+
+```css
+.text {
+            color: red;
+            font-size: 30px;
+            text-indent: 50px;
+        }
+.inner {
+            display:inline;
+            width: 100px;
+            height: 300px;
+            margin-left: 150px;
+        }
+```
+
+```html
+<html>
+    <style>
+        .text {
+            color: red;
+            font-size: 30px;
+            text-indent: 50px;
+        }
+        .inner {
+            display:inline;
+            width: 100px;
+            height: 300px;
+            margin-left: 150px;
+        }
+    </style>
+    <body>
+        <div class="text">Lorem ipsum dolor sit,<div class="inner">Lorem ipsum dolor sit amet consectetur adipisicing elit. Laudantium dolores laborum ut veniam laboriosam, at provident iusto non? Eveniet commodi dolorum rem natus sit error ducimus, veritatis iste consequatur! Soluta quae praesentium necessitatibus tenetur laudantium neque obcaecati eveniet earum corrupti.</div> amet consectetur adipisicing elit. Numquam sequi at minus molestias architecto aliquam, nihil neque amet ipsam tenetur eum aliquid fugiat odit harum cumque impedit quam nisi, earum deserunt natus ratione qui? Totam earum velit soluta aliquam sunt sequi dolores hic praesentium! Sunt perspiciatis optio, fugiat iusto ad unde consequatur magnam cumque blanditiis pariatur porro quis vitae repellat debitis non animi quae laboriosam excepturi ea! Voluptatum natus veniam ab sequi molestiae perferendis necessitatibus minima dolor, consequatur, laborum numquam, temporibus repellat! Reprehenderit quo quis error dolorem iure repellendus! Quisquam aperiam sed, odio soluta deleniti sunt velit ipsum excepturi saepe.</div>
+    </body>
+</html>
+```
+
+![image-20210520114517081](https://tva1.sinaimg.cn/large/008i3skNgy1gqoqw7d5kbj30yo0ian24.jpg)
+
+text-indent会继承，所以有时可能出现意外的情况
+
+![image-20210520124407721](https://tva1.sinaimg.cn/large/008i3skNgy1gqoslf8lgsj30ta0dcgol.jpg)
+
+```html
+<html>
+    <style>
+        .text {
+            color: red;
+            font-size: 30px;
+            text-indent: 50px;
+        }
+        .inner {
+            display:inline;
+            width: 100px;
+            height: 300px;
+            margin-left: 150px;
+        }
+    </style>
+    <body>
+        <div class="text">
+            hello world
+            <div>Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis consequuntur deleniti accusantium? Sapiente odio error, enim cumque sed vero minus quas aspernatur, saepe placeat dolor porro. Eum numquam laboriosam natus cupiditate, quasi quae eligendi illo tempora nulla consequuntur quaerat blanditiis nihil illum officiis molestiae sapiente officia ab vitae doloribus provident.</div>
+        </div>
+    </body>
+</html>
+```
+
+### text-align
+
+控制元素中各文本行的对其方式。水平方向
+
+```css
+text-align: start|end|left|right|center|justify|match-parent
+start: 文本与所在行框的起边对其
+end: 文本与所在行框的终边对其
+起边和终边会根据语言是从左到右，还从右到左而不同。
+left:左对齐
+right:右对其
+center:居中对其
+justify:两边对其。如果超过一行了，那么这一行的左右两边的文字都是和边对其的，他会自动调整文字中的单词和字母间的间距。这种通常用于印刷。
+match-parent:类似于inherit。和父元素保持一致。但有区别，如果父元素是start或者end，match-parent后会变为left,right。而inherit则会保持不变
+```
+
+### text-align-last
+
+最后一行文本如何对其。如果有强制换行`<br>`，那么`<br>`前后两段文字的最后一行都会按照text-align-last对其。x
+
+```css
+text-align-last: start|end|left|right|center|justify
+```
+
+### line-height
+
+行高，要理解这个需要明白以下概念
+
+```css
+行框 ：所有行内框最高点和最低点决定了行框的大小
+行内框：处于行框中的一小块区域
+内容区：等价于font-size那么大
+行距：line-height 减去font-size就是行距
+```
+
+![图像](https://tva1.sinaimg.cn/large/008i3skNgy1gqoygrp2nrj31cw0esq9l.jpg)
+
+```css
+line-height: <number> | <length> | 百分比| normal
+默认是normal,代表行之间的空间由用户代理决定。不同用户代理计算出来的可能不同，一般都是字体的1.2倍。
+
+line-height可以是<length>,比如20px,3em等，不过多数情况首选存数字。即使使用有效的长度量，比如4cm，浏览器使用的具体量也可能与实际情况不符合。
+
+em,ex和百分数相对元素的font-size计算。
+
+line-height能够被继承，如果使用非纯数字，那么会相对于父元素，如果指定的是纯数字，那么都是相对自身的font-size的大小。
+```
+
+### vertical-align
+
+设置文本纵向的对其方式，只能用于行内元素。不被继承。
+
+```css
+vertical-align: baseline | sub | super | top | text-top| middle | bottom | text-bottom | <length> | 百分比
+baseline： 默认值，强制元素的基线和父元素的基线对其。如果目标元素没有基线，比如：图片，那么就是基线和元素的底端对其。
+sub:下标，即元素的基线低于父元素的基线，但具体低多少由用户代理决定
+super:上标，高于父元素基线，具体多少页是用户代理决定
+bottom: 元素的底边和行框的底边对其
+top:类似，顶边
+tex-bottom:说是相对于文本的底边对其
+text-top:类似
+middle:通常用于图片，把行内元素所在方框的中线与父元素的基线向上偏移0.5ex。1ex等于父元素的font-size。
+百分比:把元素的基线相对于父元素的基线抬升或者下沉指定的量（百分比 * 自身的line-height）。
+<length>: 抬升或者下沉指定的length
+```
+
+### word-spacing
+
+单词间在默认间距的基础上增加或者减少
+
+```css
+word-spacing: <length> | normal
+normal:代表0，增加减少0，即默认间距
+<length>: 增加或者减少多少
+```
+
+### letter-spacing
+
+字母间的间距在默认值的基础上增加或者减少
+
+```css
+letter-spacing: <length> | normal
+```
+
+### text-transform
+
+文本转换，能够被继承
+
+```css
+text-transform: uppercase | lowercase | capitalize | none
+```
+
+### text-decoration
+
+装饰，下划线等
+
+```css
+text-decoration: none|[ underline||overline| line-through||blink ]
+```
+
+### text-rendering
+
+渲染行为，性能优先？清晰度优先？
+
+```css
+text-rendering: auto|optimizeSpeed | optimizeLegibility| geometricPrecision
+```
+
+### text-shadow
+
+文本阴影，由一个颜色，3个长度构成，前两个长度是shadowoffset，最后一个是shadowRadius
+
+```css
+text-shadow:none | color shadowoffset.width shadowoffset.height shadowradius
+```
+
+### White-space
+
+控制如何处理空格
+
+```css
+white-space: normal
+normal:默认,合并多余空格，去掉换行
+nowrap:
+pre:保留换行和多余空格
+pre-line:保留换行，合并多余空格
+pre-wrap:
+```
+
+### writting-mode
+
+书写方向
+
+```css
+writing-mode : horizontal-tb | vertical-rl | vertical-lr
+horizontal-tb: 水平书写， 从top 到 bottom
+vertical-rl: 竖直方向书写 | 从right到left
+vertical-lr: 竖直方向书写 | 从left到right
+```
+
+![image-20210521151526933](https://tva1.sinaimg.cn/large/008i3skNgy1gqq2l8fn6hj30m20q0mzn.jpg)
+
+
+
+### text-orientation
+
+文本方向
+
+```css
+text-orientation: mixed | upright | sideways
+mixed: 非数字，英文字母是竖直方向，其他的都是水平方向
+upright:都是竖直方向
+sideways:水平方向
+```
+
+![image-20210521152311250](https://tva1.sinaimg.cn/large/008i3skNgy1gqq2t6t2adj307o09mmxh.jpg)
