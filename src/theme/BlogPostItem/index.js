@@ -12,11 +12,10 @@ import Link from '@docusaurus/Link';
 import {useBaseUrlUtils} from '@docusaurus/useBaseUrl';
 import {usePluralForm} from '@docusaurus/theme-common';
 import MDXComponents from '@theme/MDXComponents';
-import EditThisPage from '@theme/EditThisPage';
-import useThemeContext from '@theme/hooks/useThemeContext';
+// import EditThisPage from '@theme/EditThisPage';
 import styles from './styles.module.css';
 import TagsListInline from '@theme/TagsListInline';
-import { Utterances } from 'utterances-react-component';
+import useUtterances from '@site/src/hooks/useUtterances';
 
 function useReadingTimePlural() {
   const {selectMessage} = usePluralForm();
@@ -39,23 +38,12 @@ function useReadingTimePlural() {
   };
 }
 
-function updateUtterancesTheme (isDarkTheme) {
-  let iframe = document.querySelector('.utterances-frame');
-  if (iframe) {
-    const theme = isDarkTheme ? 'github-dark' : 'github-light'
-    const message = {
-      type: 'set-theme',
-      theme: theme
-    }; 
-    iframe.contentWindow.postMessage(message, 'https://utteranc.es');
-  }
-}
+
 
 function BlogPostItem(props) {
   const readingTimePlural = useReadingTimePlural();
-  const {withBaseUrl} = useBaseUrlUtils();
-  const {isDarkTheme} = useThemeContext();
-  updateUtterancesTheme(isDarkTheme);
+  const {withBaseUrl} = useBaseUrlUtils();  
+  const commentComponent = useUtterances();
   const {
     children,
     frontMatter,
@@ -163,13 +151,7 @@ function BlogPostItem(props) {
             </div>
           )}
 
-          {isBlogPostPage && (
-            <Utterances
-            repo="xing-ou/GxBlog"
-            theme={isDarkTheme ? "github-dark" : "github-light"}
-            issueTerm="pathname"
-            />
-          )}
+          {isBlogPostPage && commentComponent}
         </footer>
       )}
     </article>
