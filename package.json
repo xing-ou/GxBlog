@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
-    "start": "docusaurus start",
-    "build": "docusaurus build",
+    "start": "docusaurus start --locale zh-cn",
+    "build": "docusaurus build --locale zh-cn",
     "swizzle": "docusaurus swizzle",
-    "deploy": "GIT_USER=xing-ou docusaurus deploy",
+    "deploy": "GIT_USER=xing-ou docusaurus deploy --locale zh-cn",
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
