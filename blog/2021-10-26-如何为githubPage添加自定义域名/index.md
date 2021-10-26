@@ -1,7 +1,10 @@
+---
+tags: [github]
+---
 ![68CF50FD-8CA2-4A5B-9D3A-F1786775BDFD](./68CF50FD-8CA2-4A5B-9D3A-F1786775BDFD.png)
 
 当我们把blog托管在github page上后，就能得到一个`<userName>.github.io`的域名。不过有点丑，没关系我们还可以用自己的域名。
-
+<!--truncate-->
 ### 第一步：购买域名
 
 我是在阿里云上买的一个域名，购买完成后，进入`解析设置`， 然后添加记录。
