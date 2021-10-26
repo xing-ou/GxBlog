@@ -39,10 +39,23 @@ function useReadingTimePlural() {
   };
 }
 
+function updateUtterancesTheme (isDarkTheme) {
+  let iframe = document.querySelector('.utterances-frame');
+  if (iframe) {
+    const theme = isDarkTheme ? 'github-dark' : 'github-light'
+    const message = {
+      type: 'set-theme',
+      theme: theme
+    }; 
+    iframe.contentWindow.postMessage(message, 'https://utteranc.es');
+  }
+}
+
 function BlogPostItem(props) {
   const readingTimePlural = useReadingTimePlural();
   const {withBaseUrl} = useBaseUrlUtils();
   const {isDarkTheme} = useThemeContext();
+  updateUtterancesTheme(isDarkTheme);
   const {
     children,
     frontMatter,
