@@ -10,12 +10,12 @@ import {MDXProvider} from '@mdx-js/react';
 import Translate, {translate} from '@docusaurus/Translate';
 import Link from '@docusaurus/Link';
 import {useBaseUrlUtils} from '@docusaurus/useBaseUrl';
-import {usePluralForm} from '@docusaurus/theme-common';
+import {usePluralForm, useThemeContext} from '@docusaurus/theme-common';
 import MDXComponents from '@theme/MDXComponents';
 import EditThisPage from '@theme/EditThisPage';
 import styles from './styles.module.css';
 import TagsListInline from '@theme/TagsListInline';
-import BlogPostAuthors from '@theme/BlogPostAuthors'; // Very simple pluralization: probably good enough for now
+import { Utterances } from 'utterances-react-component';
 
 function useReadingTimePlural() {
   const {selectMessage} = usePluralForm();
@@ -41,6 +41,7 @@ function useReadingTimePlural() {
 function BlogPostItem(props) {
   const readingTimePlural = useReadingTimePlural();
   const {withBaseUrl} = useBaseUrlUtils();
+  const {isDarkTheme} = useThemeContext();
   const {
     children,
     frontMatter,
@@ -146,6 +147,14 @@ function BlogPostItem(props) {
                 </b>
               </Link>
             </div>
+          )}
+
+          {isBlogPostPage && (
+            <Utterances
+            repo="xing-ou/GxBlog"
+            theme={isDarkTheme ? "github-dark" : "github-light"}
+            issueTerm="pathname"
+            />
           )}
         </footer>
       )}
