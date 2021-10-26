@@ -15,7 +15,7 @@ import MDXComponents from '@theme/MDXComponents';
 // import EditThisPage from '@theme/EditThisPage';
 import styles from './styles.module.css';
 import TagsListInline from '@theme/TagsListInline';
-import useUtterances from '@site/src/hooks/useUtterances';
+import { UtterancesComments } from '@site/src/components/UtterancesComments';
 
 function useReadingTimePlural() {
   const {selectMessage} = usePluralForm();
@@ -42,8 +42,7 @@ function useReadingTimePlural() {
 
 function BlogPostItem(props) {
   const readingTimePlural = useReadingTimePlural();
-  const {withBaseUrl} = useBaseUrlUtils();  
-  const commentComponent = useUtterances();
+  const {withBaseUrl} = useBaseUrlUtils();    
   const {
     children,
     frontMatter,
@@ -151,7 +150,7 @@ function BlogPostItem(props) {
             </div>
           )}
 
-          {isBlogPostPage && commentComponent}
+          {isBlogPostPage && <UtterancesComments></UtterancesComments>}
         </footer>
       )}
     </article>

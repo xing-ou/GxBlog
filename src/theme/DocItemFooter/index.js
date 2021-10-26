@@ -11,7 +11,7 @@ import EditThisPage from '@theme/EditThisPage';
 import TagsListInline from '@theme/TagsListInline';
 import styles from './styles.module.css';
 import {ThemeClassNames} from '@docusaurus/theme-common';
-import useUtterances from '@site/src/hooks/useUtterances';
+import { UtterancesComments } from '@site/src/components/UtterancesComments';
 
 function TagsRow(props) {
   return (
@@ -61,8 +61,7 @@ export default function DocItemFooter(props) {
   
   if (!canDisplayFooter) {
     return <></>;
-  }
-  const commentComponent = useUtterances();
+  }  
 
   return (
     <footer
@@ -76,7 +75,7 @@ export default function DocItemFooter(props) {
           formattedLastUpdatedAt={formattedLastUpdatedAt}
         />
       )} */}
-      {commentComponent}
+      <UtterancesComments></UtterancesComments>
     </footer>
   );
 }

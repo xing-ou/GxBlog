@@ -42,7 +42,8 @@ export default function ReadingPage() {
                             "col",
                             "col--3",
                             idx == 0 ? 0 : "col--offset-1"
-                          )}                          
+                          )}
+                          key={value.bookLink}                          
                         >
                           <BookItem item={value}></BookItem>
                         </div>
