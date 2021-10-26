@@ -68,14 +68,14 @@ export default function DocItemFooter(props) {
     <footer
       className={clsx(ThemeClassNames.docs.docFooter, 'docusaurus-mt-lg')}>
       {canDisplayTagsRow && <TagsRow tags={tags} />}
-      {canDisplayEditMetaRow && (
+      {/* {canDisplayEditMetaRow && (
         <EditMetaRow
           editUrl={editUrl}
           lastUpdatedAt={lastUpdatedAt}
           lastUpdatedBy={lastUpdatedBy}
           formattedLastUpdatedAt={formattedLastUpdatedAt}
         />
-      )}
+      )} */}
       {commentComponent}
     </footer>
   );
