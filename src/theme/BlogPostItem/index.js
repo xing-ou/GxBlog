@@ -128,11 +128,11 @@ function BlogPostItem(props) {
             </div>
           )}
 
-          {isBlogPostPage && editUrl && (
+          {/* {isBlogPostPage && editUrl && (
             <div className="col margin-top--sm">
               <EditThisPage editUrl={editUrl} />
             </div>
-          )}
+          )} */}
 
           {!isBlogPostPage && truncated && (
             <div className="col col--3 text--right">
