@@ -48,4 +48,4 @@ Custom domain处填写你自己的域名，然后等一会github解析，成功�
 }
 ```
 
-重新部署下就好了.
+然后你还会发现，每次deploy后custom domain都会被重置。我们还需要在static目录下加上CNAME文件，参考https://docusaurus.io/zh-CN/docs/deployment#docusaurusconfigjs-settings
