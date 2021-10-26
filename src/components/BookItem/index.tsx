@@ -2,6 +2,7 @@ import Link from '@docusaurus/Link';
 import clsx from 'clsx';
 import React from 'react';
 import styles from './styles.module.css';
+import { useBaseUrlUtils } from "@docusaurus/useBaseUrl";
 
 export type BookItemType = {
     "cover": string,
@@ -18,8 +19,9 @@ type BookItemProps = {
 
 export default function BookItem(props: BookItemProps) {
     const { item } = props;
+    const { withBaseUrl } = useBaseUrlUtils();  
     return <div className={clsx(styles.bookitem, "card")}>
-        <img src={item.cover} alt="cover"/>                
+        <img src={withBaseUrl(item.cover)} alt="cover"/>                
         <p className="hero__subtitle margin-horiz--md margin-vert--md" style={{fontSize: "1rem"}}>
             {item.desc}    
             <br></br>

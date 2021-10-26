@@ -5,10 +5,10 @@ import BookItem, {BookItemType} from "../components/BookItem";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 
 export default function ReadingPage() {
-  let { siteConfig } = useDocusaurusContext();
-  let books = siteConfig.customFields.booksInfo as [BookItemType];
-  let rowCount = 3;
-  let getPage = (values: BookItemType[]) => {
+  const { siteConfig } = useDocusaurusContext();  
+  const books = siteConfig.customFields.booksInfo as [BookItemType];
+  const rowCount = 3;
+  const getPage = (values: BookItemType[]) => {
     let final: Array<BookItemType[]> = [];
     let tempContainer: Array<BookItemType> = [];
     values.forEach((value, index) => {
