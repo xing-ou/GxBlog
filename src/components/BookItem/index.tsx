@@ -20,7 +20,7 @@ type BookItemProps = {
 export default function BookItem(props: BookItemProps) {
     const { item } = props;
     const { withBaseUrl } = useBaseUrlUtils();  
-    return <div className={clsx(styles.bookitem, "card")}>
+    return <div className={clsx(styles.bookitem, "card", "shadow--md")}>
         <img src={withBaseUrl(item.cover)} alt="cover"/>                
         <p className="hero__subtitle margin-horiz--md margin-vert--md" style={{fontSize: "1rem"}}>
             {item.desc}    

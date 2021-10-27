@@ -8,6 +8,15 @@ module.exports = {
       readStartTime: "wwdc专辑",
       readEndTime: "~",
       isReading: false,
+    },
+    {
+      cover: "/img/bookCover/algorithm.png",
+      desc: "~",
+      bookLink: "/docs/algorithm/关于本专题",
+      bookDir: "algorithm",
+      readStartTime: "算法专辑",
+      readEndTime: "~",
+      isReading: false,
     }
   ],
 };

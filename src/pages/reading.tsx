@@ -1,11 +1,11 @@
 import React from "react";
 import Layout from "@theme/Layout";
 import clsx from "clsx";
-import BookItem, {BookItemType} from "../components/BookItem";
+import BookItem, { BookItemType } from "../components/BookItem";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 
 export default function ReadingPage() {
-  const { siteConfig } = useDocusaurusContext();  
+  const { siteConfig } = useDocusaurusContext();
   const books = siteConfig.customFields.booksInfo as [BookItemType];
   const rowCount = 3;
   const getPage = (values: BookItemType[]) => {
@@ -25,29 +25,27 @@ export default function ReadingPage() {
     }
     return final;
   };
-    
+
   return (
     <Layout
       children={
-        <div>          
+        <div>
           <div className="container">
             {getPage(books).map((items) => {
               return (
-                <div className="row margin-bottom--lg margin-top--lg">
+                <div key={items.map((value) => value.bookLink).join()} className="row margin-bottom--lg margin-top--lg">
                   {items.map((value, idx) => {
                     return (
-                      <>
-                        <div
-                          className={clsx(
-                            "col",
-                            "col--3",
-                            idx == 0 ? 0 : "col--offset-1"
-                          )}
-                          key={value.bookLink}                          
-                        >
-                          <BookItem item={value}></BookItem>
-                        </div>
-                      </>
+                      <div
+                        className={clsx(
+                          "col",
+                          "col--3",
+                          idx == 0 ? 0 : "col--offset-1"
+                        )}
+                        key={value.bookLink}
+                      >
+                        <BookItem item={value}></BookItem>
+                      </div>
                     );
                   })}
                 </div>
