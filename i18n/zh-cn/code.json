@@ -172,7 +172,7 @@
     "description": "The label used by the button on the collapsible TOC component"
   },
   "theme.tags.tagsListLabel": {
-    "message": "标签:",
+    "message": "标签",
     "description": "The label alongside a tag list"
   },
   "theme.tags.tagsPageTitle": {
