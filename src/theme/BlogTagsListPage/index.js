@@ -28,7 +28,7 @@ function BlogTagsListPage(props) {
       sidebar={sidebar}>
       <div className="margin-bottom--lg">
       <h1>文档类文章标签</h1>
-      <div><Link to="/docs/tags">点击这里查看文档类文章tags</Link></div>     
+      <div><Link to="/docs/tags">点击这里查看文档类文章(书籍阅读)tags</Link></div>     
       </div>
       <h1>Blog类文章标签</h1>
       <TagsListByLetter tags={Object.values(tags)} />
