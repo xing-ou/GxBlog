@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkgx_blog=self.webpackChunkgx_blog||[]).push([[778],{1878:function(e){e.exports=JSON.parse('{"allTagsPath":"/tags","slug":"/tags/flex","name":"flex","count":1,"permalink":"/tags/flex"}')}}]);
