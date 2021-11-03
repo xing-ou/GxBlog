@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+    <channel>
+        <title>Gx'sBlog Blog</title>
+        <link>https://gouxin.fun/</link>
+        <description>Gx'sBlog Blog</description>
+        <lastBuildDate>Fri, 29 Oct 2021 00:00:00 GMT</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[推流分辨率码率设置]]></title>
+            <link>https://gouxin.fun/2021/10/29/推流码率设置</link>
+            <guid>推流分辨率码率设置</guid>
+            <pubDate>Fri, 29 Oct 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[Header]]></description>
+            <content:encoded><![CDATA[<p><img src="./Header.png" alt="Header"/></p><p>做直播始终离不开分辨率和码率的设置。</p><p>这里记录下腾讯音视频sdk中对推流参数的设置建议。</p><h3>分辨率码率对应表</h3><table><thead><tr><th>分辨率</th><th>码率范围</th></tr></thead><tbody><tr><td>160 * 160</td><td>100Kbps ~ 150Kbps</td></tr><tr><td>270*270</td><td>200Kbps ~ 300Kbps</td></tr><tr><td>480*480</td><td>350Kbps ~ 525Kbps</td></tr><tr><td>320*240</td><td>250Kbps ~ 375Kbps</td></tr><tr><td>480*360</td><td>400Kbps ~ 600Kbps</td></tr><tr><td>640*480</td><td>600Kbps ~ 900Kbps</td></tr><tr><td>320*180</td><td>250Kbps ~ 400Kbps</td></tr><tr><td>480*270</td><td>350Kbps ~ 550Kbps</td></tr><tr><td>640*360</td><td>500Kbps ~ 900Kbps</td></tr><tr><td>960*540</td><td>800Kbps ~ 1500Kbps</td></tr><tr><td>1280*720</td><td>1000Kbps ~ 1800Kbps</td></tr><tr><td>1920*1080</td><td>2500Kbps ~ 3000Kbps</td></tr></tbody></table>]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[pod repo push使用总结]]></title>
+            <link>https://gouxin.fun/2021/10/28/pod-repo-push使用总结</link>
+            <guid>pod repo push使用总结</guid>
+            <pubDate>Thu, 28 Oct 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[90088193-C7B8-4466-9DB9-DE681F7BF357]]></description>
+            <content:encoded><![CDATA[<p><img src="./90088193-C7B8-4466-9DB9-DE681F7BF357.png" alt="90088193-C7B8-4466-9DB9-DE681F7BF357"/></p><p>我们在修改完lib库后的最后一步就是使用<code>pod repo push</code>，将新的版本推到仓库里。</p><p>可是有时候会遇到各种奇怪的问题，导致一直push不成功，这里总结下使用方式。</p><h3>使用方式</h3><pre><code class="language-shell">pod repo push &lt;仓库&gt; xxx.podspec
+</code></pre><h3>使用pod lib lint检查</h3><p>在push前，我们最好使用<code>pod lib lint</code>检查一下，因为这个命令可以提前暴露出push时会遇到的问题。</p><h4>--allow-warnings</h4><p>最常用的选项，忽略警告</p><h4>--fail-fast</h4><p>建议加上，遇到error可以立马结束，这样就不用在很长很长的log里找到底是什么error。</p><h4>--no-subspecs</h4><p>如果有很多subspec，可以加上这个，能快点。</p><h4>--skip-import-validation</h4><p>跳过import校验。通常我们遇到下面的错误时，可以跳过对能否import的校验</p><pre><code class="language-shell"> - NOTE  | [iOS] xcodebuild:  ld: warning: ignoring file xxx/xx/x.a, missing required architecture x86_64 in file xxx/xx/
+ - NOTE  | [iOS] xcodebuild:  ld: warning: ignoring file xxx/xx/x.a, missing required architecture i386 in file xxx/xx/
+</code></pre><h4>--sources</h4><p>指定source，如果error是某个lib找不到，那么就通过这个指定这个lib的source, 可以指定多个，用逗号隔开。</p><pre><code class="language-shell">--sources=&quot;http://my-private/xxx/CocoapodsRepos.git,https://github.com/CocoaPods/Specs.git&quot;
+</code></pre><h3>使用pod repo push</h3><p>一般能通过pod lib lint的，基本上push都没啥问题。不建议不lint直接push，因为push产生的Log会很长很长，如果遇到error将很难发现问题。一般常用的option：</p><h4>--allow-warnings</h4><p>最常用的选项，忽略警告</p><h4>--sources</h4><p>指定source，如果error是某个lib找不到，那么就通过这个指定这个lib的source, 可以指定多个，用逗号隔开。</p><h4>--skip-import-validation</h4><p>跳过import校验</p><h3>其他</h3><p>有时候还会遇到一些奇奇怪怪的问题。比如：能编译过，但是lint/push时都报compile Error，最后发现是RealReachability的header中会少一些宏定义，代码中又引用了这些宏，最终全部替换掉就能正常push。</p><p>总之，先lint，用<code>--fail-fast</code>尽快找到错误提示，完成修改。</p>]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[Flex-Layout]]></title>
+            <link>https://gouxin.fun/2021/10/27/Flex-Layout</link>
+            <guid>Flex-Layout</guid>
+            <pubDate>Wed, 27 Oct 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[193EADF1-38F8-4FAF-9335-A05209EC236A]]></description>
+            <content:encoded><![CDATA[<p><img src="./193EADF1-38F8-4FAF-9335-A05209EC236A.png" alt="193EADF1-38F8-4FAF-9335-A05209EC236A"/></p><h2>flex布局</h2><p>flex布局由两部分组成：flex container(弹性容器)和flex item(弹性元素)组成。</p><h2>Flex container</h2><p>你可以通过<code>display:flex</code> 或者 <code>display:inline-flex</code>，来将一个元素变成弹性容器。<code>display:flex</code>声明的是块级框， <code>display:inline-flex</code>声明的是行内块级框。</p><p>当你声明一个元素是flex container时，他的每个直接子元素都变成了一个flex item。</p><h3>排版原则</h3><p>将item按照justifycontent的设置依次<strong>沿着主轴</strong>排列,默认不换行。</p><p>如果换行的话，那么<strong>沿着交叉轴</strong>方向排列下一行。</p><h3>flex container的轴</h3><p>弹性容器有2个轴：主轴 和 交叉轴。</p><p><code>flex-direction</code>定义了主轴的方向，他的取值如下：</p><pre><code class="language-css">row: 水平书写方向
+row-reverse: 与row相反
+coulm: 垂直于主轴的书写方向
+coulm-reverse:与coulm相反
+</code></pre><p>那么交叉轴呢？交叉轴始终和主轴垂直，方向是这个方向的书写方向。</p><p>这里都是用的书写方向，而不是水平向右这类词汇，因为对于不同的书写方向row的方向也不同，比如：对于从右到左书写方向的，他的row是，从右到左。</p><p>知道了主轴和交叉轴方向后，弹性元素将沿着主轴方向布局，如果允许换行，那么新的一行沿着交叉轴方向排列。</p><h3>换行flex-wrap</h3><p>如果弹性元素在主轴方向上排列不下。默认是不会换行的，如果设置了shrink，那就缩小尺寸，否则将从边框溢出。</p><p>我们可以使用flex-wrap控制换行。他的值如下：</p><pre><code>nowrap: 不换行
+wrap: 沿着交叉轴方向换行
+wrap-reverse: 沿着交叉轴的反方向换行
+</code></pre><h3>flex-direction和flex-wrap的简写</h3><p><code>flex-flow</code>是flex-direction和flex-wrap的简写</p><h3>控制空白的位置</h3><p>目前为止，我们知道flex item会沿着主轴方向进行排列，如果有多行，那么行沿着交叉轴方向排列，这也意味着如果一行没占满，留有空白，那么这个空白始终出现在主轴+交叉轴的方向那。</p><p>我们可以控制这个行为，下面是相关属性：</p><pre><code class="language-css">justify-content ：控制一行中，item在主轴方向上的布局方式(我个人更喜欢理解为空白的处理方式)
+flex-start: item沿着主轴依次布局，（空白全在末尾）
+flex-end:item沿着主轴反方向依次布局，（空白全在开头）
+center: 把所有item作为一个整体居中布局。 (空白两侧等分)
+space-between: 把每行第一个元素放在主轴起边， 最后一个元素放在主轴终边。然后余下的item的两侧放置等量空白, 如果没有多余空白，那么会把最后一个元素撑到外面去。
+space-around: item两侧有等量的不折叠的空白。
+space-evenly: 把剩余空白等分，和item依次排列。这也意味着第一个元素到主轴起边和最后一个元素到主轴终边的距离是一样的。
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gr2tjs3h9ij31400sf4ci.jpg" alt="图像"/></p><p>如果没有多余空白，页不允许换行，那么将溢出，justify-content对溢出也有影响</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gr2tp24qdrj313x0ot134.jpg" alt="图像"/></p><h3>一行中如何对齐元素</h3><p>上面justify-content的例子有点特殊，因为他们的item的高度都是相等的，以至于我们忽略了，如果item也有不同高度时的情况。</p><p>如果item有不同的高度，那么item在交叉轴方向上应该如何布局嘞？</p><p>他受下面的属性控制：</p><pre><code class="language-css">align-items : 定义一行中，item在交叉轴上的布局方式
+flex-start: 沿着交叉轴起边对其
+flex-end: 沿着交叉轴终边对其
+center: 在一行中垂直居中对其
+stretch: 全部拉伸填满交叉轴方向
+baseline: 各个item基线对其
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gr2u1epaxhj30dz12gq8x.jpg" alt="图像"/></p><h3>交叉轴对齐方式覆盖</h3><p>刚刚讲了align-items是item在一行中交叉轴上的布局方式。但有时我们可能存在特异化需求，比如奇数位置上的item是flex-start, 偶数位置上是flex-end。</p><p><code>align-self</code>便是用于覆盖align-items属性的值，和align-items不同的是，align-self是声明在flex item上的，覆盖了flex container上的align-items属性。</p><p>由于是覆盖align-items，所以他的取值和align-items是一样的，作用也是一样的。</p><h3>多个行的布局方式</h3><p>如果允许换行，那么久可能出现多个行的情况，默认情况下，多个行是沿着交叉轴方向依次排列。但我们可以改变这个行为。</p><p><code>align-content</code>属性指定了交叉轴方向上的额外空间如何分配到各个行之间。</p><p>他的取值和justify-content类似，多了个stretch。</p><pre><code class="language-css">align-content: 
+flex-start : 沿着交叉轴起边依次排列行,(空白在末尾)
+flex-end : 沿着交叉轴终边开始依次排列行，(空白在开头)
+center: 把各个行作为一个整体，居中排列
+space-between: 第一行放在交叉轴起边，最后一行放在交叉轴终边，剩余空间等分和item依次排列
+space-around: item两边有等量的不折叠的空白
+space-evenly: item两边有等量空白
+stretch: 等分空白，每一行拉伸等量空白空间。
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gr2ujy594dj30u00zp1kx.jpg" alt="图像"/></p><h2>Flex item</h2><p>刚刚我们说的除了align-self，其他都是应用在container上的属性。接下来，我们再看看应用在item上的属性。</p><p>除了align-self，还有flex, flex-grow, flex-shrink, flex-basis, order。</p><p>其中flex是flex-grow flex-shrink flex-basis的缩写。</p><p>我们可能遇到出现的结果和想象的不一样的情况，这个大多数有2个原因：</p><ol><li>对属性含义的误解</li><li>忽略各个情况下的默认值</li></ol><p>弹性元素还有：外边距不折叠的特性。float和clear对弹性元素不起作用。</p><p>Vertical-align对弹性元素没有作用，vertical-align是文本属性中的一员，用于控制文本在文本行框中的垂直方向上的对其方式。所以你item指定了vertical-align:bottom，那么只是item中的文本在文本行框中底部对齐，而不是把item推向container的底部。</p><p>绝对定位对item也有影响。如果某个item使用了绝对定位，那么这个item将从文档流移除，不会参与弹性布局。虽然他从文档流中移除了，但是justify-content和align-self还是会影响绝对定位元素。比如：align-self:center，那么绝对定位item会在弹性容器中交叉轴方向居中。</p><h3>Flex-basis</h3><p>含义：根据增长因子或者缩减因子分配多余或者缺少空间之前，弹性元素的大小。</p><p>不鼓励：单独使用，建议用flex简写</p><pre><code class="language-css">flex-basis:
+auto: width ==&gt; min-width =&gt; content
+&lt;length&gt;: 指定长度,比如200px
+&lt;percentage&gt;: 百分比，相对于弹性container
+</code></pre><p>注意：flex-basis的默认值是auto，但是如果你指定了flex属性，省略了flex-basis，那么flex-basis是0%。</p><h3>Flex-grow</h3><p>含义：有多余空间时是否允许增大，以及如何分配剩余空间。</p><p>不鼓励：单独使用，建议用flex简写</p><p>负数无效。</p><p>下面看看container宽750，有3个100px的item：</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gr2w7s8g6fj30w20u01bu.jpg" alt="图像"/></p><p>如果我们换成flex:1, flex:1, flex:3呢？我们看到又是分配的全部空间，而不是剩余空间。为什么呢？这就和默认值有关了。</p><p>如果我们单独设flex-grow，没有设置flex，和flex-basis，那么这个时候flex-basis是auto。也就是在分配剩余空间前，item占用width的空间，所以得到剩余空间是450px。</p><p>如果指定了flex:1， 但是省略了flex-basis，那么flex-basis是0，也就是说在分配剩余空间前，item不占空间，3个item都不占空间，那么剩余空间就是整个空间的大小，所以看到的是按比例分配。</p><h3>Flex-shrink</h3><p>翻译：空间不够放置所有弹性元素，而且弹性容器不能增加尺寸也不允许换行时，如何分配“缺少空间”。</p><p>不鼓励：单独使用，建议用flex简写</p><p>那么如何分配呢？首先得计算出缩减比例，缩减比例不仅和shrink有关，还和item宽度有关。</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gr2x0tya2wj30zv07c408.jpg" alt="图像"/></p><p>最终item的宽度为</p><p>120/(150 <em> 1 + 250 </em> 1+ 200 <em>1) </em> 1 </p><p>Width = itemWidth <em> shrink </em> 缩小比例。</p><h3>flex</h3><p>之前说了flex是flex-grow flex-shrink flex-basis的简写，推荐使用这个。</p><p>唯一需要注意的是他的默认值。省略flex-basis的话是0 而不是auto。</p><h3>order</h3><p>定义item的顺序。</p>]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[如何为githubPage添加自定义域名]]></title>
+            <link>https://gouxin.fun/2021/10/26/如何为githubPage添加自定义域名</link>
+            <guid>如何为githubPage添加自定义域名</guid>
+            <pubDate>Tue, 26 Oct 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[68CF50FD-8CA2-4A5B-9D3A-F1786775BDFD]]></description>
+            <content:encoded><![CDATA[<p><img src="./68CF50FD-8CA2-4A5B-9D3A-F1786775BDFD.png" alt="68CF50FD-8CA2-4A5B-9D3A-F1786775BDFD"/></p><p>当我们把blog托管在github page上后，就能得到一个<code>&lt;userName&gt;.github.io</code>的域名。不过有点丑，没关系我们还可以用自己的域名。</p><h3>第一步：购买域名</h3><p>我是在阿里云上买的一个域名，购买完成后，进入<code>解析设置</code>， 然后添加记录。</p><p><img src="./23A6A5C1-68E6-4B1C-B56F-C962C574E897.png" alt="23A6A5C1-68E6-4B1C-B56F-C962C574E897"/></p><h5>添加一个CNAME记录</h5><p>记录类型：CNAME</p><p>主机记录：www</p><p>记录值:  xxx.github.io</p><h5>添加多个A记录</h5><p>参考<a href="https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site#configuring-an-apex-domain">官方文档</a>, 添加多个A 和 AAAA</p><p>记录类型：A</p><p>主机记录：不填</p><p>记录值:  185.199.108.153</p><h3>第二步：修改仓库setting</h3><p><img src="./226E7E5E-6EE6-457B-85F9-CD1823B554ED.png" alt="226E7E5E-6EE6-457B-85F9-CD1823B554ED"/></p><p>Custom domain处填写你自己的域名，然后等一会github解析，成功后勾选<code>Enforce https</code>。</p><p>现在就可以访问新的。</p><h3>第三步：其他修改</h3><p>如果你使用像<code>docusaurus</code>这样的框架，那么还得修改config文件中的url和baseUrl。</p><pre><code class="language-json">{
+  url: &#x27;https://gouxin.fun&#x27;,
+  baseUrl: &#x27;/&#x27;,
+}
+</code></pre><p>然后你还会发现，每次deploy后custom domain都会被重置。我们还需要在static目录下加上CNAME文件，参考<a href="https://docusaurus.io/zh-CN/docs/deployment#docusaurusconfigjs-settings">https://docusaurus.io/zh-CN/docs/deployment#docusaurusconfigjs-settings</a></p>]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[博客开张啦]]></title>
+            <link>https://gouxin.fun/2021/10/25/博客开张啦</link>
+            <guid>博客开张啦</guid>
+            <pubDate>Mon, 25 Oct 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[6DE1C549-029E-49E9-A79B-669B782FD675]]></description>
+            <content:encoded><![CDATA[<p><img src="./6DE1C549-029E-49E9-A79B-669B782FD675.png" alt="6DE1C549-029E-49E9-A79B-669B782FD675"/></p><p> 之前的blog在老电脑上，现在已经找不到了，有段时间没有写博客了。现在用<a href="https://docusaurus.io/">docusaurus</a>重新搭建自己的博客。相比于hexo，docusaurus使用React更灵活。</p><p>加油！加油！加油</p>]]></content:encoded>
+        </item>
+    </channel>
+</rss>
