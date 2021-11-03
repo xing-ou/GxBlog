@@ -20,7 +20,7 @@ description: 来源：力扣（LeetCode）链接：https://leetcode-cn.com/probl
 
 示例 1：
 
-![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2021/01/02/addtwonumber1.jpg)
+![img](./15B646FC-370D-42C5-BD58-2E18C5A196C2.png)
 
 
 输入：l1 = [2,4,3], l2 = [5,6,4]
