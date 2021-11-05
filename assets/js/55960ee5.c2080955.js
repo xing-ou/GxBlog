@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkgx_blog=self.webpackChunkgx_blog||[]).push([[121],{8070:function(e){e.exports=JSON.parse('[{"name":"leetcode","permalink":"/docs/tags/leetcode","count":2},{"name":"algorithm","permalink":"/docs/tags/algorithm","count":2}]')}}]);
