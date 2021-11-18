@@ -4,9 +4,48 @@
         <title>Gx'sBlog Blog</title>
         <link>https://gouxin.fun/</link>
         <description>Gx'sBlog Blog</description>
-        <lastBuildDate>Fri, 29 Oct 2021 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Wed, 10 Nov 2021 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[一个简单的StringKeyChain]]></title>
+            <link>https://gouxin.fun/2021/11/10/一个简单的StringKeyChain</link>
+            <guid>一个简单的StringKeyChain</guid>
+            <pubDate>Wed, 10 Nov 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[headerimg]]></description>
+            <content:encoded><![CDATA[<p><img src="./B6086038-32F7-48AE-AC07-DBAE5C0F21D7.png" alt="headerimg"/></p><p>一个简单的<code>StringKeyChain</code>封装，存储/获取字符串到keychain中。通常用于生成设备的唯一id。</p><pre><code class="language-swift">class StringKeyChain {
+    static func save(value: String, key: String) {
+        let data = value.data(using: .utf8)!
+        let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword,
+                                    kSecAttrAccount as String: key,
+                                    kSecValueData as String: data]
+        SecItemDelete(query as CFDictionary)
+        let status = SecItemAdd(query as CFDictionary, nil)
+        if status != errSecSuccess {
+            print(&quot;keychain save error&quot;)
+        }
+    }
+
+    static func getValue(key: String) -&gt; String? {
+        let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword,
+                                    kSecAttrAccount as String: key,
+//                                    kSecAttrService as String: key,
+//                                    kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock,
+                                    kSecMatchLimit as String: kSecMatchLimitOne,
+                                    kSecReturnData as String: kCFBooleanTrue!]
+
+        var retrivedData: AnyObject?
+
+        _ = SecItemCopyMatching(query as CFDictionary, &amp;retrivedData)
+
+        guard let data = retrivedData as? Data else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+}
+
+
+</code></pre>]]></content:encoded>
+        </item>
         <item>
             <title><![CDATA[推流分辨率码率设置]]></title>
             <link>https://gouxin.fun/2021/10/29/推流码率设置</link>
