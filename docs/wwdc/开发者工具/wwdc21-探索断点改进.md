@@ -1,0 +1,122 @@
+---
+title: wwdc21-探索断点改进
+tags: [wwdc, lldb, breakpoint]
+description: xcode13中断点新增功能，比如列断点
+---
+## 列断点
+
+我们在设置断点的时候，通常都是在某行的开头打上断点标记。但是随着swift的发展，尾随闭包、计算属性、$0这种默认参数名称等等，让我们可以在一行中很简洁的表达意图。但是，我们在这一行打上断点的时候，编译器会为我们生成多个可供lldb中断的位置。举个例子:
+
+```swift
+class ViewController: UIViewController {
+    var ajustDensity: Bool {
+        return true
+    }
+    func convertedToVolume(ajustDensity: Bool) -> Int {
+        return ajustDensity ? 100 : 10
+    }
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // 在下面这一行打上断点，step会进入到计算属性ajustDensity中
+        let result = self.convertedToVolume(ajustDensity: self.ajustDensity)
+        print(result)
+    }
+}
+```
+
+xcode13提供了更精细的断点控制：`列断点`。比如上面的代码，我们只想在`convertedToVolume`方法上打断点，不想进入`ajustDensity`计算属性中。
+
+此时可以移到对应函数上，鼠标右键单击，选择`create column breakpoint`。
+
+![image-20211118142344368](https://tva1.sinaimg.cn/large/008i3skNgy1gwja990g2jj30sq07qwfd.jpg)
+
+![image-20211118142435653](https://tva1.sinaimg.cn/large/008i3skNgy1gwjaa0xs44j30p009qjs9.jpg)
+
+![image-20211118142719632](https://tva1.sinaimg.cn/large/008i3skNgy1gwjacvkn57j30su07a3zd.jpg)
+
+打上列断点后就会出现一个小箭头，我们单击小箭头就能出现断点设置相关界面，可以编辑、移除。
+
+同时，当进入断点时，对应位置会用`绿色的下划线`进行标记，表明当前断点的位置。
+
+再来看个swift闭包的例子:
+
+```swift
+let array = [1,2,3,4,5]
+let result = array.map{ "\($0)" }.map{ "\($0)\($0)" }
+print(result)
+```
+
+我们只想在第二个map中打下断点，查看$0的值，所以我们可以在第二个map中的$0上打上列断点。
+
+## 符号断点
+
+```swift
+class ViewController: UIViewController {
+    
+    func toggle() -> Bool {
+        return true
+    }
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // Do any additional setup after loading the view.
+        var a = true
+        a.toggle()
+        let result = self.toggle()
+        print(result)
+    }
+}
+```
+
+
+
+我们添加一个symble包含`toggle`的`Symbolic Breakpoint`。
+
+![image-20211118144209630](https://tva1.sinaimg.cn/large/008i3skNgy1gwjasb7crlj30pi0e4dh9.jpg)
+
+![image-20211118144329733](https://tva1.sinaimg.cn/large/008i3skNgy1gwjatp2re7j30nq07it9n.jpg)
+
+他会匹配系统库在内的所有符合的符号。如果没有限制，可能会命中非常多的位置。还好我们可以将搜索结果限制在某个module中。
+
+![image-20211118144907506](https://tva1.sinaimg.cn/large/008i3skNgy1gwjazkf0k7j30ny0cowfi.jpg)
+
+现在就只有viewcontroller中的toggle会进入断点。
+
+如果我们创建了一个找不到的`symblic breakpoint`，xcode会显示一个`虚线断点`。
+
+![image-20211118145446536](https://tva1.sinaimg.cn/large/008i3skNgy1gwjb5ffn4hj30oi05qwep.jpg)
+
+这是xcode13的新功能，如果某个断点没有被lldb解析出是在哪个位置，就会显示一个虚线断点。虚线断点出现的原因可能有无数个，不过我们都可以鼠标悬停在虚线断点上面，xcode会显示一个原因弹窗。
+
+![IMG_3736](https://tva1.sinaimg.cn/large/008i3skNgy1gwjbcgeku9j305k034q2t.jpg)
+
+上面显示了可能原因:
+
+- 检测拼写错误
+- 符号是否存在
+- Library是否loaded
+
+我们也可以在lldb中去搜索符号:
+
+```shell
+(lldb) image lookup -rn toggle SwiftDemo
+1 match found in /Users/gx/Library/Developer/Xcode/DerivedData/SwiftDemo-bjjbgmlihoaimlfphiakxpgactle/Build/Products/Debug-iphonesimulator/SwiftDemo.app/SwiftDemo:
+        Address: SwiftDemo[0x0000000100002e50] (SwiftDemo.__TEXT.__text + 0)
+        Summary: SwiftDemo`SwiftDemo.ViewController.toggle() -> Swift.Bool at ViewController.swift:12
+```
+
+`虚线断点`还有可能出现在`source file breakpoint `中。同样的我们悬停在上面，可以看到通常的原因：
+
+- 这一行没被编译，比如：`#if`限制等
+- Build setting中是否设置了生成调试信息
+- 。。。
+
+## Runtime Issues Breakpoint
+
+![image-20211118151512417](https://tva1.sinaimg.cn/large/008i3skNgy1gwjbqpbmnoj30v20bqdgx.jpg)
+
+![image-20211118151533675](https://tva1.sinaimg.cn/large/008i3skNgy1gwjbr1yx2yj30hy0703yk.jpg)
+
+这会在我们遇到Runtime问题时进入断点。注意后面的描述`to hit the breakpoint ...`，我们还需要进入diagnostic中进行设置，我们可以点那个小箭头快速进入设置界面。
+
+![image-20211118151811176](https://tva1.sinaimg.cn/large/008i3skNgy1gwjbtt0f4bj30ps0aqjs1.jpg)
+
