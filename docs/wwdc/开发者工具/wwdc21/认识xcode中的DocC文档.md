@@ -1,7 +1,7 @@
 ---
 title: 认识xcode中的DocC文档
 tags: [wwdc, DocC]
-description: Documentation Compiler。也并不单指文档编译器，而是代指整个xcode中整合的文档环境。
+description: Documentation Compiler。也并不单指文档编译器，而是代指整个xcode中整合的文档环境。这篇文章主要介绍DocC的Reference。
 ---
 ## DocC
 
