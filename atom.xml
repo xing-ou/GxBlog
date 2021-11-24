@@ -47,6 +47,15 @@
 </code></pre>]]></content>
     </entry>
     <entry>
+        <title type="html"><![CDATA[Xcode13的Info.plist不见了?]]></title>
+        <id>Xcode13的Info.plist不见了?</id>
+        <link href="https://gouxin.fun/2021/10/31/Xcode13的Info.plist不见了"/>
+        <updated>2021-10-31T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Header]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="Header"/>
+创建新的SwiftUI项目，发现Info.plist不见了？</p><p>哦~~~，原来是Xcode13引起的。</p><p>查看<a href="https://developer.apple.com/documentation/xcode-release-notes/xcode-13-release-notes">Xcode13 Release Note</a>，可以看到</p><blockquote><p>Projects created from several templates no longer require configuration files such as entitlements and <code>Info.plist</code> files. Configure common fields in the target’s Info tab, and build settings in the project editor. These files are added to the project when additional fields are used. (68254857)</p></blockquote><p>原来新的模板不在创建Info.plist了，Info.plist的功能转移到<code>Target-&gt;Info</code>下了。</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gwq3pltcx9j311o0oyjub.jpg" alt="image-20211124115621173"/></p><p>在Info中修改相关设置。如果你添加了一个自定义Key，那么系统会帮你创建一个Info.plist来包含你的自定义key-value。</p><p>你也可以自己直接新建。</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gwq3p3sf3lj319g05agm4.jpg" alt="image-20211124115550252"/></p><p>非SwiftUI项目中还是存在Info.plist，但是大部分内容还是都移动到了<code>Target-&gt;Info</code>中。Info.plist只保留了部分Key-Value。</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gwq3sea29cj316g0dcwg7.jpg" alt="image-20211124115901894"/></p>]]></content>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[appstore截图尺寸规范设置]]></title>
         <id>appstore截图尺寸规范设置</id>
         <link href="https://gouxin.fun/2021/10/30/appstore截图尺寸规范"/>
