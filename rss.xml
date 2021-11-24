@@ -47,6 +47,16 @@
 </code></pre>]]></content:encoded>
         </item>
         <item>
+            <title><![CDATA[如何查看iOS、iPadOS系统版本占比？]]></title>
+            <link>https://gouxin.fun/2021/11/01/如何查看ios和ipados当前系统版本占比</link>
+            <guid>如何查看iOS、iPadOS系统版本占比？</guid>
+            <pubDate>Mon, 01 Nov 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[header]]></description>
+            <content:encoded><![CDATA[<p><img src="./Header.png" alt="header"/>
+每当开始新项目的时候，我们都得决定应该把最低系统版本设置为多少，此时，我们都希望能有个参考，市场上的系统版本的占比究竟是多少？
+苹果官网有一个最近3个系统版本的占比统计，我们可以参考一下。</p><h2>官网占比统计</h2><p><a href="https://developer.apple.com/support/app-store/">官网统计页面</a></p><p><img src="./iOS_and_iPadOS_usage.png" alt="iOS_and_iPadOS_usage"/></p><p>可以看到统计时间是2021年6月3日，</p><p>iphone</p><ul><li><p>近四年的设备中已有98%到iOS13以上。</p></li><li><p>所有设备中93%已经到iOS13以上。</p></li></ul><p>iPad</p><ul><li>近四年的设备中已有99%到iOS13以上。</li><li>所有设备中88%已经到iOS13以上。</li></ul><h2>常用App的最低版本</h2><p>我们再去appstore中看下免费App排行榜设置的最低版本是多少。</p><table><thead><tr><th>App名称</th><th>兼容性</th></tr></thead><tbody><tr><td>国家反诈中心</td><td>iOS10</td></tr><tr><td>微信</td><td>iOS12</td></tr><tr><td>抖音</td><td>iOS10</td></tr><tr><td>QQ</td><td>iOS9</td></tr><tr><td>支付宝</td><td>iOS9</td></tr><tr><td>拼多多</td><td>iOS9</td></tr><tr><td>淘宝</td><td>iOS9</td></tr><tr><td>百度</td><td>iOS10</td></tr><tr><td>美团</td><td>iOS10</td></tr><tr><td>剪映</td><td>iOS11</td></tr><tr><td>高德地图</td><td>iOS10</td></tr><tr><td>小红书</td><td>iOS10</td></tr><tr><td>得物</td><td>iOS10</td></tr><tr><td>快手极速版</td><td>iOS9</td></tr><tr><td>快手</td><td>iOS10</td></tr><tr><td>抖音极速版</td><td>iOS10</td></tr><tr><td>腾讯视频</td><td>iOS10</td></tr><tr><td>咸鱼</td><td>iOS9</td></tr><tr><td>京东</td><td>iOS9</td></tr><tr><td>钉钉</td><td>iOS10</td></tr><tr><td>酷狗音乐</td><td>iOS9</td></tr><tr><td>优酷</td><td>iOS10</td></tr><tr><td>QQ音乐</td><td>iOS9</td></tr><tr><td>网易云音乐</td><td>iOS11</td></tr><tr><td>哔哩哔哩</td><td>iOS9</td></tr><tr><td>爱奇艺</td><td>iOS10</td></tr><tr><td>Soul</td><td>iOS11</td></tr><tr><td>知乎</td><td>iOS11</td></tr><tr><td>今日头条</td><td>iOS10</td></tr><tr><td>虎牙直播</td><td>iOS10</td></tr><tr><td>探探</td><td>iOS11</td></tr><tr><td>。。。</td><td></td></tr></tbody></table><p>可以看到主流是iOS10。iOS11也呈现出增多的趋势。微信竟然直接是iOS12。</p>]]></content:encoded>
+        </item>
+        <item>
             <title><![CDATA[Xcode13的Info.plist不见了?]]></title>
             <link>https://gouxin.fun/2021/10/31/Xcode13的Info.plist不见了</link>
             <guid>Xcode13的Info.plist不见了?</guid>
