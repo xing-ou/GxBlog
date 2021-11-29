@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkgx_blog=self.webpackChunkgx_blog||[]).push([[259],{6722:function(e){e.exports=JSON.parse('{"allTagsPath":"/tags","slug":"/tags/xcode","name":"Xcode","count":1,"permalink":"/tags/xcode"}')}}]);
