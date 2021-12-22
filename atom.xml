@@ -2,16 +2,311 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://gouxin.fun/</id>
     <title>Gx'sBlog Blog</title>
-    <updated>2021-11-10T00:00:00.000Z</updated>
+    <updated>2021-11-06T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://gouxin.fun/"/>
     <subtitle>Gx'sBlog Blog</subtitle>
     <icon>https://gouxin.fun/img/favicon.ico</icon>
     <entry>
+        <title type="html"><![CDATA[SwiftUI专辑003-使用Image]]></title>
+        <id>/2021/11/06/SwiftUI专辑-003-使用Image</id>
+        <link href="https://gouxin.fun/2021/11/06/SwiftUI专辑-003-使用Image"/>
+        <updated>2021-11-06T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+这一章，我们将介绍如何添加Image到View中。</p><h2>Getting ready</h2><p>新建一个SwiftUI工程，叫做<strong>ImageApp</strong></p><h2>How to do it…</h2><p>首先让我们添加一些图片到Assert中，然后我们再介绍一些modifier来修改图片样式。</p><ol><li>替换Text为VStack</li><li>从<a href="https://github.com/PacktPublishing/SwiftUI-Cookbook-2nd-Edition/tree/main/Resources/Chapter01/recipe3%E4%B8%8B%E8%BD%BD%E5%9B%BE%E7%89%87">https://github.com/PacktPublishing/SwiftUI-Cookbook-2nd-Edition/tree/main/Resources/Chapter01/recipe3下载图片</a></li><li>拖动图片到Asserts中</li><li>添加一个<code>Image</code>到<code>VStack中</code></li></ol><pre><code class="language-swift">Image(&quot;dogs1&quot;)
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxlubi8eadj30d40ou3zy.jpg" alt="image-20211221224926711"/></p><ol start="5"><li>添加一个<code>.resizable()</code>modifier, 他能让SwiftUI调整图片大小以适应可以用空间。</li></ol><pre><code class="language-swift">Image(&quot;dogs1&quot;)
+.resizable()
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxlucuqitnj30cy0ootae.jpg" alt="image-20211221225044534"/></p><ol start="6"><li>我们看到图片被压缩了，继续添加一个<code>.aspectRatio</code></li></ol><pre><code class="language-swift">Image(&quot;dogs1&quot;)
+    .resizable()
+    .aspectRatio(contentMode: .fit)
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxlufwjo2cj30cc0o8dgm.jpg" alt="image-20211221225341902"/></p><ol start="7"><li>继续添加 <strong>dog-and-nature</strong>到<code>VStack</code>中</li></ol><pre><code class="language-swift">Image(&quot;dog-and-nature&quot;)
+    .resizable()
+    .aspectRatio(contentMode: .fit)
+    .frame(width:300, height:200)
+    .clipShape(Circle())
+    .overlay(Circle().stroke(Color.blue, lineWidth: 6))
+    .shadow(radius: 10)
+</code></pre><ol start="8"><li>我们写个工具方法来获取UIImage</li></ol><pre><code class="language-swift">func getImageFromUIImage(image:String) -&gt; UIImage {
+    guard let img = UIImage(named: image) else {
+        fatalError(&quot;Unable to load image&quot;)
+    }
+    return img
+}
+</code></pre><ol start="9"><li>然后使用UIImage来加载图片</li></ol><pre><code class="language-swift">Image(uiImage: getImageFromUIImage(image:&quot;dog2&quot;))
+    .resizable()
+    .frame(width: 200, height: 200)
+    .aspectRatio(contentMode: .fit)
+</code></pre><ol start="10"><li>最终效果</li></ol><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxlumbs7t0j30cq0pa0u9.jpg" alt="image-20211221225942417"/></p><h2>How it works…</h2><p>添加<code>Image</code>到View上时，<code>Image</code>默认显示原始尺寸。图片可能大了，也可能小了。</p><p>要让<code>Image</code>适应屏幕大小，我们需要添加<code>.resizable</code>modifier。这会让<code>Image</code>缩放以占满可用空间。</p><p>为了解决缩放的拉伸问题，我们可以使用<code>.aspectRatio</code>modifier。</p><p>但aspectFill时，图片可能超出范围，我们可以用<code>.clip()</code>裁减掉</p><p>如果我们要限制图片大小固定为某个值，可以使用<code>.frame</code>modifier。</p><p>如果想裁剪图片为某个形状，可以使用<code>.clipShape</code>modifier。</p><p>我们还可以使用<code>.overlay</code>和<code>.shadow</code>来添加边框和阴影。</p><p>注意modifer的顺序比较重要，不同顺序的组合可能得到不一样的结果。</p><h2>Image</h2><p>我们可以中资源中创建Image</p><ul><li>从bundle中的资源文件创建</li><li>从UIImage/NSImage创建</li><li>从CGImage创建</li><li>从SF Symbols创建</li></ul><h3>Creating an Image</h3><pre><code class="language-swift">//通过name初始化，bundle为nil默认为main bundle
+init(_ name: String, bundle: Bundle? = nil)
+
+</code></pre><h3>Creating an Image for Use as a Control</h3><pre><code class="language-swift">//和上面的类似， label用作accessibility
+init(_ name: String, bundle: Bundle? = nil, label: Text)
+init(_ cgImage: CGImage, scale: CGFloat, orientation: Image.Orientation = .up, label: Text)
+</code></pre><h3>Creating an Image for Decorative Use</h3><pre><code class="language-swift">///创建装饰性的image，不会有accessibility
+init(decorative name: String, bundle: Bundle? = nil)
+init(decorative cgImage: CGImage, scale: CGFloat, orientation: Image.Orientation = .up)
+</code></pre><h3>Creating a System Symbol Image</h3><pre><code class="language-swift">init(systemName: String)
+</code></pre><h3>Creating an Image from a System Representation</h3><pre><code class="language-swift">///通过平台对应的Image初始化
+init(uiImage: UIImage)
+init(nsImage: NSImage)
+</code></pre><h3>Resizing and Scaling Images</h3><pre><code class="language-swift">/// 拉伸，EdgeInsets中间的区域不拉伸，四周拉伸，ResizingMode制定了拉伸方式
+func resizable(capInsets: EdgeInsets = EdgeInsets(), resizingMode: Image.ResizingMode = .stretch) -&gt; Image
+</code></pre><h3>Specifying Image Rendering Behavior</h3><pre><code class="language-swift">///设置symble image的render方式
+func symbolRenderingMode(_ mode: SymbolRenderingMode?) -&gt; Image
+//两种mode: original:图片本色 temple: 将所有不透明的颜色渲染为forgroundColor。
+func renderingMode(_ renderingMode: Image.TemplateRenderingMode?) -&gt; Image
+///渲染那种需要插值的图片，指定插值质量
+func interpolation(_ interpolation: Image.Interpolation) -&gt; Image
+///是否开启反锯齿
+func antialiased(_ isAntialiased: Bool) -&gt; Image
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxlvhx2yyuj30yq0jqwgq.jpg" alt="image-20211221233014594"/></p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑002-处理文本]]></title>
+        <id>/2021/11/05/SwiftUI专辑-002-处理文本</id>
+        <link href="https://gouxin.fun/2021/11/05/SwiftUI专辑-002-处理文本"/>
+        <updated>2021-11-05T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+文本是任何App的一个基础。
+本章我们将介绍：</p><ul><li><strong>Text</strong></li><li><strong>TextField</strong></li><li><strong>SecureField</strong></li><li><strong>TextEditor</strong></li></ul><h2>准备</h2><p>创建一个名为<strong>FormattedText</strong>的新 SwiftUI 项目。</p><h2>怎么做…</h2><p>首先将Text用VStack包裹一下</p><pre><code class="language-swift">struct ContentView: View {
+var body: some View {
+        VStack{
+            Text(&quot;Hello World&quot;)
+        }
+    }
+}
+</code></pre><p>然后添加一个fontWeight modifier。</p><pre><code class="language-swift">Text(&quot;Hello World&quot;).fontWeight(.medium)
+</code></pre><p>添加两个个state</p><pre><code class="language-swift">@State var password = &quot;&quot;
+@State var someText = &quot;&quot;
+</code></pre><p>添加一个Text和SecureField, 用Text显示SecureField的输入</p><pre><code class="language-swift">SecureField(&quot;Enter a password&quot;, text: $password).padding()
+Text(&quot;password entered: \(password)&quot;).italic()
+</code></pre><p>添加一个Text和TextField，用Text显示TextField的输入</p><pre><code class="language-swift">TextField(&quot;Enter some text&quot;, text: $someText).padding()
+Text(&quot;\(someText)&quot;).font(.largeTitle).underline()
+</code></pre><p>再尝试一下其他modifier</p><pre><code class="language-swift">Text(&quot;Changing text color and make it bold&quot;).foregroundColor(Color.blue).bold()
+Text(&quot;Use kerning to change space between lines of text&quot;).kerning(7)
+Text(&quot;Changing baseline offset&quot;).baselineOffset(100)
+Text(&quot;Strikethrough&quot;).strikethrough()
+Text(&quot;This is a multiline text implemented in SwiftUI. The trailing modifier was added to the text. This text also implements multiple modifiers&quot;)
+    .background(Color.yellow)
+    .multilineTextAlignment(.trailing)
+    .lineSpacing(10)
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxj3txyjzfj30cu0qgjsg.jpg" alt="image-20211219140147411"/></p><h2>How it works…</h2><p>Text有关于font，spacing等相关的Modifier。TextFiled和SecureField都需要一个<code>State</code>来存储输入，我们可以使用<code>@State</code>来声明一个<code>State</code>。SwiftUI会在<code>State</code>改变时，自动刷新UI。</p><p>我们通过$来绑定<code>State</code>。</p><pre><code class="language-swift">  TextField(&quot;Enter some text&quot;, text: $someText)     
+</code></pre><h2>There&#x27;s more…</h2><p>我们继续添加Text，当子视图超过10个时，就会报错。原来是SwiftUI只支持最大10个子视图。所以此时，我们需要使用<code>Group</code>来分割我们的子视图。</p><h2>详细介绍</h2><h3>Text</h3><p>用于显示1行或者多行的只读文本。</p><h4>Creating a Text View from a String</h4><pre><code class="language-swift">//国际化
+init(_ key: LocalizedStringKey, tableName: String? = nil, bundle: Bundle? = nil, comment: StaticString? = nil)
+//普通字符串，无国际化
+init&lt;S&gt;(_ content: S) where S : StringProtocol
+//富文本
+init(_ attributedContent: AttributedString)
+</code></pre><h4>Creating a Text View for a Date</h4><pre><code class="language-swift">// 显示某个时间范围3:09-3.10 PM
+init(_ dates: ClosedRange&lt;Date&gt;)
+init(_ interval: DateInterval)
+// 显示日期, 按照style
+init(_ date: Date, style: Text.DateStyle)
+</code></pre><h4>Creating a Text View with Formatting</h4><p>显示非string对象, 需要你的type遵循FormatStyle协议。</p><pre><code class="language-swift">init&lt;F&gt;(_ input: F.FormatInput, format: F) where F : FormatStyle, F.FormatInput : Equatable, F.FormatOutput == String
+init&lt;Subject&gt;(_ subject: Subject, formatter: Formatter) where Subject : ReferenceConvertible
+init&lt;Subject&gt;(_ subject: Subject, formatter: Formatter) where Subject : NSObject
+</code></pre><p>我们也可以实现自己的formater。比如我们要格式化日期为yyyy-MM-dd。但默认Date.FormatStyle提供的似乎不够用，我们可以实现自己的formater。</p><pre><code class="language-swift">struct YYYYMMddDateStyle: FormatStyle {
+    typealias FormatInput = Date
+    typealias FormatOutput = String
+    
+    static let dateFormater: DateFormatter = {
+        let formater = DateFormatter()
+        formater.dateFormat = &quot;yyyy-MM-dd&quot;
+        return formater
+    }()
+    func format(_ value: Date) -&gt; String {
+        return YYYYMMddDateStyle.dateFormater.string(from: value)
+    }
+}
+/// 扩展一下FormatStyle，这样就有提示了
+extension FormatStyle where Self == YYYYMMddDateStyle {
+    static var yyyyMMddDateStyle:YYYYMMddDateStyle { return .init() }
+}
+
+//使用
+struct ContentView: View {
+    var body: some View {
+        Text.init(Date(), format: .yyyyMMddDateStyle)
+    }
+}
+</code></pre><h4>Creating a Text View from an Image</h4><p>将图片包裹为Text，适合和其他Text拼接。</p><pre><code class="language-swift">init(_ image: Image)
+</code></pre><p>例子:</p><pre><code class="language-swift">struct ContentView: View {
+    @State var password = &quot;&quot;
+    @State var someText = &quot;Initial text&quot;
+    var body: some View {
+            Text(&quot;hello&quot;) + Text(Image(&quot;my-img-name&quot;)) + Text(&quot;world&quot;)
+    }
+}            
+</code></pre><h4>Choosing a Font</h4><p>字体相关：</p><pre><code class="language-swift">func font(Font?) -&gt; Text
+func fontWeight(Font.Weight?) -&gt; Text
+</code></pre><h4>Styling the View’s Text</h4><p>文本样式</p><pre><code class="language-swift">func foregroundColor(Color?) -&gt; Text
+func bold() -&gt; Text
+func italic() -&gt; Text
+func strikethrough(Bool, color: Color?) -&gt; Text
+func underline(Bool, color: Color?) -&gt; Text
+func monospacedDigit() -&gt; Text
+func kerning(CGFloat) -&gt; Text
+func tracking(CGFloat) -&gt; Text
+func baselineOffset(CGFloat) -&gt; Text
+func textCase(Text.Case?) -&gt; some View
+</code></pre><h4>Fitting Text into Available Space</h4><p>缩放相关:</p><pre><code class="language-swift">func allowsTightening(Bool) -&gt; some View//是否允许缩放两个字符间的间距
+func minimumScaleFactor(CGFloat) -&gt; some View//缩放字体
+func truncationMode(Text.TruncationMode) -&gt; some View//截断
+</code></pre><h4>Handling Multiline Text</h4><p>处理多行文本</p><pre><code class="language-swift">func lineLimit(Int?) -&gt; some View
+func lineSpacing(CGFloat) -&gt; some View
+func multilineTextAlignment(TextAlignment) -&gt; some View
+</code></pre><h4>其他</h4><p>还有些voiceover和accessbility相关的功能，可以暂时忽略</p><h3>TextField</h3><p>输入框。</p><h4>Creating a Text Field with a String Value</h4><p>textfield和string绑定。需要3个东西： title, binding和prompt。</p><pre><code class="language-swift">init(_ titleKey: LocalizedStringKey, text: Binding&lt;String&gt;, prompt: Text?)
+init&lt;S&gt;(_ title: S, text: Binding&lt;String&gt;, prompt: Text?) where S : StringProtocol
+init(text: Binding&lt;String&gt;, prompt: Text? = nil, label: () -&gt; Label)
+</code></pre><p>注意title和prompt的区别。</p><pre><code class="language-swift">Form {
+    TextField(text: $username, prompt: Text(&quot;Required&quot;)) {
+        Text(&quot;Username&quot;)
+    }
+    SecureField(text: $password, prompt: Text(&quot;Required&quot;)) {
+        Text(&quot;Password&quot;)
+    }
+}
+</code></pre><p>在macOS上：前面的文字是title/label。placeholder是prompt。</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxj9ltz1ppj30qi05m74e.jpg" alt="image-20211219172142715"/></p><p>在ios上，不会单独显示label，如果提供了prompt，则用prompt作为placeholder，没有提供则用title/label作为placeholder。</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxj9nghei6j30og094q2x.jpg" alt="image-20211219172316635"/></p><h4>Creating a Text Field with an Arbitrary Value</h4><p>TextField并不一定只能binding到String，可以Binding到任何类型，只是需要一个ParseableFormatStyle 或者 Formatter。</p><pre><code class="language-swift">init&lt;F&gt;(_ titleKey: LocalizedStringKey, value: Binding&lt;F.FormatInput&gt;, format: F, prompt: Text? = nil) where F : ParseableFormatStyle, F.FormatOutput == String
+init&lt;S, F&gt;(_ title: S, value: Binding&lt;F.FormatInput&gt;, format: F, prompt: Text? = nil) where S : StringProtocol, F : ParseableFormatStyle, F.FormatOutput == String
+init&lt;F&gt;(value: Binding&lt;F.FormatInput&gt;, format: F, prompt: Text? = nil, label: () -&gt; Label) where F : ParseableFormatStyle, F.FormatOutput == String
+init&lt;V&gt;(_ titleKey: LocalizedStringKey, value: Binding&lt;V&gt;, formatter: Formatter, prompt: Text?)
+init&lt;S, V&gt;(_ title: S, value: Binding&lt;V&gt;, formatter: Formatter, prompt: Text?) where S : StringProtocol
+init&lt;V&gt;(value: Binding&lt;V&gt;, formatter: Formatter, prompt: Text? = nil, label: () -&gt; Label)
+</code></pre><p>我们来举个例子，将一个Person绑定到TextField。TextField显示<code>firstName lastName</code>。</p><p>先定义Person</p><pre><code class="language-swift">struct Person {
+    var firstName = &quot;&quot;
+    var lastName = &quot;&quot;
+}
+</code></pre><p>定义解析策略，负责将String解析成Person</p><pre><code class="language-swift">/// 解析，负责将string解析成自定义类型
+struct PersonParseStrategy: ParseStrategy {
+    typealias ParseInput = String
+    typealias ParseOutput = Person
+    func parse(_ value: String) throws -&gt; Person {
+        var components = value.components(separatedBy: &quot; &quot;)
+        if components.isEmpty {
+            return Person()
+        } else if components.count == 1 {
+            return Person(firstName: components[0], lastName: &quot;&quot;)
+        } else {
+            let firstName = components[0]
+            components.removeFirst()
+            let lastName = components.joined(separator: &quot; &quot;)
+            return Person(firstName: firstName, lastName: lastName)
+        }
+    }
+}
+</code></pre><p>定义FormatStyle，负责将Person格式化为String</p><pre><code class="language-swift">/// formater, 负责将自定义类型解析成textfield的显示
+struct PersonNameFormatStyle: ParseableFormatStyle {
+    typealias Strategy = PersonParseStrategy
+    typealias FormatInput = Person
+    typealias FormatOutput = String
+    var parseStrategy = PersonParseStrategy()
+    func format(_ value: Person) -&gt; String {
+        return &quot;\(value.firstName) \(value.lastName)&quot;
+    }
+}
+@available(iOS 15.0, *)
+extension ParseableFormatStyle where Self == PersonNameFormatStyle {
+    static var personNameFormatStyle: PersonNameFormatStyle { .init() }
+}
+</code></pre><p>使用</p><pre><code class="language-swift">struct ContentView: View {
+    @State var person = Person()
+    var body: some View {
+    TextField(&quot;请输入姓名&quot;, value: $person, format: .personNameFormatStyle, prompt: nil)
+        Text(&quot;firstName:\(person.firstName) lastName:\(person.lastName)&quot;)
+    }
+}       
+</code></pre><h4>Creating a Text Field with an Arbitrary Optional</h4><p>和上面的类似，只是支持Optional</p><pre><code class="language-swift">init&lt;F&gt;(_ titleKey: LocalizedStringKey, value: Binding&lt;F.FormatInput?&gt;, format: F, prompt: Text? = nil) where F : ParseableFormatStyle, F.FormatOutput == String
+....省略
+</code></pre><h4>Styling Text Fields</h4><p>设置text field的style</p><pre><code class="language-swift">func textFieldStyle&lt;S&gt;(_ style: S) -&gt; some View where S : TextFieldStyle
+</code></pre><p>举例</p><pre><code class="language-swift">TextField(&quot;请输入姓名&quot;, value: $person, format: .personNameFormatStyle, prompt: nil)
+.textFieldStyle(.roundedBorder)
+</code></pre><h4>常用的UITextFieldDelegate对比</h4><p>.editingChanged</p><pre><code class="language-swift">TextField(&quot;&quot;, text: $password)
+   .onChange(of: password) { newValue in
+        password = Format(password)
+   }
+</code></pre><p>.editingDidBegin / .editingDidEnd</p><pre><code>@FocusState var isFocused: Bool
+TextField(&quot;&quot;, text: $password)
+    .focused($isFocused)                
+    .onChange(of: isFocused) { newValue in
+       print(&quot;current foucus state \(newValue)&quot;)
+    }
+</code></pre><p>textShouldReturn</p><pre><code class="language-swift">TextField(&quot;&quot;, text: $password)
+   .onSubmit {
+       print(&quot;clicked return btn&quot;)
+   }
+</code></pre><h3>SecureField</h3><p>只能binding到string，不能像TextField一样可以绑定任何值。</p><p>没有显示真实输入密码的功能。要实现眼睛功能，只有用TextField和SecureField一起。</p><h4>Creating a Secure Text Field</h4><p>和texfiled类似</p><pre><code class="language-swift">init&lt;S&gt;(_ title: S, text: Binding&lt;String&gt;, prompt: Text?) where S : StringProtocol
+</code></pre><h4>Configuring Text Entry</h4><pre><code class="language-swift">func keyboardType(_ type: UIKeyboardType) -&gt; some View //键盘类型
+func disableAutocorrection(_ disable: Bool?) -&gt; some View //自动修正
+func textInputAutocapitalization(_ autocapitalization: TextInputAutocapitalization?) -&gt; some View //自动首字母大小写
+//设置文本类型，系统会根据类型为输入提供建议
+func textContentType(_ textContentType: UITextContentType?) -&gt; some View
+</code></pre><h3>TextEditor</h3><p>显示和编辑多行较长的文本</p><h4>Creating a Text Editor</h4><pre><code class="language-swift">init(text: Binding&lt;String&gt;)
+</code></pre><h4>Styling the View’s Text</h4><pre><code class="language-swift">func font(_ font: Font?) -&gt; some View
+func foregroundColor(_ color: Color?) -&gt; some View
+func multilineTextAlignment(_ alignment: TextAlignment) -&gt; some View
+func lineSpacing(_ lineSpacing: CGFloat) -&gt; some View
+func allowsTightening(_ flag: Bool) -&gt; some View
+</code></pre><h4>Managing Text Entry</h4><pre><code class="language-swift">func textInputAutocapitalization(_ autocapitalization: TextInputAutocapitalization?) -&gt; some View
+func disableAutocorrection(_ disable: Bool?) -&gt; some View
+func keyboardType(_ type: UIKeyboardType) -&gt; some View
+</code></pre>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑001-layout相关控件]]></title>
+        <id>/2021/11/04/SwiftUI专辑-001-layout相关控件</id>
+        <link href="https://gouxin.fun/2021/11/04/SwiftUI专辑-001-layout相关控件"/>
+        <updated>2021-11-04T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+本文将介绍用于布局相关的一些控件</p><ul><li>VStack</li><li>HStack</li><li>ZStack</li><li>Spacer</li><li>Divider</li></ul><h2>准备</h2><p>先创建一个叫做<code>TheStacks</code>的SwiftUI工程。</p><h2>写代码</h2><p>修改ContentView里的body为以下代码, 然后resume Preview：</p><pre><code class="language-swift">VStack {
+            Text(&quot;VStack Item 1&quot;)
+            Text(&quot;VStack Item 2&quot;)
+            Text(&quot;VStack Item 3&quot;)
+        }.background(Color.blue)
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gx9ytz8862j302s05h3yb.jpg" alt="008i3skNly1gx9ys9dvjmj30do0qwmxn"/></p><p>然后我们在添加一些Divider和Spacer。</p><pre><code class="language-swift">VStack {
+            Text(&quot;VStack Item 1&quot;)
+            Text(&quot;VStack Item 2&quot;)
+            Spacer()
+            Divider().background(Color.white)
+            Text(&quot;VStack Item 3&quot;)            
+        }.background(Color.blue)
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gx9z4p6o9kj304608it8l.jpg" alt="image-20211211162833693"/></p><p>我们再在<code>item 3</code>之后加一个HStack和ZStack。</p><pre><code class="language-swift">VStack {
+            Text(&quot;VStack Item 1&quot;)
+            Text(&quot;VStack Item 2&quot;)
+            Spacer()
+            Divider().background(Color.white)
+            Text(&quot;VStack Item 3&quot;)
+            HStack {
+                Text(&quot;Item 1&quot;)
+                Divider().background(Color.black)
+                Text(&quot;HStack Item 2&quot;)
+                Divider().background(Color.black)
+                Spacer()
+                Text(&quot;HStack Item 3&quot;)
+            }.background(Color.red)
+            ZStack {
+                Text(&quot;ZStack Item 1&quot;).padding().background(Color.green).opacity(0.8)
+                Text(&quot;ZStack Item 2&quot;).padding().background(Color.green).offset(x: 80, y: -400)
+            }
+        }.background(Color.blue)
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gx9za4cl4zj305k0b8mx9.jpg" alt="截屏2021-12-11 下午4.33.17"/></p><h2>这是怎么工作的？</h2><p>一个新的SwiftUI工程默认是以一个居中的Text开始的。</p><p><code>body</code>返回一个<code>View</code>。</p><p>如果要添加竖直排列的其他View，我们用VStack替换掉默认的Text，然后添加内容。</p><p>SwiftUI的Stack使用如下步骤来决定如何显示它的内容(详细可参考WWDC2019:利用SwiftUI构建自定义视图)：</p><ol><li>Figure out its internal spacing and subtract that from the size proposed by its parent view.(确定子视图的大小，从父视图提供的大小中减去子视图)</li><li>Divide the remaining space into equal parts.(将剩余空间按剩余子视图数量等分)</li><li>Process the size of its least flexible view.(处理 least flexibl的视图，确定其大小)</li><li>Divide the remaining unclaimed space by the unallocated space, and then repeat <em>Step 2</em>.（用剩余空间减去其大小，再重复步骤2）</li><li>The stack then aligns its content and chooses its own size to exactly enclose its children.( stack对其他的内容，确定其自身大小，其大小是刚好包裹子视图)</li></ol><p>添加<strong>Spacer</strong>可以强制View使用最大的空间。这是因为<strong>Spacer()</strong>是最flexible的视图，它在显示所有其他视图之后填充剩余空间。</p><p><strong>Divider</strong>用来画一个占满parent宽度的水平线，这也是为什么我们加了<strong>Divider</strong>后，蓝色背景会撑满屏幕宽度。默认<strong>Divider</strong>没有颜色，我们可以通过<code>.background(Color)</code>modifier来设置。</p><p>modifier是一系列可以应用到View上的方法，换句话说：他将某些改动设置到View上，然后返回新的View。</p><p>常用的<strong>.background(Color. black)</strong>, <strong>.padding()</strong>, and <strong>.offsets(…)</strong>都是modifier。</p><p><strong>HStack</strong>和<strong>VStack</strong>类似，不过他是水平从左到右显示他的内容。添加<strong>Spacer</strong>到<strong>HStack</strong>中，会让它填满水平空白区域，<strong>Divider</strong>也是竖直向下的。</p><p><strong>ZStack</strong>和<strong>HStack</strong> 、 <strong>VStack</strong> 类似，不过是重叠他的content在已有的item上。</p><h2>There&#x27;s more…</h2><p>你还可以使用<strong>.frame</strong> modifier来调整component的width和height。</p><pre><code class="language-swift">.frame(
+  maxWidth: .infinity,
+    maxHeight: .infinity,
+    alignment: .topLeading
+)
+</code></pre><h2>SwiftUI 中布局的工作原理</h2><p>详细可参考WWDC2019:利用SwiftUI构建自定义视图</p><h3>Hello world布局</h3><p>我们先来看一个Hello world的例子。</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfshsh127j30zc0jqjsj.jpg" alt="image-20211216171253892"/></p><p>这里有3个View：</p><ul><li>Text: 大小由文本决定</li><li>ContentView：大小由children决定，所以上图中ContentView的大小刚好包裹Text</li><li>RootView：屏幕减去safeArea的区域，你可以通过<code>.edgesIgnoringSafeArea(.all)</code>modifier来修改这个行为，这样就是整个屏幕。</li></ul><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfsmiww1yj30z40juabb.jpg" alt="image-20211216171729871"/></p><p>我们把任何带有<code>var body: some View</code>的视图成为<code>中性视图(Layout Neutral)</code>，他的边界是由他的<code>body</code>决定的，因此我们上面才说ContentView的大小和Text是一致的。</p><p>我们再来看看布局过程：</p><ul><li>RootView：嘿，我有整个安全区域那么大，你需要多大的空间？</li><li>ContentView：好的，但是我是中性视图，我得问下我的body。Text你好，我有整个安全区域那么大，你需要多少空间？</li><li>Text：好的，我的文本是Helloworld，我只需要100 * 20那么大。</li><li>ContentView：好的，我是中性视图，你多大我就多大，RootView，我只需要100 * 20那么大。</li><li>RootView：好的，我还有很多剩余空间，我默认会把你放到我的center那里。</li></ul><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxftfq527nj30z80jyjsz.jpg" alt="image-20211216174533016"/></p><p>总结下布局过程：</p><ol><li>Parent为children提供一个size</li><li>Children确定自己的大小</li><li>Parent将children放到自己的坐标系中</li><li>屏幕像素是整数，但大小是小数，处理小数大小，会round到最近的整数</li></ol><h3>更复杂的例子</h3><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxftngd4c6j30ze0jmdh9.jpg" alt="image-20211216175258340"/></p><ul><li>RootView：嘿，我有整个安全区域那么大，你需要多大的空间？</li><li>Toast：好的，但是我是中性视图，我得问下我的body。Background你好，我有整个安全区域那么大，你需要多少空间？</li><li>Background: 好的，但是我也是中性视图。Padding你好，我有整个安全区域那么大，你需要多少空间？</li><li>Padding：好的。Text你好，我有整个安全区域减去10 padding那么多空间，你需要多少空间？</li><li>Text：我需要100* 100 。</li><li>Padding: 好的, Background，我只需要110* 110</li><li>Background: 好的，我还有子视图Color，我得问下他，Color你好，我有110 * 110, 那么大，你需要多少。</li><li>Color：我也需要110 * 110</li><li>Background：好的，Toast，我只需要110 *110</li><li>Toast: 好的,RootView，我也只需要110* 110</li><li>RootView: 好的，我还有很多剩余空间，我默认会把你放到我的center那里。</li></ul><h3>再来一个简单但重要的例子</h3><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfu70mnauj30yo0jkaau.jpg" alt="image-20211216181143533"/></p><p>SwiftUI中除非你指定图片是可缩放的，否则图片的size就是图片本身的大小。</p><p>现在我想让图片是30x30，我们加个frame modifier。</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfu8csg25j30yq0j8myk.jpg" alt="image-20211216181304205"/></p><p>你会在图片周围发现一个30x30的框，这和我们刚刚说的图片大小不可改矛盾了么？</p><p>frame并不是约束，而是modifier，modifier返回的是一个新的view。所以你加了frame modifier后，30x30实际上是新的view。Image还是20x20。</p><h3>再看看Stack的布局原理</h3><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfugngw30j30yw0jadhj.jpg" alt="image-20211216182102883"/></p><p>我们首先得注意到，SwiftUI并不是直接吧Stack堆砌在一起，而是在他们之间留有adaptive space。这是SwiftUI将apple 人性化设计指南的一些规则默认应用到了SwiftUI的结果，他们希望你能通过最简单的代码，也能产生漂亮的结果。如果你不希望有这些space，可以在Stack初始化的参数中指定spacing为0。</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfuirdcufj30yo0ig0u2.jpg" alt="image-20211216182304331"/></p><pre><code class="language-swift">VStack(spacing: 0) {
+            Text(&quot;hello world111&quot;).background(Color.red)
+            Image(&quot;question-circle&quot;).background(Color.green)
+        }
+</code></pre><p>现在我们来分析下Stack是如何工作的？我们看个例子。</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfuo84px1j30yu0ja0u9.jpg" alt="image-20211216182819005"/></p><ol><li>首先Parent告诉HStack建议的size</li><li>HStack先减去spacing(如果没指定，是有默认space的，上面说过)，得到剩余空间<img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfurqbo6vj30gq06g3yi.jpg" alt="image-20211216183141238"/></li><li>因为HStack有3个children，所以将剩余空间3等分<img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfuswb3oxj30eu06eweh.jpg" alt="image-20211216183248259"/></li><li>找出least flexible的子视图，其中图片是least flexible的，因为他的size是固定的。所以剩余空间减去图片size<img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfuw0e4s0j30f605sdfu.jpg" alt="image-20211216183548332"/></li><li>重复上面过程。目前有2个children。所以2等分<img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfuwzhgh5j30ek0680ss.jpg" alt="image-20211216183644570"/></li><li>两个优先级一样，因此处理第一个，先把一半的size分配给<code>Delicious</code>。但<code>Delicious</code>说，太多了，我要不了这么多，我只要这么多size。<img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfv27t0v9j30de058dfv.jpg" alt="image-20211216184145585"/></li><li>再重复上面的过程，得到最新的剩余空间<img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfv3agfbhj30gm05q3yk.jpg" alt="image-20211216184248523"/></li><li>把剩下的所有空间分配给<code>Avocado Toast</code>。<code>Avocado Toast</code>说，太多了，我用不完这么多空间。于是<code>Avocado Toast</code>刚好能显示完，整个HStack的size会比Parent提供的小一些。</li><li>水平方向的size确定了，然后确定竖直方向的。竖直方向按照HStack的<code>alignment</code>参数对其，然后size刚好能包裹整个Hstack。</li><li>至此整个Hstack的大小就完全确定了。</li></ol><p>再来看看，如果第8步中剩余空间不够<code>Avocado Toast</code>显示了，那么<code>Avocado Toast</code>会被截断</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfvc8au0yj30fa05eq32.jpg" alt="image-20211216185124090"/></p><p>但是如果我们想尽可能不截断<code>Avocado Toast</code>,优先截断<code>Delicios</code>，要怎么做呢？我们可以指定优先级。</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfvfor138j30g0094q36.jpg" alt="image-20211216185442941"/></p><p>在有优先级的情况下，SwiftUI会先给所有低优先级的视图预留最小size，然后把剩余空间分配给高优先级视图：</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfvhkjb9qj30fg07w0sw.jpg" alt="image-20211216185632384"/></p><h3>Alignment</h3><h4>alignmentGuide</h4><p>还记得我们第9步中说到<code>alignment</code>么？这里再多说一点其中的基线对其<code>lastTextBaseline</code>。有时候我们可能对默认基线对其不满意， 我们可以通过<code>alignmentGuide</code>自定义对其位置:</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfvr2ju9hj30xo0hejtx.jpg" alt="image-20211216190539364"/></p><p><code>.alignmentGuide(.lastTextBaseline) { d in d[.bottom] * 0.975 }</code>的意思是对于<code>lastTextBaseline</code>这种对其方式，他的对其位置是在<code>.bottom</code>的0.927处</p><h4>自定义对其方式</h4><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfw0hw2bxj30mg05gt8x.jpg" alt="image-20211216191443420"/></p><p>考虑下我们要将星星，和<code>Avocado Toast</code>对其。啥？他们不是在两个不同的VStack中么？没关系我们可以自定义对其方式，让他们对其。</p><p>首先，自定义一种对其方式<code>midStartAndTitle</code>：</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfw3fdbzoj30re0ekwfx.jpg" alt="image-20211216191732259"/></p><p>使用新的对其方式</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxfwc8fjwmj30xu0iy40z.jpg" alt="image-20211216192559807"/></p>]]></content>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[一个简单的StringKeyChain]]></title>
-        <id>一个简单的StringKeyChain</id>
-        <link href="https://gouxin.fun/2021/11/10/一个简单的StringKeyChain"/>
-        <updated>2021-11-10T00:00:00.000Z</updated>
+        <id>/2021/11/03/一个简单的StringKeyChain</id>
+        <link href="https://gouxin.fun/2021/11/03/一个简单的StringKeyChain"/>
+        <updated>2021-11-03T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[headerimg]]></summary>
         <content type="html"><![CDATA[<p><img src="./B6086038-32F7-48AE-AC07-DBAE5C0F21D7.png" alt="headerimg"/></p><p>一个简单的<code>StringKeyChain</code>封装，存储/获取字符串到keychain中。通常用于生成设备的唯一id。</p><pre><code class="language-swift">class StringKeyChain {
     static func save(value: String, key: String) {
@@ -48,7 +343,7 @@
     </entry>
     <entry>
         <title type="html"><![CDATA[如何用XcodeKit编写一个XcodeExtension?]]></title>
-        <id>如何用XcodeKit编写一个XcodeExtension?</id>
+        <id>/2021/11/02/如何用XcodeKit编写一个XcodeExtension</id>
         <link href="https://gouxin.fun/2021/11/02/如何用XcodeKit编写一个XcodeExtension"/>
         <updated>2021-11-02T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[HEADer]]></summary>
@@ -148,7 +443,7 @@ class RemoveLinePrefixNumCommand: NSObject, XCSourceEditorCommand {
     </entry>
     <entry>
         <title type="html"><![CDATA[如何查看iOS、iPadOS系统版本占比？]]></title>
-        <id>如何查看iOS、iPadOS系统版本占比？</id>
+        <id>/2021/11/01/如何查看ios和ipados当前系统版本占比</id>
         <link href="https://gouxin.fun/2021/11/01/如何查看ios和ipados当前系统版本占比"/>
         <updated>2021-11-01T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[header]]></summary>
@@ -158,7 +453,7 @@ class RemoveLinePrefixNumCommand: NSObject, XCSourceEditorCommand {
     </entry>
     <entry>
         <title type="html"><![CDATA[Xcode13的Info.plist不见了?]]></title>
-        <id>Xcode13的Info.plist不见了?</id>
+        <id>/2021/10/31/Xcode13的Info.plist不见了</id>
         <link href="https://gouxin.fun/2021/10/31/Xcode13的Info.plist不见了"/>
         <updated>2021-10-31T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[Header]]></summary>
@@ -167,7 +462,7 @@ class RemoveLinePrefixNumCommand: NSObject, XCSourceEditorCommand {
     </entry>
     <entry>
         <title type="html"><![CDATA[appstore截图尺寸规范设置]]></title>
-        <id>appstore截图尺寸规范设置</id>
+        <id>/2021/10/30/appstore截图尺寸规范</id>
         <link href="https://gouxin.fun/2021/10/30/appstore截图尺寸规范"/>
         <updated>2021-10-30T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[headerImg]]></summary>
@@ -175,7 +470,7 @@ class RemoveLinePrefixNumCommand: NSObject, XCSourceEditorCommand {
     </entry>
     <entry>
         <title type="html"><![CDATA[推流分辨率码率设置]]></title>
-        <id>推流分辨率码率设置</id>
+        <id>/2021/10/29/推流码率设置</id>
         <link href="https://gouxin.fun/2021/10/29/推流码率设置"/>
         <updated>2021-10-29T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[Header]]></summary>
@@ -183,7 +478,7 @@ class RemoveLinePrefixNumCommand: NSObject, XCSourceEditorCommand {
     </entry>
     <entry>
         <title type="html"><![CDATA[pod repo push使用总结]]></title>
-        <id>pod repo push使用总结</id>
+        <id>/2021/10/28/pod-repo-push使用总结</id>
         <link href="https://gouxin.fun/2021/10/28/pod-repo-push使用总结"/>
         <updated>2021-10-28T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[90088193-C7B8-4466-9DB9-DE681F7BF357]]></summary>
@@ -195,7 +490,7 @@ class RemoveLinePrefixNumCommand: NSObject, XCSourceEditorCommand {
     </entry>
     <entry>
         <title type="html"><![CDATA[Flex-Layout]]></title>
-        <id>Flex-Layout</id>
+        <id>/2021/10/27/Flex-Layout</id>
         <link href="https://gouxin.fun/2021/10/27/Flex-Layout"/>
         <updated>2021-10-27T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[193EADF1-38F8-4FAF-9335-A05209EC236A]]></summary>
@@ -235,7 +530,7 @@ auto: width ==&gt; min-width =&gt; content
     </entry>
     <entry>
         <title type="html"><![CDATA[如何为githubPage添加自定义域名]]></title>
-        <id>如何为githubPage添加自定义域名</id>
+        <id>/2021/10/26/如何为githubPage添加自定义域名</id>
         <link href="https://gouxin.fun/2021/10/26/如何为githubPage添加自定义域名"/>
         <updated>2021-10-26T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[68CF50FD-8CA2-4A5B-9D3A-F1786775BDFD]]></summary>
@@ -247,7 +542,7 @@ auto: width ==&gt; min-width =&gt; content
     </entry>
     <entry>
         <title type="html"><![CDATA[博客开张啦]]></title>
-        <id>博客开张啦</id>
+        <id>/2021/10/25/博客开张啦</id>
         <link href="https://gouxin.fun/2021/10/25/博客开张啦"/>
         <updated>2021-10-25T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[6DE1C549-029E-49E9-A79B-669B782FD675]]></summary>
