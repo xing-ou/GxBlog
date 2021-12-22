@@ -25,6 +25,15 @@ module.exports = {
       bookDir: "webassembly-the-definitive-guide",
       readStartTime: "出版时间: 2021年 12月",
       readEndTime: "开始阅读: 2021-11-5",
+      isReading: false,
+    },
+    {
+      cover: "/img/bookCover/swiftUIcookbook.jpeg",
+      desc: "SwiftUI CookBook",
+      bookLink: "/docs/swiftUI-cookbook/关于本书",
+      bookDir: "swiftUI-cookbook",
+      readStartTime: "出版时间: 2021年 11月",
+      readEndTime: "开始阅读: 2021-11-4",
       isReading: true,
     }
   ],
