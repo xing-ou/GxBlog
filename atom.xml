@@ -2,11 +2,163 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://gouxin.fun/</id>
     <title>Gx'sBlog Blog</title>
-    <updated>2021-11-06T00:00:00.000Z</updated>
+    <updated>2021-11-07T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://gouxin.fun/"/>
     <subtitle>Gx'sBlog Blog</subtitle>
     <icon>https://gouxin.fun/img/favicon.ico</icon>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑004-Button以及跳转]]></title>
+        <id>/2021/11/07/SwiftUI专辑-004-Button以及跳转</id>
+        <link href="https://gouxin.fun/2021/11/07/SwiftUI专辑-004-Button以及跳转"/>
+        <updated>2021-11-07T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+本章将介绍如何使用各种Button和如何跳转。</p><ul><li>Button</li><li>EditButton</li><li>PasteButton</li><li>NavigationView</li><li>NavigationLink</li></ul><h2>Getting ready</h2><p>首先，新建一个<strong>ButtonsApp</strong>的SwiftUI工程。</p><h2>How to do it…</h2><ol><li>新建文件</li><li>模板选择<strong>SwiftUI View</strong></li><li>输入名称<strong>ButtonView</strong></li><li>重复上面步骤，创建<strong>EditButtonView</strong></li><li>重复上面步骤，创建<strong>PasteButtonView</strong></li><li>重复上面步骤，创建<strong>MenuButtonView</strong>，(<strong>MenuButton</strong>已经弃用了，使用<strong>Menu</strong>)</li><li>打开<strong>ContentView.swift</strong>，在body中添加一个<strong>NavigationView</strong></li></ol><pre><code class="language-swift">NavigationView {
+    VStack {
+        NavigationLink(destination: ButtonView()) {
+            Text(&quot;Buttons&quot;).padding()
+        }
+        NavigationLink(destination: EditButtonView()) {
+            Text(&quot;EditButtons&quot;).padding()
+        }
+        NavigationLink(destination: MenuButtonView()) {
+            Text(&quot;MenuButtons&quot;).padding()
+        }
+        NavigationLink(destination: PasteButtonView()) {
+            Text(&quot;PasteButtons&quot;).padding()
+        }
+        NavigationLink(destination:
+            Text(&quot;Very long text that should not be displayed in a single line because it is not good design&quot;)
+                .padding()
+                .navigationBarTitle(Text(&quot;Detail&quot;))
+        ) {
+            Text(&quot;details about text&quot;).padding()
+        }
+}.navigationBarTitle(Text(&quot;Main View&quot;), displayMode:.inline)
+
+</code></pre><p>最终显示如下：</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxmozc7y7pj30ci0oyjrs.jpg" alt="image-20211222163022220"/></p><ol start="8"><li>打开<strong>EditButtonView.swift</strong>，添加下面的代码，实现<strong>EditButton</strong>。</li></ol><pre><code class="language-swift">struct EditButtonView: View {
+    @State private var animals = [&quot;Cats&quot;, &quot;Dogs&quot;, &quot;Goats&quot;]
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(animals, id: \.self) { animal in
+                    Text(animal)
+                }.onDelete(perform: removeAnimal)
+            }
+        }.navigationBarItems(trailing: EditButton())
+        .navigationBarTitle(Text(&quot;EditButtonView&quot;), displayMode: .inline)
+    }
+    
+    func removeAnimal(at offsets: IndexSet){
+        animals.remove(atOffsets: offsets)
+    }
+}
+</code></pre><p>最终得到，点击右上角的Edit按钮，List会进入编辑状态。</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxmpcje8g3j305k0bedfr.jpg" alt="20211222164221"/></p><ol start="9"><li>打开<strong>MenuButtonView.swift</strong>， 添加以下代码</li></ol><pre><code class="language-swift">var body: some View {
+    Text(&quot;MenuButtons are currently available on MacOS currently&quot;)
+  .padding()
+  .navigationBarTitle(&quot;MenuButtons&quot;, displayMode:.inline)
+
+/*
+MenuButton(&quot;country +&quot;) {
+Button(&quot;USA&quot;) { print(&quot;Selected USA&quot;) }.background(Color.accentColor)
+Button(&quot;India&quot;) { print(&quot;Selected India&quot;) }
+}
+*/
+}
+
+</code></pre><ol start="10"><li>打开<strong>PasteButtonView.swift</strong>，添加以下代码</li></ol><pre><code class="language-swift">struct PasteButtonView: View {
+    var body: some View {
+        VStack {
+            Text(&quot;PasteButton controls how you paste in macOS but is not available in iOS. For more information, check the \&quot;See also\&quot; section of this recipe&quot;)
+                .padding()
+        }.navigationBarTitle(&quot;PasteButton&quot;, displayMode: .inline)
+    }
+}
+</code></pre><h2>How it works…</h2><p><strong>NavigationLink</strong>必须放在<strong>NavigationView</strong>里使用。</p><p> <strong>NavigationLink</strong> 需要两个参数<strong>destination</strong> 和 <strong>label</strong>。<strong>destination</strong>代表点击后跳转的View。<strong>label</strong>代表显示的内容。</p><p><code>.navigationBarTitle</code>modifier给ContentView界面添加了个title。第一个参数指定title的内容，第二个参数指定title显示的模式。.inline代表在标准的navigationBar中显示。</p><p>其他几个界面也有指定<code>.navigationBarTitle</code>，但是在preview中不会显示，在运行时才会显示。</p><p><strong>EditButton</strong>和<strong>List</strong>一起使用，让List可编辑。我们之后再学习List。</p><p><strong>MenuButtons</strong>和<strong>PasteButtons</strong>只能在macOS中使用。MenuButtons已被弃用，可以不用看了。</p><p>PasteButton可参考官方文档中的例子。</p><h2>API详情</h2><h3>Button</h3><h4>Creating a Button</h4><pre><code class="language-swift">// action是点击时触发的方法， label控制显示内容
+init(action: @escaping () -&gt; Void, label: () -&gt; Label)
+init(_ titleKey: LocalizedStringKey, action: @escaping () -&gt; Void)
+</code></pre><h4>Creating a Button with a Role</h4><pre><code class="language-swift">//多了个ButtonRole，用于描述Button语意，SwiftUI会根据语意添加样式，比如取消，是红色的。
+init(role: ButtonRole?, action: @escaping () -&gt; Void, label: () -&gt; Label)
+</code></pre><h4>Creating a Button from a Configuration</h4><pre><code class="language-swift">///通过config初始化
+init(_ configuration: PrimitiveButtonStyleConfiguration)
+</code></pre><h4>Setting a Border Shape</h4><pre><code class="language-swift">///设置border样式，
+// capsule : 胶囊形状，  rounded rectangle： 圆角矩形，可自定义圆角大小
+func buttonBorderShape(_ shape: ButtonBorderShape) -&gt; some View
+</code></pre><h4>Styling Button Appearance</h4><pre><code class="language-swift">/// 设置样式，创建自定义样式
+func buttonStyle&lt;S&gt;(_ style: S) -&gt; some View where S : ButtonStyle
+</code></pre><p>举个例子</p><pre><code class="language-swift">struct RedborderStyle: PrimitiveButtonStyle {
+    func makeBody(configuration: Configuration) -&gt; some View {
+        configuration.label.padding().border(Color.red)
+    }
+}
+
+struct ButtonView: View {
+    var body: some View {
+        Button(&quot;你好&quot;) {
+            print(&quot;hello&quot;)
+        }.buttonStyle(RedborderStyle())
+    }
+}
+</code></pre><h3>NavigationView</h3><p>用于创建类似于UINavigationController的导航。</p><h4>Creating a Navigation View</h4><pre><code class="language-swift">init(content: () -&gt; Content)
+</code></pre><h4>Styling Navigation Views</h4><pre><code class="language-swift">func navigationViewStyle&lt;S&gt;(_ style: S) -&gt; some View where S : NavigationViewStyle
+</code></pre><h4>Adding Titles</h4><pre><code class="language-swift">//导航栏标题
+func navigationTitle(_ titleKey: LocalizedStringKey) -&gt; some View
+//subtitle，只有macOS才有
+func navigationSubtitle&lt;S&gt;(_ subtitle: S) -&gt; some View where S : StringProtocol
+...
+</code></pre><h4>Managing Navigation Bars</h4><pre><code class="language-swift">//隐藏navigationbar
+func navigationBarHidden(_ hidden: Bool) -&gt; some View
+func navigationBarBackButtonHidden(_ hidesBackButton: Bool) -&gt; some View
+///显示模式，inline: 正常大小导航栏居中， large：大的导航栏，居左
+func navigationBarTitleDisplayMode(_ displayMode: NavigationBarItem.TitleDisplayMode) -&gt; some View
+</code></pre><h3>NavigationLink</h3><p>控制navigation跳转的view。点击后会跳转到destination。当然除了，手动触发，也能够通过代码触发跳转。代码跳转有两种方式，一种是通过isActive，一种是通过tag+selection。</p><h4>Presenting a Destination View</h4><pre><code class="language-swift">init(destination: () -&gt; Destination, label: () -&gt; Label)
+init&lt;S&gt;(_ title: S, destination: () -&gt; Destination) where S : StringProtocol
+</code></pre><h4>Presenting a Destination View with Programmatic Activation</h4><pre><code class="language-swift">///提供isActive，这样可以通过代码来跳转
+init&lt;S&gt;(_ title: S, isActive: Binding&lt;Bool&gt;, destination: () -&gt; Destination) where S : StringProtocol
+...
+</code></pre><p>举个例子, 下面的点击两个按钮都能跳转到对应View。</p><pre><code class="language-swift">struct ContentView: View {
+    @State var showEditBtnScreen = false
+    var body: some View {
+        NavigationView {
+            VStack {
+                NavigationLink(destination: EditButtonView(), isActive: $showEditBtnScreen) {
+                    Text(&quot;EditButtons&quot;).padding()
+                }
+                Button(&quot;设置active跳转&quot;) {
+                    showEditBtnScreen = true
+                }
+            }.navigationBarTitle(Text(&quot;Main View&quot;), displayMode: .inline)
+        }
+    }
+}
+</code></pre><h4>Presenting a Selectable Destination View</h4><pre><code class="language-swift">///通过给每个Link一个tag，然后通过设置selection为对应tag，控制跳转
+init&lt;S, V&gt;(_ title: S, tag: V, selection: Binding&lt;V?&gt;, destination: () -&gt; Destination) where S : StringProtocol, V : Hashable
+...
+</code></pre><p>举个例子</p><pre><code class="language-swift">struct ContentView: View {
+    enum Screens {
+        case editButtonScreen
+        case memuButtonScreen
+    }    
+    @State var currentScreen: Screens?
+    var body: some View {
+        NavigationView {
+            VStack {
+                NavigationLink(destination: EditButtonView(), tag: Screens.editButtonScreen, selection: $currentScreen) {
+                    Text(&quot;EditButtons&quot;).padding()
+                }
+                NavigationLink(destination: MenuButtonView(), tag: Screens.memuButtonScreen, selection: $currentScreen) {
+                    Text(&quot;MenuButtons&quot;).padding()
+                }
+                Button(&quot;设置selection跳转&quot;) {
+                    currentScreen = .memuButtonScreen
+                }
+            }.navigationBarTitle(Text(&quot;Main View&quot;), displayMode: .inline)
+        }
+    }
+}
+</code></pre>]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[SwiftUI专辑003-使用Image]]></title>
         <id>/2021/11/06/SwiftUI专辑-003-使用Image</id>
