@@ -2,11 +2,41 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://gouxin.fun/</id>
     <title>Gx'sBlog Blog</title>
-    <updated>2021-11-08T00:00:00.000Z</updated>
+    <updated>2021-11-09T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://gouxin.fun/"/>
     <subtitle>Gx'sBlog Blog</subtitle>
     <icon>https://gouxin.fun/img/favicon.ico</icon>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑006-自定义ViewModifier]]></title>
+        <id>/2021/11/09/SwiftUI专辑-006-自定义ViewModifier</id>
+        <link href="https://gouxin.fun/2021/11/09/SwiftUI专辑-006-自定义ViewModifier"/>
+        <updated>2021-11-09T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+SwiftUI为你提供了自定义modifiers的能力。
+你可以使用自定义modifiers将多个modifiers合成一个。
+本章我们将创建一个自定义modifier，他能够为TextView添加圆角和背景。</p><h2>Getting ready</h2><p>新建一个SwiftUI工程<strong>UsingViewModifiers</strong>。</p><h2>How to do it…</h2><ol><li>修改<strong>ContentView</strong>中的text为<strong>Perfect</strong>。</li></ol><pre><code class="language-swift">Text(&quot;Perfect&quot;)
+</code></pre><ol start="2"><li>在<strong>ContentView.swift</strong>中，新建一个struct，遵循<strong>ViewModifier</strong>，接受一个参数<strong>Color</strong>。</li></ol><pre><code class="language-swift">struct BackgroundStyle: ViewModifier {
+    var bgColor: Color
+    func body(content: Content) -&gt; some View{
+        content
+        .frame(width:UIScreen.main.bounds.width * 0.3)
+        .foregroundColor(Color.black)
+        .padding()
+        .background(bgColor)
+        .cornerRadius(CGFloat(20))
+    }
+}
+</code></pre><ol start="3"><li>为Text添加一个<strong>modifier</strong>。</li></ol><pre><code class="language-swift">Text(&quot;Perfect&quot;).modifier(BackgroundStyle(bgColor:.blue))
+</code></pre><ol start="4"><li>当然，如果你不想用<strong>modifier</strong>, 可以添加一个extension。</li></ol><pre><code class="language-swift">extension View {
+    func backgroundStyle(color: Color) -&gt; some View{
+        self.modifier(BackgroundStyle(bgColor: color))
+    }
+}
+</code></pre><ol start="5"><li>将我们的modifier修改为刚刚的extension</li></ol><pre><code class="language-swift">Text(&quot;Perfect&quot;).backgroundStyle(color: Color.red)
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxo31sxp0vj30fg0v80t3.jpg" alt="image-20211223212239097"/></p><h2>How it works…</h2><p>一个 <strong>ViewModifier</strong>通过修改原来修饰的View来创建一个新的View  。</p><p>通过通过遵循ViewModifier协议来创建一个自定义modifier。</p><p>通过.modifier()来应用我们自定义的modifier。</p><p>通过extension来添加更方便的Api。</p>]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[SwiftUI专辑005-各种pickers]]></title>
         <id>/2021/11/08/SwiftUI专辑-005-各种pickers</id>
