@@ -4,9 +4,194 @@
         <title>Gx'sBlog Blog</title>
         <link>https://gouxin.fun/</link>
         <description>Gx'sBlog Blog</description>
-        <lastBuildDate>Sun, 07 Nov 2021 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Mon, 08 Nov 2021 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[SwiftUI专辑005-各种pickers]]></title>
+            <link>https://gouxin.fun/2021/11/08/SwiftUI专辑-005-各种pickers</link>
+            <guid>/2021/11/08/SwiftUI专辑-005-各种pickers</guid>
+            <pubDate>Mon, 08 Nov 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[headerimg]]></description>
+            <content:encoded><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+pickers是用来提供给用户选择某个值的。
+本文将介绍以下的pickers</p><ul><li><strong>Picker</strong></li><li><strong>Toggle</strong></li><li><strong>Slider</strong></li><li><strong>Stepper</strong></li><li><strong>DatePicker</strong></li><li><strong>ColorPicker</strong></li></ul><h2>Getting ready</h2><p>首先，新建一个SwiftUI工程，叫做<strong>PickersApp</strong>。</p><h2>How to do it…</h2><ol><li>在<strong>ContentView.swift</strong>创建好State，以绑定各个pickers的value。</li></ol><pre><code class="language-swift">@State var choice = 0
+@State var showText = false
+@State var transitModes = [&quot;Bike&quot;, &quot;Car&quot;, &quot;Bus&quot;]
+@State var sliderVal: Float = 0
+@State var stepVal = 0
+@State var gameTime = Date()
+</code></pre><ol start="2"><li>在Body中加入一个<code>Form</code>、<code>Section</code>、<code>Picker</code>。</li></ol><pre><code class="language-swift">struct ContentView: View {
+    @State var choice = 0
+    @State var showText = false
+    @State var transitModes = [&quot;Bike&quot;, &quot;Car&quot;, &quot;Bus&quot;]
+    @State var sliderVal: Float = 0
+    @State var stepVal = 0
+    @State var gameTime = Date()
+    
+    var body: some View {
+        Form {
+            Section {
+                Picker(&quot;Transit Modes&quot;, selection: $choice) {
+                    ForEach(0..&lt;transitModes.count) { index in
+                        Text(&quot;\(self.transitModes[index])&quot;)
+                    }
+                }.pickerStyle(.segmented)
+                Text(&quot;Current choice: \(self.transitModes[choice])&quot;)
+            }
+        }
+    }
+}
+</code></pre><ol start="3"><li>再添加一个section，加入<code>Toggle</code></li></ol><pre><code class="language-swift">Section {
+    Toggle(isOn: $showText) {
+        Text(&quot;Show Text&quot;)
+    }
+    if showText {
+        Text(&quot;The Text toggle is on&quot;)
+    }
+}
+</code></pre><ol start="4"><li>再添加一个section，加入<code>Slider</code></li></ol><pre><code class="language-swift">Section {
+    Slider(value: $sliderVal, in: 0...10, step: 0.001)
+    Text(&quot;Slider current value\(sliderVal, specifier: &quot;%.1f&quot;)&quot;)
+}
+</code></pre><ol start="5"><li>再添加一个section，加入<code>Stepper</code></li></ol><pre><code class="language-swift">Section {
+    Stepper(&quot;Stepper&quot;, value: $stepVal, in: 0...5)
+    Text(&quot;Stepper current value\(stepVal)&quot;)
+}
+</code></pre><ol start="6"><li>再添加一个section，加入<code>DatePicker</code></li></ol><pre><code class="language-swift"> Section {
+    DatePicker(&quot;Please select a date&quot;, selection: $gameTime)
+}
+</code></pre><ol start="7"><li>再添加一个section，加入<code>DatePicker</code>,再限制下时间范围</li></ol><pre><code class="language-swift">Section {
+  DatePicker(&quot;select a date&quot;, selection: $gameTime, in: Date()...)
+}
+</code></pre><p>最终如下</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxnlz3hh9zj30i80xuaba.jpg" alt="image-20211223113151810"/></p><h2>How it works…</h2><p><code>Picker</code>是用来从一组值中选择某一个的，设置style为Segmented就得到了一个UIKit的SegmentView。</p><p><code>Toggle</code>控制开和关，当前状态存储在binding的vlaue中。</p><p><code>Slider</code>需要3个参数: </p><ul><li><strong>value</strong>: 当前值</li><li><strong>in</strong>： slider的范围</li><li><strong>step</strong>： 步进的值</li></ul><p><code>Stepper</code>也同Slider一样需要那3个参数。</p><p>最后演示了一下DatePicker的使用，注意binding的类型是date。</p><blockquote><p>picker的style会根据他的容器不同而不同。比如在Form或者List中的picker会和在VStack中的不一样。</p><p>我们可以通过<code>.pickerStyle</code>来修改默认style。</p></blockquote><h2>Api详情</h2><h3>Picker</h3><h4>Creating a Picker</h4><pre><code class="language-swift">///SelectionValue遵循Hashable， Content和Label都遵循View
+init(selection: Binding&lt;SelectionValue&gt;, content: () -&gt; Content, label: () -&gt; Label)
+</code></pre><blockquote><p>注意Picker的每个选项都需要带上tag，而且tag的值和类型要和Binding的变量一样。</p></blockquote><pre><code class="language-swift">enum Flavor: String, CaseIterable {
+    case chocolate
+    case vanilla
+    case strawberry
+}
+struct ContentView: View {
+    @State var selectedFlavor: Flavor = .chocolate
+    var body: some View {
+        Form {
+            Section {
+                Picker(&quot;Flaver&quot;, selection: $selectedFlavor) {
+                   //注意需要标上tag，而且类型需要和Binding的一样
+                    Text(&quot;\(Flavor.chocolate.rawValue)&quot;).tag(Flavor.chocolate)
+                    Text(&quot;\(Flavor.vanilla.rawValue)&quot;).tag(Flavor.vanilla)
+                    Text(&quot;\(Flavor.strawberry.rawValue)&quot;).tag(Flavor.strawberry)
+                }.pickerStyle(.segmented)
+                Text(&quot;Current Flaver: \(selectedFlavor.rawValue)&quot;)
+            }    
+        }
+    }
+}
+</code></pre><p>可能有人就有疑问了，为什么在<code>how to do</code>那里的Picker的例子就没有打tag呢？</p><p>因为ForEach会自动为你打tag，这个tag的值是遵循了<code>Identifiable</code>协议的对象的id字段。所以之前的那个例子不用显示的带上tag。如果我们要改写上面的例子用ForEach实现呢？</p><pre><code class="language-swift">///遵循Identifiable协议
+enum Flavor: String, CaseIterable, Identifiable {
+    case chocolate
+    case vanilla
+    case strawberry
+    var id: Flavor { self }
+}
+struct ContentView: View {
+    @State var selectedFlavor: Flavor = .chocolate
+    var body: some View {
+        Form {
+            Section {
+                Picker(&quot;Flaver&quot;, selection: $selectedFlavor) {
+                    // 不用显示的打tag，默认用id作为tag，id和Binding都是Flavor类型的
+                    // 当然，如果你愿意，也可以自己显示的指定tag
+                                        ForEach(Flavor.allCases) { flavor in
+                        Text(&quot;\(flavor.rawValue)&quot;)
+                    }
+                }.pickerStyle(.segmented)
+                Text(&quot;Current Flaver: \(selectedFlavor.rawValue)&quot;)
+            }    
+        }
+    }
+}
+</code></pre><h4>Styling Pickers</h4><pre><code class="language-swift">/// 设置picker的样式
+func pickerStyle&lt;S&gt;(_ style: S) -&gt; some View where S : PickerStyle
+</code></pre><pre><code class="language-swift">//segment样式
+static var segmented: SegmentedPickerStyle { get }
+</code></pre><pre><code class="language-swift">//类似于UIPicker的那种滚轮样式
+static var wheel: WheelPickerStyle { get }
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxnr4e090vj30ge0cowek.jpg" alt="image-20211223142959083"/></p><pre><code class="language-swift">//macOS上的勾选样式
+static var radioGroup: RadioGroupPickerStyle { get }
+</code></pre><pre><code class="language-swift">//菜单，类似于UIPopoverController，点了出现小弹窗，包含所有选项
+static var menu: MenuPickerStyle { get }
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxnr2qhu8rj30hs0am74h.jpg" alt="image-20211223142823304"/></p><pre><code class="language-swift">//所有选项都同时显示出来，
+static var inline: InlinePickerStyle { get }
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxnr1g1v55j30hi0aw74g.jpg" alt="image-20211223142709578"/></p><h3>Toggle</h3><h4>Creating a Toggle</h4><pre><code class="language-swift">init(isOn: Binding&lt;Bool&gt;, label: () -&gt; Label)
+...
+</code></pre><h4>Creating a Toggle from a Configuration</h4><pre><code class="language-swift">//通常用在自定义ToggleStyle中
+init(_ configuration: ToggleStyleConfiguration)
+</code></pre><p>举个例子</p><pre><code class="language-swift">struct RedBorderToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -&gt; some View {
+        Toggle(configuration)//通过cinfiguration初始化
+            .padding()
+            .border(Color.red)
+    }
+}
+
+Toggle(isOn: $showText) {
+      Text(&quot;Show Text&quot;)
+}.toggleStyle(RedBorderToggleStyle())
+</code></pre><h4>Styling a Toggle</h4><pre><code class="language-swift">func toggleStyle&lt;S&gt;(_ style: S) -&gt; some View where S : ToggleStyle
+</code></pre><p>下面是一些默认的style</p><pre><code class="language-swift">/// switch样式
+static var `switch`: SwitchToggleStyle { get }
+</code></pre><pre><code class="language-swift">/// label作为btn, on的时候，背景设为tintColor
+static var button: ButtonToggleStyle { get }
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxnrhzplnnj30ps0fcgm1.jpg" alt="image-20211223144303808"/></p><pre><code class="language-swift">/// 勾选框，只有macOS有
+static var checkbox: CheckboxToggleStyle { get }
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxnrj91cugj30ho04i749.jpg" alt="image-20211223144416027"/></p><h3>Slider</h3><pre><code class="language-swift">/**
+value : binding的值
+bounds: 值的范围
+step: 步进的大小
+label: 描述的view
+minimumValueLabel
+maximumValueLabel最大和最小端的view
+*/
+init&lt;V&gt;(value: Binding&lt;V&gt;, in bounds: ClosedRange&lt;V&gt;, step: V.Stride = 1, label: () -&gt; Label, minimumValueLabel: () -&gt; ValueLabel, maximumValueLabel: () -&gt; ValueLabel, onEditingChanged: @escaping (Bool) -&gt; Void = { _ in }) where V : BinaryFloatingPoint, V.Stride : BinaryFloatingPoint
+</code></pre><h3>Stepper</h3><h4>Creating a Stepper</h4><pre><code class="language-swift">/**
+value : binding的值
+bounds: 值的范围
+step: 步进的大小
+label: 描述的view
+*/
+init&lt;V&gt;(value: Binding&lt;V&gt;, in bounds: ClosedRange&lt;V&gt;, step: V.Stride = 1, label: () -&gt; Label, onEditingChanged: @escaping (Bool) -&gt; Void = { _ in }) where V : Strideable
+</code></pre><h4>Creating a Stepper with Specified Increment and Decrement Behavior</h4><pre><code class="language-swift">// 不在和某个value绑定，将两个按钮的事件暴露出来，提供给你自定义你的逻辑
+init(label: () -&gt; Label, onIncrement: (() -&gt; Void)?, onDecrement: (() -&gt; Void)?, onEditingChanged: @escaping (Bool) -&gt; Void = { _ in })
+</code></pre><h3>DatePicker</h3><h4>Creating a Date Picker</h4><pre><code class="language-swift">init(selection: Binding&lt;Date&gt;, displayedComponents: DatePicker&lt;Label&gt;.Components = [.hourAndMinute, .date], label: () -&gt; Label)
+/// 可以指定range, start...end
+init(selection: Binding&lt;Date&gt;, in range: ClosedRange&lt;Date&gt;, displayedComponents: DatePicker&lt;Label&gt;.Components = [.hourAndMinute, .date], label: () -&gt; Label)
+/// 可以指定range, start...
+init(selection: Binding&lt;Date&gt;, in range: PartialRangeFrom&lt;Date&gt;, displayedComponents: DatePicker&lt;Label&gt;.Components = [.hourAndMinute, .date], label: () -&gt; Label)
+/// 可以指定range, ...end
+init(selection: Binding&lt;Date&gt;, in range: PartialRangeThrough&lt;Date&gt;, displayedComponents: DatePicker&lt;Label&gt;.Components = [.hourAndMinute, .date], label: () -&gt; Label)
+</code></pre><h4>Setting Date Picker Components</h4><pre><code class="language-swift">//设置显示的components
+static let date: DatePickerComponents// 年月日
+static let hourAndMinute: DatePickerComponents//小时，分钟
+</code></pre><h4>Styling Date Pickers</h4><pre><code class="language-swift">///设置picker样式
+func datePickerStyle&lt;S&gt;(_ style: S) -&gt; some View where S : DatePickerStyle
+</code></pre><pre><code class="language-swift">static var wheel: WheelDatePickerStyle { get }
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxnss4kk3mj30ga0ce74g.jpg" alt="image-20211223152724050"/></p><pre><code class="language-swift">/// macOS上特有的，类似于Stepper
+static var stepperField: StepperFieldDatePickerStyle { get }
+/// macOS上特有的
+static var field: FieldDatePickerStyle { get }
+</code></pre><pre><code class="language-swift">static var graphical: GraphicalDatePickerStyle { get }
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxnstx1k4wj30h00hoaak.jpg" alt="image-20211223152907356"/></p><pre><code class="language-swift">///component以文本格式显示
+static var compact: CompactDatePickerStyle { get }
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxnsx112spj30gu04y3yg.jpg" alt="image-20211223153206130"/></p><h3>ColorPicker</h3><p>选择颜色</p><pre><code class="language-swift">///绑定Color
+init(selection: Binding&lt;Color&gt;, supportsOpacity: Bool = true, label: () -&gt; Label)
+///绑定CGColor
+init(selection: Binding&lt;CGColor&gt;, supportsOpacity: Bool = true, label: () -&gt; Label)
+</code></pre><pre><code class="language-swift">ColorPicker(selection: $color) {
+    Text(&quot;选择颜色&quot;)
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxnt5817uvj30gm03cwec.jpg" alt="image-20211223153959117"/></p>]]></content:encoded>
+        </item>
         <item>
             <title><![CDATA[SwiftUI专辑004-Button以及跳转]]></title>
             <link>https://gouxin.fun/2021/11/07/SwiftUI专辑-004-Button以及跳转</link>
