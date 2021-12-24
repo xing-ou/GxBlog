@@ -4,9 +4,183 @@
         <title>Gx'sBlog Blog</title>
         <link>https://gouxin.fun/</link>
         <description>Gx'sBlog Blog</description>
-        <lastBuildDate>Tue, 09 Nov 2021 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Thu, 11 Nov 2021 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[SwiftUI专辑008-使用SF Symbols显示简单图形]]></title>
+            <link>https://gouxin.fun/2021/11/11/SwiftUI专辑-008-使用SFSymbols显示简单图形</link>
+            <guid>/2021/11/11/SwiftUI专辑-008-使用SFSymbols显示简单图形</guid>
+            <pubDate>Thu, 11 Nov 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[headerimg]]></description>
+            <content:encoded><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+SF Symbols提供了超过3200种Symbols。</p><p>你可以在官网下载macOS app：<a href="https://developer.apple.com/sf-symbols/">SF-Symbols-3.dmg</a>，然后再App上浏览各种SF symbols。</p><p>本章我们将在label和Image中使用SF symbols，并使用modifier来修改symbles。</p><h2>Getting ready</h2><p>首先，新建一个SwiftUI项目<strong>UsingSFSymbols</strong>。</p><h2>How to do it…</h2><ol><li>打开ContentView.swift，替换默认的Text为以下代码</li></ol><pre><code class="language-swift">VStack {
+    HStack {
+        Image(systemName: &quot;c&quot;)
+        Image(systemName: &quot;o&quot;)
+        Image(systemName: &quot;o&quot;)
+        Image(systemName: &quot;k&quot;)
+    }.symbolVariant(.circle.fill)
+        .foregroundStyle(.yellow, .blue)
+        .font(.title)
+}
+</code></pre><ol start="2"><li>再添加一个HStack</li></ol><pre><code class="language-swift">HStack {
+    Image(systemName: &quot;b.circle.fill&quot;)
+    Image(systemName: &quot;o.circle.fill&quot;).foregroundColor(.red)
+    Image(systemName: &quot;o.circle.fill&quot;).imageScale(.large)
+    Image(systemName: &quot;k.circle.fill&quot;).accessibilityIdentifier(&quot;letter k&quot;)
+}.symbolVariant(.circle.fill)
+    .foregroundColor(Color.blue)
+    .font(.title)
+    .padding()
+
+</code></pre><ol start="3"><li>再添加一个HStack</li></ol><pre><code class="language-swift">HStack{
+    Image(systemName: &quot;allergens&quot;)
+    Image(systemName: &quot;ladybug&quot;)
+}.symbolVariant(.fill)
+    .symbolRenderingMode(.multicolor)
+    .font(.largeTitle)
+</code></pre><ol start="4"><li>最后，我们再添加一个Toggle</li></ol><pre><code class="language-swift">Toggle(isOn: $wifi_on) {
+    Label(&quot;Wifi&quot;, systemImage: &quot;wifi&quot;)
+}.foregroundStyle(wifi_on ? .blue : .secondary)
+    .padding()
+</code></pre><p>最终结果</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxos6im5lzj30e20tgdgd.jpg" alt="image-20211224115211366"/></p><h2>How it works…</h2><p>SF Symbols 定义了一些变体，比如<code>enclosed</code>,<code>fill</code>,<code>slash</code>。这些不同的变体能够传达不同的信息，比如Wi-Fi symbol 加上slash，能够表达wifi不可用。</p><p>在我们的第一个HStack中，我们使用了 <strong>.symbolVariant(.fill.circle)</strong> 来将 <strong>.fill</strong> 和 <strong>.circle</strong> 应用到HStack中的所有items上。这也能通过如下代码实现：</p><pre><code class="language-swift">HStack{         
+    Image(systemName: &quot;c.circle.fill&quot;)
+  Image(systemName: &quot;o.circle.fill &quot;)
+  Image(systemName: &quot;o.circle.fill &quot;)
+  Image(systemName: &quot;k.circle.fill &quot;)     
+}
+</code></pre><p>然而，这个代码不太灵活，我们可能只需要<strong>.circle</strong> 或者 <strong>.fill</strong> ，或者都不需要。</p><p>我们也注意到了 <strong>HStack</strong> 中的 .<strong>foregroundStyle(...)</strong> 。他能接受1个、2个或者3个参数，分别设置primary, secondary, 和 tertiary colors。有的symbols可能会同时包含这3种颜色，或者primary+secondary，或者primary+tertiary。</p><p>第二个HStack也有 <strong>.symbolVariant</strong> , 不过只有1个变体。同时我们看到了一个新的modifier: <strong>.symbolRenderingMode()</strong>。Rendering modes能够控制颜色如何应用到symbols上。multicolor rendering mode 将symbols渲染为多层样式。 添加 <strong>.multicolor</strong> rendering mode足够展示symbol的默认layer colors了。 其他的 rendering modes 有 <strong>hierarchical</strong>, <strong>monochrome</strong>, 和 <strong>palette</strong>。</p><p>最终, 我们创建了一个wifi toggle，我们可以根据wifi的状态来改变symbol的颜色。</p><h2>SymbolVariants</h2><p>来看看当前都有些什么SymbolVariants</p><pre><code class="language-swift">//没有Variant
+static let none: SymbolVariants
+//圆圈
+static let circle: SymbolVariants
+//正方形
+static let square: SymbolVariants
+//长方形
+static let rectangle: SymbolVariants
+//填充
+static let fill: SymbolVariants
+//斜线
+static let slash: SymbolVariants
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxox68hj1kj30ro0hcmy0.jpg" alt="image-20211224144455426"/></p><pre><code class="language-swift">VStack(spacing: 20) {
+    HStack(spacing: 20) {
+        Image(systemName: &quot;flag&quot;)
+        Image(systemName: &quot;heart&quot;)
+        Image(systemName: &quot;bolt&quot;)
+        Image(systemName: &quot;star&quot;)
+    }
+    HStack(spacing: 20) {
+        Image(systemName: &quot;flag&quot;)
+        Image(systemName: &quot;heart&quot;)
+        Image(systemName: &quot;bolt&quot;)
+        Image(systemName: &quot;star&quot;)
+    }
+    .symbolVariant(.circle)
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxox6vslhjj30cc068glk.jpg" alt="image-20211224144532250"/></p><pre><code class="language-swift">VStack(spacing: 20) {
+    HStack(spacing: 20) {
+        Image(systemName: &quot;flag&quot;)
+        Image(systemName: &quot;heart&quot;)
+        Image(systemName: &quot;bolt&quot;)
+        Image(systemName: &quot;star&quot;)
+    }
+    HStack(spacing: 20) {
+        Image(systemName: &quot;flag&quot;)
+        Image(systemName: &quot;heart&quot;)
+        Image(systemName: &quot;bolt&quot;)
+        Image(systemName: &quot;star&quot;)
+    }
+    .symbolVariant(.square)
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxox7xnvpoj30ce06o3yg.jpg" alt="image-20211224144633286"/></p><pre><code class="language-swift">VStack(spacing: 20) {
+    HStack(spacing: 20) {
+        Image(systemName: &quot;plus&quot;)
+        Image(systemName: &quot;minus&quot;)
+        Image(systemName: &quot;xmark&quot;)
+        Image(systemName: &quot;checkmark&quot;)
+    }
+    HStack(spacing: 20) {
+        Image(systemName: &quot;plus&quot;)
+        Image(systemName: &quot;minus&quot;)
+        Image(systemName: &quot;xmark&quot;)
+        Image(systemName: &quot;checkmark&quot;)
+    }
+    .symbolVariant(.rectangle)
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxox8j77c0j30d6068t8m.jpg" alt="image-20211224144707529"/></p><pre><code class="language-swift">VStack(spacing: 20) {
+    HStack(spacing: 20) {
+        Image(systemName: &quot;flag&quot;)
+        Image(systemName: &quot;heart&quot;)
+        Image(systemName: &quot;bolt&quot;)
+        Image(systemName: &quot;star&quot;)
+    }
+    HStack(spacing: 20) {
+        Image(systemName: &quot;flag&quot;)
+        Image(systemName: &quot;heart&quot;)
+        Image(systemName: &quot;bolt&quot;)
+        Image(systemName: &quot;star&quot;)
+    }
+    .symbolVariant(.fill)
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxox9cavv8j30cc064t8m.jpg" alt="image-20211224144754740"/></p><pre><code class="language-swift">VStack(spacing: 20) {
+    HStack(spacing: 20) {
+        Image(systemName: &quot;flag&quot;)
+        Image(systemName: &quot;heart&quot;)
+        Image(systemName: &quot;bolt&quot;)
+        Image(systemName: &quot;star&quot;)
+    }
+    HStack(spacing: 20) {
+        Image(systemName: &quot;flag&quot;)
+        Image(systemName: &quot;heart&quot;)
+        Image(systemName: &quot;bolt&quot;)
+        Image(systemName: &quot;star&quot;)
+    }
+    .symbolVariant(.slash)
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxoxa340ljj30cw06swef.jpg" alt="image-20211224144836914"/></p>]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[SwiftUI专辑007-使用ViewBuilder来分离展示]]></title>
+            <link>https://gouxin.fun/2021/11/10/SwiftUI专辑-007-使用ViewBuilder来分离展示</link>
+            <guid>/2021/11/10/SwiftUI专辑-007-使用ViewBuilder来分离展示</guid>
+            <pubDate>Wed, 10 Nov 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[headerimg]]></description>
+            <content:encoded><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+Apple对ViewBuilder的定义是: 一个自定义参数, 能够从闭包中构建Views。</p><p>我们可以将公共View抽离出来，以ViewBuilder作为参数，来实现差异。</p><p>本章，我们将创建一个SwiftUI View：<strong>BlueCircle</strong>，它会在content的右边放置一个blue circle。</p><h2>Getting ready</h2><p>首先，创建一个SwiftUI工程：<strong>UsingViewBuilder</strong>。</p><h2>How to do it…</h2><ol><li>新建文件</li><li>选择SwiftUI View</li><li>取名<strong>BlueCircle</strong></li><li>删除<strong>BlueCircle_Previews</strong></li><li>添加代码</li></ol><pre><code class="language-swift">struct BlueCircle&lt;Content: View&gt;: View {
+    let content: Content
+    
+    init(@ViewBuilder content: () -&gt; Content) {
+        self.content = content()
+    }
+    
+    var body: some View {
+        HStack {
+            content
+            Spacer()
+            Circle().fill(Color.blue).frame(width: 20, height: 30)
+        }.padding()
+    }
+}
+</code></pre><ol start="6"><li>打开ContentView，使用BlueCircle</li></ol><pre><code class="language-swift">struct ContentView: View {
+    var body: some View {
+        BlueCircle {
+            Text(&quot;some text here&quot;)
+            Rectangle().fill(Color.red).frame(width: 40, height: 40)
+        }
+        BlueCircle {
+            Text(&quot;hello world&quot;)
+        }
+    }
+}
+</code></pre><p>最终得到结果</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxoqchw6tej30hi0z0q3f.jpg" alt="image-20211224104842400"/></p><h2>ViewBuilder</h2><pre><code class="language-swift">@resultBuilder struct ViewBuilder
+static func buildBlock&lt;Content&gt;(_ content: Content) -&gt; Content where Content : View
+static func buildBlock&lt;C0, C1&gt;(_ c0: C0, _ c1: C1) -&gt; TupleView&lt;(C0, C1)&gt; where C0 : View, C1 : View
+....
+//我们可以看到ViewBuilder支持的最大参数为C0到C9,总共10个View
+//这也是为什么当我们添加超过10个子View后会报错的原因，此时我们需要用Group来减少直接子View的数量
+static func buildBlock&lt;C0, C1, C2, C3, C4, C5, C6, C7, C8, C9&gt;(_ c0: C0, _ c1: C1, _ c2: C2, _ c3: C3, _ c4: C4, _ c5: C5, _ c6: C6, _ c7: C7, _ c8: C8, _ c9: C9) -&gt; TupleView&lt;(C0, C1, C2, C3, C4, C5, C6, C7, C8, C9)&gt; where C0 : View, C1 : View, C2 : View, C3 : View, C4 : View, C5 : View, C6 : View, C7 : View, C8 : View, C9 : View
+</code></pre>]]></content:encoded>
+        </item>
         <item>
             <title><![CDATA[SwiftUI专辑006-自定义ViewModifier]]></title>
             <link>https://gouxin.fun/2021/11/09/SwiftUI专辑-006-自定义ViewModifier</link>
