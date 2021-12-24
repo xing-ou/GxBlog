@@ -4,9 +4,296 @@
         <title>Gx'sBlog Blog</title>
         <link>https://gouxin.fun/</link>
         <description>Gx'sBlog Blog</description>
-        <lastBuildDate>Thu, 11 Nov 2021 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Tue, 16 Nov 2021 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[SwiftUI专辑013-创建static items List]]></title>
+            <link>https://gouxin.fun/2021/11/16/SwiftUI专辑-013-创建static-items-List</link>
+            <guid>/2021/11/16/SwiftUI专辑-013-创建static-items-List</guid>
+            <pubDate>Tue, 16 Nov 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[headerimg]]></description>
+            <content:encoded><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+<strong>List</strong> 和ScrollView类似，都是用来显示一个Items的集合。不同的是<strong>List</strong>更适合处理较大的数据集，因为它们不会将整个数据集加载到内存中。</p><p>本章，我们将会用static list来显示各个城市的天气信息。</p><h2>Getting ready</h2><p>新建一个SwiftUI工程：<strong>StaticList</strong>。</p><h2>How to do it…</h2><ol><li>首先创建一个数据结构来存储天气信息</li></ol><pre><code class="language-swift">struct WeatherInfo: Identifiable {
+    var id = UUID()
+    var image: String
+    var temp: Int
+    var city: String
+}
+</code></pre><ol start="2"><li>在ContenView中准备天气数据</li></ol><pre><code class="language-swift">let weatherData: [WeatherInfo] = [
+    WeatherInfo(image: &quot;snow&quot;, temp: 5, city:&quot;NewYork&quot;),
+    WeatherInfo(image: &quot;cloud&quot;, temp:5, city:&quot;KansasCity&quot;),
+    WeatherInfo(image: &quot;sun.max&quot;, temp: 80, city:&quot;SanFrancisco&quot;),
+    WeatherInfo(image: &quot;snow&quot;, temp: 5,city:&quot;Chicago&quot;),
+    WeatherInfo(image: &quot;cloud.rain&quot;, temp: 49,city:&quot;Washington DC&quot;),
+    WeatherInfo(image: &quot;cloud.heavyrain&quot;, temp: 60,city:&quot;Seattle&quot;),
+    WeatherInfo(image: &quot;sun.min&quot;, temp: 75,city:&quot;Baltimore&quot;),
+    WeatherInfo(image: &quot;sun.dust&quot;, temp: 65,city:&quot;Austin&quot;),
+    WeatherInfo(image: &quot;sunset&quot;, temp: 78,city:&quot;Houston&quot;),
+    WeatherInfo(image: &quot;moon&quot;, temp: 80,city:&quot;Boston&quot;),
+    WeatherInfo(image: &quot;moon.circle&quot;, temp: 45,city:&quot;denver&quot;),
+    WeatherInfo(image: &quot;cloud.snow&quot;, temp: 8,city:&quot;Philadelphia&quot;),
+    WeatherInfo(image: &quot;cloud.hail&quot;, temp: 5,city:&quot;Memphis&quot;),
+    WeatherInfo(image: &quot;cloud.sleet&quot;, temp:5,city:&quot;Nashville&quot;),
+    WeatherInfo(image: &quot;sun.max&quot;, temp: 80, city:&quot;SanFrancisco&quot;),
+    WeatherInfo(image: &quot;cloud.sun&quot;, temp: 5,city:&quot;Atlanta&quot;),
+    WeatherInfo(image: &quot;wind&quot;, temp: 88, city:&quot;LasVegas&quot;),
+    WeatherInfo(image: &quot;cloud.rain&quot;, temp: 60,city:&quot;Phoenix&quot;),
+    ]
+</code></pre><ol start="3"><li>添加List，用ForEach显示每个天气信息</li></ol><pre><code class="language-swift">List {
+  ForEach(self.weatherData) { weather in
+      HStack {
+          Image(systemName: weather.image).frame(width: 50, alignment: .leading)
+          Text(&quot;\(weather.temp)°F&quot;).frame(width: 80, alignment:.leading)
+          Text(weather.city)
+      }.font(.system(size: 25))
+      .padding()
+  }
+}.listStyle(.grouped)
+</code></pre><p>最终显示：</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxp3gwbp7wj30is0sejsg.jpg" alt="image-20211224182243081"/></p><h2>How it works…</h2><p>首先我们创建<strong>WeatherInfo</strong>结构体，并让其遵循<strong>Identifiable</strong>协议，这样使用ForEach的时候就不用指定id了。</p><p>然后每个item使用HStack来显示其中的内容。</p>]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[SwiftUI专辑012-使用ScrollView]]></title>
+            <link>https://gouxin.fun/2021/11/15/SwiftUI专辑-012-使用ScrollView</link>
+            <guid>/2021/11/15/SwiftUI专辑-012-使用ScrollView</guid>
+            <pubDate>Mon, 15 Nov 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[headerimg]]></description>
+            <content:encoded><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+当要显示的内容无法放入其容器时, 你可以使用ScrollView。</p><p>滚动视图默认是垂直的，但也可以设置为水平的。</p><p>本章我们将学习如何创建水平和垂直的ScrollView</p><h2>Getting ready</h2><p>新建一个SwiftUI项目<strong>WeScroll</strong></p><h2>How to do it…</h2><p>我们将创建一个显示字母A-P的ScrollView。</p><ol><li>添加我们需要的字母到contentView中</li></ol><pre><code class="language-swift">let letters = [&quot;a&quot;,&quot;b&quot;,&quot;c&quot;,&quot;d&quot;,&quot;e&quot;,&quot;f&quot;,&quot;g&quot;,&quot;h&quot;,&quot;i&quot;,&quot;j&quot;,&quot;k&quot;,&quot;l&quot;,&quot;m&quot;,&quot;n&quot;,&quot;o&quot;,&quot;p&quot;]
+</code></pre><ol start="2"><li>替换ContentView为以下内容</li></ol><pre><code class="language-swift">struct ContentView: View {
+    let letters = [&quot;a&quot;,&quot;b&quot;,&quot;c&quot;,&quot;d&quot;,&quot;e&quot;,&quot;f&quot;,&quot;g&quot;,&quot;h&quot;,&quot;i&quot;,&quot;j&quot;,&quot;k&quot;,&quot;l&quot;,&quot;m&quot;,&quot;n&quot;,&quot;o&quot;,&quot;p&quot;]
+    var body: some View {
+        VStack {
+            ScrollView(.vertical, showsIndicators: true) {
+                ForEach(self.letters, id: \.self) { letter in
+                    Image(systemName: letter)
+                        .font(.largeTitle)
+                        .foregroundColor(.yellow)
+                        .background(Color.blue)
+                        .frame(width: 50, height: 50, alignment: .center)
+                        .symbolVariant(.circle.fill)
+                }
+            }.frame(width: 50, height: 200, alignment: .center)
+            
+            ScrollView(.horizontal, showsIndicators: true) {
+                HStack {
+                    ForEach(self.letters, id: \.self) { letter in
+                        Image(systemName: letter)
+                            .font(.largeTitle)
+                            .foregroundColor(.yellow)
+                            .background(Color.blue)
+                            .frame(width: 50, height: 50, alignment: .center)
+                            .symbolVariant(.circle.fill)
+                    }
+                }
+            }
+        }
+    }
+}
+</code></pre><p>最终得到</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxp2e0sd2pj30iu0rogmg.jpg" alt="image-20211224174523532"/></p><h2>How it works…</h2><p>默认情况下，ScrollView是垂直滚动的。</p><p>这里我们使用了ForEach来将我们的集合数据转化成Views。</p><p>我们给ForEach传递了2个参数，第一个是需要迭代的collection，第二个是id。id帮助我们区别每个item，他们应该是唯一的。因为我们集合中的每个字母是唯一的，因此可以使用.self作为id。</p><p>如果你的item遵循<strong>Identifiable</strong>协议，就不用提供id参数，会使用Identifiable的id作为id。</p><p>第二个scrollview指定了滚动方向为水平，要显示滚动条，要水平显示内容，我们用HStack让字母水平排列。</p><h2>Api详情</h2><h3>ScrollView</h3><h4>Creating a Scroll View</h4><pre><code class="language-swift">//可以水平，垂直，或者两个一起滚动。
+init(_ axes: Axis.Set = .vertical, showsIndicators: Bool = true, content: () -&gt; Content)
+</code></pre>]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[SwiftUI专辑011-iOS14以上的View和Controls]]></title>
+            <link>https://gouxin.fun/2021/11/14/SwiftUI专辑-011-iOS14以上的View和Controls</link>
+            <guid>/2021/11/14/SwiftUI专辑-011-iOS14以上的View和Controls</guid>
+            <pubDate>Sun, 14 Nov 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[headerimg]]></description>
+            <content:encoded><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+本章我们将查看</p><ul><li><strong>ProgressView</strong></li><li><strong>ColorPicker</strong></li><li><strong>Link</strong></li><li><strong>Menu</strong></li></ul><p>ProgressView用于显示任务的完成程度。有两种类型的ProgressView：不确定的进度视图显示一个旋转的圆圈直到任务完成，而确定的进度视图显示一个被填满的bar，以显示任务的完成程度。</p><p>ColorPicker视图允许用户从多种颜色中进行选择。</p><p>Menu视图则显示一个items列表，用户可以从中选择以执行特定操作。</p><h2>Getting ready</h2><p>新建一个SwiftUI项目，<strong>MoreViewsAndControls</strong></p><h2>How to do it…</h2><ol><li>首先，添加一些状态</li></ol><pre><code class="language-swift">@State private var progress = 0.5
+@State private var color  = Color.red
+@State private var secondColor  = Color.yellow
+@State private var someText = &quot;Initial value&quot;
+</code></pre><ol start="2"><li>添加一个List， 在添加一个包含ProgressView的Section</li></ol><pre><code class="language-swift">List {
+    Section(header: Text(&quot;ProgressViews&quot;)) {
+        ProgressView(&quot;Indeterminate progressview&quot;)
+        ProgressView(&quot;Downloading&quot;,value:progress, total:2)
+        Button(&quot;More&quot;){
+            if(progress &lt; 2){
+                progress += 0.5
+            }
+        }
+    }
+}
+</code></pre><ol start="3"><li>再添加另一个Section</li></ol><pre><code class="language-swift">    Section(header: Text(&quot;Labels&quot;)) {
+    Label(&quot;Slow&quot;, image: &quot;tortoise.fill&quot;)
+    Label {
+        Text(&quot;Fast&quot;).font(.title)
+    } icon: {
+        Circle()
+            .fill(.orange)
+            .frame(width: 40, height: 20, alignment: .center)
+            .overlay {
+                Text(&quot;F&quot;)
+            }
+    }
+}
+</code></pre><ol start="4"><li>在添加2个Section，包含<strong>ColorPicker</strong>和Link</li></ol><pre><code class="language-swift">Section(header: Text(&quot;ColorPicker&quot;)) {
+    ColorPicker(selection: $color) {
+        Text(&quot;Pick my background&quot;).background(color).padding()
+    }
+    ColorPicker(&quot;Picker&quot;, selection: $secondColor)
+}
+Section(header: Text(&quot;Link&quot;)) {
+  Link(&quot;Packt Publishing&quot;, destination: URL(string: &quot;https://www.baidu.com&quot;)!)
+}
+</code></pre><ol start="5"><li>再添加一个Section，包含TextEditor</li></ol><pre><code class="language-swift">Section(header: Text(&quot;TextEditor&quot;)) {
+    TextEditor(text: $someText)
+    Text(&quot;current editortext:\n\(someText)&quot;)
+}
+</code></pre><ol start="6"><li>再添加一个Section，包含Menu</li></ol><pre><code class="language-swift">Section(header: Text(&quot;Menu&quot;)) {
+    Menu(&quot;Actions&quot;) {
+        Button(&quot;set TextEditor text to &#x27;magic&#x27;&quot;) {
+            someText = &quot;magic&quot;
+        }
+        Button(&quot;turn first color green&quot;) {
+            color = .green
+        }
+        Menu(&quot;Actions&quot;) {
+            Button(&quot;set TextEditor text to &#x27;number&#x27;&quot;) {
+                someText = &quot;number&quot;
+            }
+            Button(&quot;turn first color red&quot;) {
+                color = .red
+            }
+        }
+    }
+}
+</code></pre><ol start="7"><li>最终，我们修改下List的显示样式</li></ol><pre><code class="language-swift">List {
+
+...
+
+}.listStyle(.grouped)
+</code></pre><p>最终</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxp0p1v15rj30i6100406.jpg" alt="image-20211224164647811"/></p><h2>How it works…</h2><p>不确定进度的进度条，不需要参数</p><pre><code class="language-swift">ProgressView(&quot;Indeterminate progress view&quot;)
+ProgressView()
+</code></pre><p>确定进度的，需要提供，当前进度和总进度, 总进度不传的话默认为1.</p><pre><code class="language-swift">ProgressView(&quot;Downloading&quot;,value: progress, total:2)
+</code></pre><p>Label显示一个text和icon，我们可以使用SF symbol。</p><p>ColorPicker能够让用户选择颜色</p><p>Link用于显示一个可以点击的链接</p><p><strong>Menu</strong>提供了弹窗供用户选择选项，可以添加多级，但不建议嵌套太深。</p><h2>Api详情</h2><h3>ProgressView</h3><h4>Creating Progress View</h4><pre><code class="language-swift">//不确定进度的
+init(label: () -&gt; Label)
+//确定进度的
+init&lt;V&gt;(value: V?, total: V = 1.0, label: () -&gt; Label) where CurrentValueLabel == EmptyView, V : BinaryFloatingPoint
+//通过config初始化，通常用在自定义style中
+init(_ configuration: ProgressViewStyleConfiguration) where Label == ProgressViewStyleConfiguration.Label, CurrentValueLabel == ProgressViewStyleConfiguration.CurrentValueLabel
+//比如
+struct DarkBlueShadowProgressViewStyle: ProgressViewStyle {
+    func makeBody(configuration: Configuration) -&gt; some View {
+        ProgressView(configuration)
+            .shadow(color: Color(red: 0, green: 0, blue: 0.6),
+                    radius: 4.0, x: 1.0, y: 2.0)
+    }
+}
+</code></pre><h4>Styling Progress Views</h4><pre><code class="language-swift">func progressViewStyle&lt;S&gt;(_ style: S) -&gt; some View where S : ProgressViewStyle
+//直线
+static var linear: LinearProgressViewStyle { get }
+//运行看效果似乎是和不确定进度的那种小菊花一样，看不到进度的改变
+static var circular: CircularProgressViewStyle { get }
+</code></pre><h3>Label</h3><h4>Creating a Label from Text and an Image</h4><pre><code class="language-swift">//title + 本地image
+init&lt;S&gt;(_ title: S, image name: String) where S : StringProtocol
+</code></pre><h4>Creating a Label from Text and an SF Symbol</h4><pre><code class="language-swift">//title + sf symbol
+init&lt;S&gt;(_ title: S, systemImage name: String) where S : StringProtocol
+</code></pre><h4>Creating a Label from a Title and Icon</h4><pre><code class="language-swift">//title + Icon
+init(title: () -&gt; Title, icon: () -&gt; Icon)
+</code></pre><h4>Creating a Label from a Configuration</h4><pre><code class="language-swift">init(_ configuration: LabelStyleConfiguration)
+//比如
+struct RedBorderedLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -&gt; some View {
+        Label(configuration)
+            .border(Color.red)
+    }
+}
+</code></pre><h4>Styling Labels</h4><pre><code class="language-swift">func labelStyle&lt;S&gt;(_ style: S) -&gt; some View where S : LabelStyle
+//只显示图片
+static var iconOnly: IconOnlyLabelStyle { get }
+//title + icon
+static var titleAndIcon: TitleAndIconLabelStyle { get }
+//只显示title
+static var titleOnly: TitleOnlyLabelStyle { get }
+</code></pre><h3>Link</h3><pre><code class="language-swift">// 显示的title 和跳转的url
+init(destination: URL, label: () -&gt; Label)
+</code></pre><h3>Menu</h3><h4>Creating a Menu from Content</h4><pre><code class="language-swift">//点击后出现content中的选项
+init(content: () -&gt; Content, label: () -&gt; Label)
+</code></pre><h4>Creating a Menu with a Primary Action</h4><pre><code class="language-swift">//普通点击会触发primaryAction，如果长按或者双击则显示content中的选项
+init(content: () -&gt; Content, label: () -&gt; Label, primaryAction: @escaping () -&gt; Void)
+</code></pre><h4>Creating a Menu from a Configuration</h4><pre><code class="language-swift">init(_ configuration: MenuStyleConfiguration)
+//比如
+struct RedBorderMenuStyle: MenuStyle {
+    func makeBody(configuration: Configuration) -&gt; some View {
+        Menu(configuration)
+            .border(Color.red)
+    }
+}
+</code></pre><h4>Styling a Menu</h4><pre><code class="language-swift">func menuStyle&lt;S&gt;(_ style: S) -&gt; some View where S : MenuStyle
+//默认的
+struct DefaultMenuStyle
+//无边框button
+struct BorderlessButtonMenuStyle
+//有边框，只能macOS用
+struct BorderedButtonMenuStyle
+</code></pre>]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[SwiftUI专辑010-已有App中使用SwiftUI]]></title>
+            <link>https://gouxin.fun/2021/11/13/SwiftUI专辑-010-已有App中使用SwiftUI</link>
+            <guid>/2021/11/13/SwiftUI专辑-010-已有App中使用SwiftUI</guid>
+            <pubDate>Sat, 13 Nov 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[headerimg]]></description>
+            <content:encoded><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+本章，我们将学习如何从 UIKit 视图跳转到 SwiftUI 视图，同时将文本传递给我们的 SwiftUI 视图。</p><h2>Getting ready</h2><p>新建一个普通Storyboard工程。</p><h2>How to do it…</h2><ol><li>选中Main.stroyboard。</li><li>选中<strong>ViewController</strong></li><li>在菜单中选择 <strong>Editor</strong> | <strong>Embed in</strong> | <strong>Navigation Controller</strong>.</li><li>选择右上角的+号，添加一个<strong>Hosting View Controller</strong>到storyboard里</li><li>添加一个Button到ViewController中，添加点击btn跳转到HostingViewController</li><li>拖动segue到ViewController中，取名为gotoSwiftUI</li></ol><pre><code class="language-swift">    @IBSegueAction func gotoSwiftUI(_ coder: NSCoder) -&gt; UIViewController? {
+        return UIHostingController(coder: coder, rootView: rootView)
+    }
+
+</code></pre><ol start="7"><li>添加import SwiftUI</li></ol><pre><code class="language-swift">import SwiftUI
+</code></pre><ol start="8"><li>在gotoSwiftUI中创建rootView</li></ol><pre><code class="language-swift">@IBSegueAction func gotoSwiftUI(_ coder: NSCoder) -&gt; UIViewController? {
+  let greetings = &quot;Hello From UIKit&quot;
+    let rootView = Greetings(textFromUIKit:greetings)
+  return UIHostingController(coder: coder, rootView: rootView)
+}
+</code></pre><ol start="9"><li>新建一个SwiftUI View, 取名<strong>Greetings</strong></li><li>实现Greetings</li></ol><pre><code class="language-swift">struct Greetings: View {
+    var textFromUIKit = &quot;&quot;
+    var body: some View {
+        Text(textFromUIKit)
+    }
+}
+</code></pre><p>最终，点击button，就能够跳转到Greetings，并显示传过去的参数
+<img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxozv4r4xzg30940ixdgz.gif" alt="Untitled"/></p><h2>How it works…</h2><p>为了在普通项目中显示SwiftUI，你需要将SwiftUI视图包裹到一个<strong>ViewController</strong> 或者 <strong>InterfaceController</strong>中。</p><p>我们添加了<strong>UIHostingController</strong>作为SwiftUI的容器。</p>]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[SwiftUI专辑009-SwiftUI中使用UIKit]]></title>
+            <link>https://gouxin.fun/2021/11/12/SwiftUI专辑-009-SwiftUI中使用UIKit</link>
+            <guid>/2021/11/12/SwiftUI专辑-009-SwiftUI中使用UIKit</guid>
+            <pubDate>Fri, 12 Nov 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[headerimg]]></description>
+            <content:encoded><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+SwiftUI 是 在 WWDC 2019 上宣布 的，仅适用于运行 iOS 13 及更高版本的设备。由于其相对不成熟，与 UIKit 相比，SwiftUI 可能缺乏广泛的 API 支持。例如，截至 2021 年 7 月，只能使用 UIKit 的<strong>UIImagePickerController</strong>选择图片和视频。因此，需要在 SwiftUI 中实现某些 UIKit API。</p><p>本章，我们将看看如何在 SwiftUI 中使用 UIKit API。我们将创建一个包装<strong>UIActivityIndicatorView</strong>的View，然后在 SwiftUI 中显示一个ActivityIndicator。</p><h2>Getting ready</h2><p>新建一个SwiftUI工程，叫做<strong>UIKitToSwiftUI</strong></p><h2>How to do it…</h2><p>我们能够通过<strong>UIViewRepresentable</strong>协议来在SwiftUI中显示UIKit View。</p><ol><li>新建文件，选择<code>Swift File</code>，命名<strong>ActivityIndicator</strong></li><li>替换<strong>import Foundation</strong>为<strong>import SwiftUI</strong></li></ol><pre><code class="language-swift">import SwiftUI
+</code></pre><ol start="3"><li>修改<strong>ActivityIndicator</strong>遵循<strong>UIViewRepresentable</strong>协议</li></ol><pre><code class="language-swift">struct ActivityIndicator: UIViewRepresentable {
+    var animating: Bool
+    func updateUIView(_ activityIndicator: UIActivityIndicatorView, context: Context) {
+        if self.animating {
+            activityIndicator.startAnimating()
+        } else {
+            activityIndicator.stopAnimating()
+        }
+    }
+
+    func makeUIView(context: Context) -&gt; UIActivityIndicatorView {
+        return UIActivityIndicatorView()
+    }
+}
+</code></pre><ol start="4"><li>打开ContentView.swift，使用我们刚刚的<strong>ActivityIndicator</strong></li></ol><pre><code class="language-swift">struct ContentView: View {
+    @State var animated = false
+    var body: some View {
+        VStack {
+            ActivityIndicator(animating: animated)                
+            HStack {
+                Toggle(isOn: $animated) {
+                    Text(&quot;Toggle Activity&quot;)
+                }
+            }
+        }
+    }
+}
+</code></pre><p>最终结果：</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxoxubn99dj30eq0uaglt.jpg" alt="image-20211224150803446"/></p><h2>How it works…</h2><p>我们通过实现<strong>UIViewRepresentable</strong>协议来将UIKit View包裹为一个SwiftUI View。</p><p>在 <strong>ActivityIndicator.swift</strong> 文件中，我们实现了一个 struct， 遵循<strong>UIViewRepresentable</strong>协议。</p><p>协议要求我们实现 <strong>makeUIView</strong> 和 <strong>updateUIView</strong> 这两个函数。</p><p> <strong>makeUIView</strong> 负责创建和准备View</p><p> <strong>updateUIView</strong> 负责当animation改变时更新 <strong>UIView</strong>。</p>]]></content:encoded>
+        </item>
         <item>
             <title><![CDATA[SwiftUI专辑008-使用SF Symbols显示简单图形]]></title>
             <link>https://gouxin.fun/2021/11/11/SwiftUI专辑-008-使用SFSymbols显示简单图形</link>
