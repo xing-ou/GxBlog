@@ -1,5 +1,5 @@
 ---
-title: SwiftUI专辑016-创建一个可编辑的List
+title: SwiftUI专辑017-创建一个可编辑的List
 tags: [swiftUI]
 ---
 ![headerimg](./Header.png)
