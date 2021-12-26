@@ -56,4 +56,4 @@ private func deleteItem(at indexSet: IndexSet){
 
 然后我们修改数据源，移除这些Index。
 
-当然，我们还可以通过添加**EditButton**来进入编辑模式，实现对rows的删除。
+当然，除了swip手势，我们还可以通过添加**EditButton**来进入编辑模式，实现对rows的删除。
