@@ -1,5 +1,5 @@
 ---
-title: 2、List中使用自定义Cell
+title: 3、List中使用自定义Cell
 tags: [swiftUI]
 ---
 如果我们每次都要用到相同的Cell，而每次都重复写一些HStack肯定不是一个好的选择，此时我们可以把这些View封装成一个Cell，增加代码的可重用性。
