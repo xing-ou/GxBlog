@@ -2,11 +2,607 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://gouxin.fun/</id>
     <title>Gx'sBlog Blog</title>
-    <updated>2021-11-16T00:00:00.000Z</updated>
+    <updated>2021-12-01T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://gouxin.fun/"/>
     <subtitle>Gx'sBlog Blog</subtitle>
     <icon>https://gouxin.fun/img/favicon.ico</icon>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑028-预览动态字体dynamicTypeSize]]></title>
+        <id>/2021/12/01/SwiftUI专辑-028-预览动态字体dynamicTypeSize</id>
+        <link href="https://gouxin.fun/2021/12/01/SwiftUI专辑-028-预览动态字体dynamicTypeSize"/>
+        <updated>2021-12-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+您可能希望改进应用的一些功能以吸引更多的用户 。比如：用户可能喜欢的不同字体，这意味着要确保设计在不同字体大小下看起来不错。SwiftUI 预览非常适合此类情况。它们允许您立即预览新内容在不同动态字体大小下的外观。
+我们来编写一个新闻类文章demo。</p><h2>Getting ready</h2><p>创建一个新的SwiftUI工程：<strong>DynamicTypeSizesPreview</strong>。</p><h2>How to do it</h2><p>一个新闻类文章应该包含一个图片，一个title，和一段描述。我们首选创建一个model来代表一个新闻，然后创建一个View来显示他，最后在不同大小的设备上预览。</p><ol><li>我们把两个图片放到Preview Content下的xcassets下</li></ol><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxvp1z7yt3j319u0ju76s.jpg" alt="image-20211230112258939"/></p><ol start="2"><li>新建一个文件<strong>Article</strong>，定义model</li></ol><pre><code class="language-swift">struct Article {
+    var imageName:String
+    var title: String
+    var description: String
+}
+</code></pre><ol start="3"><li>在Article定义的下方，我们创建点数据用于预览</li></ol><pre><code class="language-swift">let sampleArticle1 = Article(imageName: &quot;reading&quot;, title: &quot;Love reading&quot;, description: &quot;Reading is essential to success&quot;)
+let sampleArticle2 = Article(imageName: &quot;naptime&quot;, title: &quot;Nap time&quot;, description: &quot;Take naps when tired to improve performance&quot;)
+</code></pre><ol start="4"><li>新建一个SwiftUI view： <strong>ArticleView</strong></li></ol><pre><code class="language-swift">struct ArticleView: View {
+    var article: Article
+    var body: some View {
+        HStack {
+            Image(article.imageName)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 150, height: 100)
+                .clipShape(Ellipse())
+            VStack {
+                Text(article.title)
+                    .font(.title)
+                Text(article.description)
+                    .padding()
+            }
+        }
+    }
+}
+</code></pre><ol start="5"><li>preview中传入我们的demo数据</li></ol><pre><code class="language-swift">struct ArticleView_Previews: PreviewProvider {
+    static var previews: some View {
+        ArticleView(article: sampleArticle1)
+    }
+}
+</code></pre><p>预览就得到：</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxvp9j8h0nj30pg0ao3z3.jpg" alt="image-20211230113015389"/></p><ol start="6"><li>换个预览数据</li></ol><pre><code class="language-swift">struct ArticleView_Previews: PreviewProvider {
+    static var previews: some View {
+        ArticleView(article: sampleArticle2)
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxvpan0fcij30oi0bu3z6.jpg" alt="image-20211230113119106"/></p><ol start="7"><li>好了，我们将ArticleView添加到ContentView中</li></ol><pre><code class="language-swift">struct ContentView: View {
+    var body: some View {
+        ArticleView(article: sampleArticle1)
+    }
+}
+</code></pre><ol start="8"><li>在ContentView_Previews添加个Group同时预览多个View</li></ol><pre><code class="language-swift">struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            ContentView()
+            ContentView().environment(\.dynamicTypeSize, .xSmall)
+        }
+    }
+}
+</code></pre><ol start="9"><li>现在我们显示了2个device，不过都是全屏，我们要查看全部的话，需要滚动很长，我们希望只包含View那么大</li></ol><pre><code class="language-swift">struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            ContentView()
+            ContentView().environment(\.dynamicTypeSize, .xSmall)
+        }.previewLayout(.sizeThatFits)
+    }
+}
+</code></pre><ol start="10"><li>最后我们再添加一个ContentView</li></ol><pre><code class="language-swift">ContentView().environment(\.dynamicTypeSize, .accessibility5)
+</code></pre><p>最终结果</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxw12ct3bbj30gc0zk0uf.jpg" alt="image-20211230181829540"/></p><h2>How it works</h2><p>我们通过Group可以同时预览多个设备。</p><p>我们通过 <strong>.environment()</strong>的<strong>dynamicTypeSize</strong> 设置不同的值来预览不同dynamicTypeSize下的情况。</p><p>我们同时预览多个设备时，他们都是全屏，我们需要滚动才能查看全部，浪费时间。我们通过<strong>.previewLayout(.sizeThatFits)</strong>解决，这样每个预览都只有自身大小。</p><h2>关于Dynamic Type Sizes</h2><p>可查看<a href="https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/typography/#dynamic-type-sizes">官方文档</a></p><p>这个7个值分别对应iphone手机上的：设置-》辅助功能-》显示与文字大小-》更大字体中的7个字体大小。</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxw1h95t51j31590u0dhy.jpg" alt="image-20211230183251548"/></p><p>除了这7个值，还可以设置accessbility的5个值</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxw1jd5fu1j314s0u0q4u.jpg" alt="image-20211230183453468"/></p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑027-预览黑暗模式]]></title>
+        <id>/2021/11/30/SwiftUI专辑-027-预览黑暗模式</id>
+        <link href="https://gouxin.fun/2021/11/30/SwiftUI专辑-027-预览黑暗模式"/>
+        <updated>2021-11-30T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+SwiftUI内置支持黑暗模式。你只需要修改预览的设置，就能预览黑暗模式。
+接下来我们将通过一个简单的例子演示一下。</p><h2>Getting ready</h2><p>创建个新的SwiftUI工程：<strong>DarkModePreview</strong></p><h2>How to do it</h2><p>自从 SwiftUI 出现以来，预览就存在一个问题，您无法在黑暗模式下预览任何视图，除非视图包含在<strong>NavigationView 中</strong>。这是一个功能还是一个错误？希望我们能在下一版 SwiftUI 中得到答案。</p><p>我们将在<strong>NavigationView 中</strong>包含一个<strong>Text</strong>，并在light和dark模式下预览它。步骤如下：</p><ol><li>打开ContentView.swift</li><li>添加一个环境变量</li></ol><pre><code class="language-swift">@Environment(\.colorScheme) var deviceColorScheme
+</code></pre><ol start="3"><li>添加一个NavigationView</li></ol><pre><code class="language-swift">NavigationView {
+    Text(deviceColorScheme == .dark ? &quot;Quick journey to the dark side&quot; : &quot;Back to the light&quot;)
+}
+
+</code></pre><ol start="4"><li>在<strong>Content_Previews</strong>中添加一个<strong>colorScheme</strong></li></ol><pre><code class="language-swift">struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            ContentView().colorScheme(.dark)
+            ContentView().colorScheme(.light)
+        }
+    }
+}
+</code></pre><p>此时能够在preview中查看到：</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxv451pn3bj30dm0qqdg3.jpg" alt="截屏2021-12-29 下午11.19.13"/></p><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxv4592ayej30dg0qwt93.jpg" alt="image-20211229231931515"/></p><h2>How it works</h2><p>在黑暗模式下预览内容的过程是不言自明的。预览显示来自<strong>ContentView</strong>视图的内容。如果未向预览提供配色方案，则使用<strong>.light</strong>作为默认配色方案。</p><p>为了在明暗模式下显示不同的文本，我们添加了一个<strong>deviceColorScheme</strong>环境变量。然后，我们在<strong>Text</strong>视图中使用三元运算符将其值更改<strong>为在</strong>检测到深色方案时显示<strong>Quick journey to the dark side</strong>，并在检测到浅色方案时 <strong>Back to the light</strong>。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑026-用DisclosureGroup显示隐藏内容]]></title>
+        <id>/2021/11/29/SwiftUI专辑-026-用DisclosureGroup显示隐藏内容</id>
+        <link href="https://gouxin.fun/2021/11/29/SwiftUI专辑-026-用DisclosureGroup显示隐藏内容"/>
+        <updated>2021-11-29T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+<strong>DisclosureGroup</strong>根据disclosure control状态来控制显示和隐藏的一个视图。</p><p>需要两个参数：标识其content的<strong>label</strong>， 以及控制content是可见还是隐藏的<strong>binding</strong>。</p><p>我们创建一个例子来仔细看看它是如何工作的。</p><h2>Getting ready</h2><p>首先，新建一个工程<strong>DisclosureGroups</strong></p><h2>How to do it…</h2><ol><li>首先，创建一个State</li></ol><pre><code class="language-swift">@State private var showplanets = true
+</code></pre><ol start="2"><li>修改默认的Text为 <strong>List</strong> 和 <strong>DisclosureGroup</strong></li></ol><pre><code class="language-swift">List {
+    DisclosureGroup(&quot;Planets&quot;, isExpanded: $showplanets) {
+        Text(&quot;Mercury&quot;)
+        Text(&quot;Venus&quot;)
+    }
+}
+</code></pre><ol start="3"><li>再嵌套一个</li></ol><pre><code class="language-swift">var body: some View {
+        List {
+            DisclosureGroup(&quot;Planets&quot;, isExpanded: $showplanets) {
+                Text(&quot;Mercury&quot;)
+                Text(&quot;Venus&quot;)
+                DisclosureGroup(&quot;Earth&quot;) {
+                    Text(&quot;North America&quot;)
+                    Text(&quot;South America&quot;)
+                    Text(&quot;Europe&quot;)
+                    Text(&quot;Africa&quot;)
+                    Text(&quot;Asia&quot;)
+                    Text(&quot;Antarctica&quot;)
+                    Text(&quot;Oceania&quot;)
+                }
+            }
+        }
+    }
+</code></pre><p>运行，最终结果</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxu08q6c3ij309q0l174f.jpg" alt="Simulator Screen Shot - iPhone 12 - 2021-12-29 at 00.18.08"/></p><h2>How it works…</h2><p>我们通过showplanets 控制<strong>DisclosureGroup</strong> content的显示和隐藏。</p><p><strong>DisclosureGroup</strong> 是能够嵌套的，用于显示多个层级。</p><p>DisclosureGroup也能脱离List单独使用。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑025-用List显示多层级列表]]></title>
+        <id>/2021/11/28/SwiftUI专辑-025-用List显示多层级列表</id>
+        <link href="https://gouxin.fun/2021/11/28/SwiftUI专辑-025-用List显示多层级列表"/>
+        <updated>2021-11-28T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+我们可以用展开收起的列表来展示层级。</p><h2>Getting ready</h2><p>首先，创建一个新项目：<strong>ExpandingLists</strong></p><h2>How to do it…</h2><ol><li>首先，定义一个多层数据结构</li></ol><pre><code class="language-swift">struct Backpack: Identifiable {
+    let id = UUID()
+    let name: String
+    let icon: String
+    var content: [Backpack]?
+}
+</code></pre><ol start="2"><li>准备数据</li></ol><pre><code class="language-swift">let dollar = Backpack(name: &quot;Dollar&quot;, icon: &quot;dollarsign.circle&quot;)
+let yen = Backpack(name: &quot;Yen&quot;,icon: &quot;yensign.circle&quot;)
+let currencies = Backpack(name: &quot;Currencies&quot;, icon: &quot;coloncurrencysign.circle&quot;, content: [dollar, yen])
+
+let pencil = Backpack(name: &quot;Pencil&quot;,icon: &quot;pencil.circle&quot;)
+let hammer = Backpack(name: &quot;Hammer&quot;,icon: &quot;hammer&quot;)
+let paperClip = Backpack(name: &quot;Paperclip&quot;,icon: &quot;paperclip&quot;)
+let glass = Backpack(name: &quot;Magnifying glass&quot;, icon: &quot;magnifyingglass&quot;)
+let bin  = Backpack(name: &quot;Bin&quot;, icon: &quot;arrow.up.bin&quot;, content: [paperClip, glass])
+let tools = Backpack(name: &quot;Tools&quot;, icon: &quot;folder&quot;, content: [pencil, hammer,bin])
+</code></pre><ol start="3"><li>在contentView中定义数据</li></ol><pre><code class="language-swift">struct ContentView: View {
+    let bagContents = [currencies,tools]
+}
+</code></pre><ol start="4"><li>显示数据</li></ol><pre><code class="language-swift">var body: some View {
+    List(bagContents, children: \.content){ row in
+        Image(systemName: row.icon)
+        Text(row.name)
+    }
+}
+</code></pre><p>最终结果:</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxtzpns2luj309q0l1t8v.jpg" alt="Simulator Screen Shot - iPhone 12 - 2021-12-28 at 23.57.21"/></p><h2>How it works…</h2><p>首先我们定义了<strong>Backpack</strong>，拥有嵌套结构，能表示多个层级。</p><p>我们显示List时，指定children为content字段。</p><pre><code class="language-swift">List(bagContents, children: \.content){ row in
+    Image(systemName: row.icon)
+    Text(row.name)
+}
+</code></pre>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑024-用ScrollViewReader控制滚动]]></title>
+        <id>/2021/11/27/SwiftUI专辑-024-用ScrollViewReader控制滚动</id>
+        <link href="https://gouxin.fun/2021/11/27/SwiftUI专辑-024-用ScrollViewReader控制滚动"/>
+        <updated>2021-11-27T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+<strong>ScrollViewReader</strong>允许你通过代码控制滚动到某个Index处，这个Index甚至可能在当前屏幕中并不可见。</p><p>比如：自动滚动到新添加的item，自动滚动到最近更新的item等等。</p><p>在本节中，我们将创建一个显示从 A 到 Q 的字符列表。屏幕顶部的按钮将在单击时以编程方式从列表顶部滚动到列表末尾。屏幕底部的另一个按钮将允许我们从底部向上滚动到列表中间。</p><h2>Getting ready</h2><p>首先新建一个swiftui项目<strong>ScrollViewReaders</strong></p><h2>How to do it…</h2><ol><li>首先创建一个数据结构：CharacterInfo</li></ol><pre><code class="language-swift">struct CharacterInfo: Identifiable {
+    var name: String
+    var id: Int
+}
+</code></pre><ol start="2"><li>准备数据</li></ol><pre><code class="language-swift"> let charArray = [
+    CharacterInfo(name: &quot;a.circle.fill&quot;, id: 0),
+    CharacterInfo(name: &quot;b.circle.fill&quot;, id: 1),
+    CharacterInfo(name: &quot;c.circle.fill&quot;, id: 2),
+    CharacterInfo(name: &quot;d.circle.fill&quot;, id: 3),
+    CharacterInfo(name: &quot;e.circle.fill&quot;, id: 4),
+    CharacterInfo(name: &quot;f.circle.fill&quot;, id: 5),
+    CharacterInfo(name: &quot;g.circle.fill&quot;, id: 6),
+    CharacterInfo(name: &quot;h.circle.fill&quot;, id: 7),
+    CharacterInfo(name: &quot;i.circle.fill&quot;, id: 8),
+    CharacterInfo(name: &quot;j.circle.fill&quot;, id: 9),
+    CharacterInfo(name: &quot;k.circle.fill&quot;, id: 10),
+    CharacterInfo(name: &quot;l.circle.fill&quot;, id: 11),
+    CharacterInfo(name: &quot;m.circle.fill&quot;, id: 12),
+    CharacterInfo(name: &quot;n.circle.fill&quot;, id: 13),
+    CharacterInfo(name: &quot;o.circle.fill&quot;, id: 14),
+    CharacterInfo(name: &quot;p.circle.fill&quot;, id: 15),
+    CharacterInfo(name: &quot;q.circle.fill&quot;, id: 16),
+]
+</code></pre><ol start="3"><li>替换默认的Text为Scrollview和ScrollViewReader</li></ol><pre><code class="language-swift">var body: some View {
+    ScrollView {
+        ScrollViewReader { value in
+            Button(&quot;go to q&quot;) {
+                value.scrollTo(16)
+            }.padding().background(Color.yellow)
+        }
+    }
+}
+</code></pre><ol start="4"><li>将列表加进去</li></ol><pre><code class="language-swift">var body: some View {
+    ScrollView {
+        ScrollViewReader { value in
+            Button(&quot;go to q&quot;) {
+                value.scrollTo(16)
+            }.padding().background(Color.yellow)
+            ForEach(charArray) { image in
+                Image(systemName: image.name)
+                    .id(image.id)
+                    .font(.largeTitle)
+                    .foregroundColor(Color.yellow)
+                    .frame(width: 90, height: 90)
+                    .background(Color.blue)
+                    .padding()
+            }
+        }
+    }
+}
+</code></pre><ol start="5"><li>再加个按钮，滚动到G</li></ol><pre><code class="language-swift">
+var body: some View {
+    ScrollView {
+        ScrollViewReader { value in
+            ....
+            Button(&quot;Go to G&quot;) { 
+                        value.scrollTo(6, anchor: .bottom)
+                        }.padding().background(Color.yellow)            
+        }
+    }
+}
+</code></pre><p>最终结果</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxtqebas96j309j0jh3yt.jpg" alt="20211228183732"/></p><h2>How it works…</h2><p> <strong>CharacterInfo</strong> 遵循<strong>Identifiable</strong> 协议，包含2个属性  <strong>name</strong> 和 <strong>id</strong>。 <strong>id</strong> 是必须的，<strong>ScrollViewReader</strong> 用这个来定位每个item。就行你的房间号一样，ScrollView知道该往什么地方滚动。</p><p>我们将ScrollViewReader嵌套在ScrollView中，这样就能够使用<strong>scrollTo()</strong> 方法。</p><p> <strong>scrollTo()</strong> 方法有个 <strong>anchor</strong> 参数，用来指定我们想滚动到的位置， 他是某个item的id 。第二个参数用来指定Item滚动到顶部、底部、还是中心等。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑023-LazyHGrid和LazyVGrid]]></title>
+        <id>/2021/11/26/SwiftUI专辑-023-LazyHGrid和LazyVGrid</id>
+        <link href="https://gouxin.fun/2021/11/26/SwiftUI专辑-023-LazyHGrid和LazyVGrid"/>
+        <updated>2021-11-26T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+和Lazy stack一样，lazy grid也使用lazy loading来显示一系列的items。items只会在即将出现在屏幕上时才会初始化。</p><p>从上到下的使用LazyVGrid， 从左到右的使用LazyHGrid。</p><h2>Getting ready</h2><p>我们创建一个新项目<strong>LazyGrids</strong></p><h2>How to do it…</h2><ol><li>首先在ContentView中创建LazyVGrid的布局信息， <strong>GridItem</strong>用来帮助配置lazy grid的布局</li></ol><pre><code class="language-swift">let coulumSpe = [GridItem(.adaptive(minimum: 100))]
+</code></pre><ol start="2"><li>创建LazyHGrid的布局信息</li></ol><pre><code class="language-swift">let rowSpec = [GridItem(.flexible()),
+                   GridItem(.flexible()),
+                   GridItem(.flexible())]
+</code></pre><ol start="3"><li>准备个颜色数组，之后用在item上</li></ol><pre><code class="language-swift">let colors: [Color] = [.green, .red, .yellow, .blue]
+</code></pre><ol start="4"><li>替换原来的Text为VStack， ScrollView，<strong>LazyVGrid</strong></li></ol><pre><code class="language-swift">VStack {
+  ScrollView {
+      LazyVGrid(columns: coulumSpe, spacing: 20) {
+          ForEach(1 ... 999, id: \.self) { index in
+              Text(&quot;Item \(index)&quot;)
+                  .padding(EdgeInsets(top: 30,leading: 15, bottom: 30, trailing: 15))
+                  .background(colors[index % colors.count])
+                  .clipShape(Circle())
+                  .border(Color.red)
+          }
+      }
+  }
+}
+</code></pre><ol start="5"><li>在来一个ScrollView显示LazyHGrid，注意调整scrollview方向</li></ol><pre><code class="language-swift">ScrollView(.horizontal) {
+    LazyHGrid(rows: coulumSpe, spacing: 20) {
+        ForEach(1 ... 999, id: \.self) { index in
+            Text(&quot;Item \(index)&quot;)
+                .foregroundColor(.white)
+              .padding(EdgeInsets(top: 30,leading: 15, bottom: 30, trailing: 15))
+                .background(colors[index % colors.count])
+                .clipShape(Capsule())
+        }
+    }
+}
+</code></pre><p>最终结果:</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxtpcxubenj309o0jjt9q.jpg" alt="20211228180104"/></p><h2>How it works…</h2><p> lazy grid最基本的用法就是ScrollView中嵌套<strong>LazyVGrid</strong> 或者 <strong>LazyHGrid</strong></p><pre><code class="language-swift">ScrollView {
+    LazyHGrid(columns: columnsSpec) {
+        // Items to be displayed
+    }
+}
+</code></pre><p>其中最重要的是要理解如何定义行和列。比如上面的，我们的<strong>LazyVGrid</strong>只定义了包含一个<strong>GridItem</strong>的数组，但是却显示了3列。这是怎么回事？原因在于<strong>GridItem</strong>是如何定义的。我们定义<strong>GridItem(.adaptive(minimum: 100))</strong>，就是告诉SwiftUI每个item至少100宽，然后一行尽可能多的放置Item，因此每一行的个数可能在横屏和竖屏下不一样。</p><p>如果你想指定每一行的个数，你可以使用 <strong>GridItem(.flexible())</strong>。就像我们上面定义的</p><pre><code class="language-swift">let rowSpec = [
+    GridItem(.flexible()),
+    GridItem(.flexible()),
+    GridItem(.flexible())
+]
+</code></pre><p>添加3个flexible的GridItem会将可用 空间3等分。然后用那段空间显示，如果空间用不完，那么就是空白。</p><h2>Api详情</h2><h3>LazyVGrid</h3><pre><code class="language-swift">//注意有个pinnedViews，和LazyVStack一样，可以设置一直悬浮的header/footer
+init(columns: [GridItem], alignment: HorizontalAlignment = .center, spacing: CGFloat? = nil, pinnedViews: PinnedScrollableViews = .init(), content: () -&gt; Content)
+</code></pre><pre><code class="language-swift">LazyVGrid(columns: coulumSpe, spacing: 20, pinnedViews: .sectionHeaders) {
+    Section(header: Text(&quot;this is section header&quot;)) {
+        ForEach(1 ... 999, id: \.self) { index in
+            Text(&quot;Item \(index)&quot;)
+                .padding(EdgeInsets(top: 30,leading: 15, bottom: 30, trailing: 15))
+                .background(colors[index % colors.count])
+                .clipShape(Circle())
+                .border(Color.red)
+        }
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxtpsgjzngj30hg0j4abp.jpg" alt="image-20211228181716473"/></p><h3>LazyHGrid</h3><pre><code class="language-swift">//注意有个pinnedViews，和LazyVStack一样，可以设置一直悬浮的header/footer
+init(rows: [GridItem], alignment: VerticalAlignment = .center, spacing: CGFloat? = nil, pinnedViews: PinnedScrollableViews = .init(), content: () -&gt; Content)
+</code></pre>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑022-使用LazyHStack和LazyVStack]]></title>
+        <id>/2021/11/25/SwiftUI专辑-022-使用LazyHStack和LazyVStack</id>
+        <link href="https://gouxin.fun/2021/11/25/SwiftUI专辑-022-使用LazyHStack和LazyVStack"/>
+        <updated>2021-11-25T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+SwiftUI 2.0 引入了<strong>LazyHStack</strong>和<strong>LazyVStack</strong>。它们的使用类似于常规的<strong>HStack</strong>和<strong>VStack</strong>，但提供了延迟加载。仅在content在设备的屏幕上变得可见前，List才开始加载content，允许用户无缝地滚动浏览大型数据集，没有明显的 UI 延迟或较长的加载时间。让我们创建一个demo来看看它在实践中是如何工作的。</p><h2>Getting ready</h2><p>首先创建一个Swiftui工程：<strong>LazyStacks</strong></p><h2>How to do it…</h2><ol><li>首先我们创建一个Cell：ListRow，他会在初始化时打印一些信息</li></ol><pre><code class="language-swift">struct ListRow: View {
+    let id: Int
+    let type: String
+    init(id: Int, type: String){
+        print(&quot;Loading \(type) item \(id)&quot;)
+        self.id = id
+        self.type = type
+    }
+
+    var body: some View {
+        Text(&quot;\(type) \(id)&quot;).padding()
+    }
+}
+</code></pre><ol start="2"><li>添加VStack， ScrollView， LazyHStack</li></ol><pre><code class="language-swift">var body: some View {
+    VStack {
+        ScrollView(.horizontal) {
+            LazyHStack {
+                ForEach(1 ... 10000, id: \.self) { item in
+                    ListRow(id: item, type:&quot;Horizontal&quot;)
+                }
+            }
+        }.frame(height: 100, alignment: .center)
+    }
+}
+</code></pre><ol start="3"><li>再添加一个ScrollView， LazyVStack</li></ol><pre><code class="language-swift">ScrollView {
+    LazyVStack {
+        ForEach(1 ... 10000, id: \.self) { item in
+            ListRow(id: item, type: &quot;Vertical&quot;)
+        }
+    }.border(Color.blue)
+}
+</code></pre><p>运行</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxtga3v1pej30a30jq0t7.jpg" alt="20211228124742"/></p><p>当我们滚动时，能在控制台看到对应的初始化信息。</p><h2>How it works…</h2><p>正如我们在本节的介绍中提到的，<strong>LazyHStack</strong>和<strong>LazyVStack</strong>视图相对于常规<strong>HStack</strong>和<strong>VStack</strong>视图的主要优点是前者在显示item之前才加载它们，而后者在运行时一次加载所有item。</p><p>我们在滚动时，看到控制台显示初始化log，这是延迟加载。只有即将显示在屏幕上的item才会被初始化。</p><h2>Api详情</h2><h3>LazyHStack</h3><pre><code class="language-swift">//注意比普通Stack多了个pinnedViews，你可以设置sectionHeader或者sectionFooter悬浮在顶部/底部
+init(alignment: VerticalAlignment = .center, spacing: CGFloat? = nil, pinnedViews: PinnedScrollableViews = .init(), content: () -&gt; Content)
+</code></pre><pre><code class="language-swift">ScrollView {
+    LazyVStack(pinnedViews: .sectionHeaders) {
+        Section(header: Text(&quot;this is section header&quot;)) {
+            ForEach(1 ... 10000, id: \.self) { item in
+                ListRow(id: item, type: &quot;Vertical&quot;)
+            }
+        }
+    }
+}.border(Color.blue)
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxtgonw9q4j30is0hsdgd.jpg" alt="image-20211228130214194"/></p><h3>LazyVStack</h3><pre><code class="language-swift">//类似
+init(alignment: HorizontalAlignment = .center, spacing: CGFloat? = nil, pinnedViews: PinnedScrollableViews = .init(), content: () -&gt; Content)
+</code></pre>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑021-使用可搜索列表]]></title>
+        <id>/2021/11/24/SwiftUI专辑-021-使用可搜索列表</id>
+        <link href="https://gouxin.fun/2021/11/24/SwiftUI专辑-021-使用可搜索列表"/>
+        <updated>2021-11-24T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+<strong>列表</strong>视图可以包含一个到无数个item。随着列表中item数的增加，我们通常会提供在列表中搜索特定item的能力。</p><p>本章，我们将介绍<strong>.searchable()</strong>修饰符并讨论如何使用它来搜索列表中的item。</p><h2>Getting ready</h2><p>首先，创建一个新的SwiftUI项目<strong>SearchableLists</strong></p><h2>How to do it…</h2><ol><li>准备数据</li></ol><pre><code class="language-swift">@State private var searchText = &quot;&quot;
+let messages = [
+    &quot;Dad, can you lend me money?&quot;,
+    &quot;Nada. Does money grow on trees?&quot;,
+    &quot;What is money made out of?&quot;,
+    &quot;Paper&quot;,
+    &quot;Where does paper come from?&quot;,
+    &quot;Huh.....&quot;,
+]
+</code></pre><ol start="2"><li>添加NavigationView和List</li></ol><pre><code class="language-swift">var body: some View {
+    NavigationView {
+        List {
+          TextField(&quot;search&quot;, text: $searchText)
+            ForEach(searchResults, id: \.self) { msg in
+                Text(msg)
+            }
+        }.navigationBarTitle(&quot;Order Number&quot;)
+            .searchable(text: $searchText)
+    }
+}
+</code></pre><ol start="3"><li>实现searchResults</li></ol><pre><code class="language-swift">var searchResults: [String] {
+  if self.searchText.isEmpty {
+      return self.messages
+  } else {
+      return self.messages.filter {
+          $0.lowercased().contains(searchText.lowercased())
+      }
+  }
+}
+</code></pre><p>运行</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxtdmnfnjvj30iw0qcq40.jpg" alt="image-20211228111630217"/></p><h2>How it works…</h2><p><strong>searchText</strong>保存正在搜索的值并作为参数传递给<strong>.searchable</strong>修饰符。每次<strong>searchText</strong>的值更改时，都会计算计算属性<strong>searchResults</strong>。最后，在<strong>ForEach</strong>结构中使用<strong>searchResults</strong>的值来显示基于搜索文本的过滤项目列表。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑020-将集合绑定到List]]></title>
+        <id>/2021/11/23/SwiftUI专辑-020-将集合绑定到List</id>
+        <link href="https://gouxin.fun/2021/11/23/SwiftUI专辑-020-将集合绑定到List"/>
+        <updated>2021-11-23T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+在 SwiftUI 中一直可以编辑列表，但在 WWDC 2021 和 SwiftUI 3 之前，这样做非常 效率低下，因为 SwiftUI 不支持绑定到集合。让我们在集合上使用绑定并讨论它现在如何以及为什么更好地工作。</p><h2>Getting ready</h2><p>让我们创建一个新的SwiftUI项目<strong>EditableListsFields</strong></p><h2>How to do it…</h2><ol><li>首先创建一个数据结构<strong>TodoItem</strong></li></ol><pre><code class="language-swift">struct TodoItem: Identifiable {
+    let id = UUID()
+    var title: String
+    init(_ someTitle:String){
+        title = someTitle
+    }
+}
+</code></pre><ol start="2"><li>然后添加一个State</li></ol><pre><code class="language-swift">@State var todos = [
+      TodoItem(&quot;Eat&quot;),
+      TodoItem(&quot;Sleep&quot;),
+      TodoItem(&quot;Code&quot;)
+]
+</code></pre><ol start="3"><li>替换默认的Text为List</li></ol><pre><code class="language-swift">var body: some View {
+    List($todos) { $todo in
+        TextField(&quot;Number&quot;, text: $todo.title)
+    }
+}
+</code></pre><p>运行</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxtctmjiuej30w80myq3n.jpg" alt="image-20211228104834018"/></p><h2>How it works…</h2><p>让我们先看看 在 SwiftUI 3 之前如何处理可编辑列表。 在 SwiftUI 3 之前，可编辑项目列表的代码将使用列表索引来创建到集合的绑定，如下所示：</p><pre><code class="language-swift">List(0..&lt;todos.count) { index in
+  TextField(&quot;Todo&quot;, text: $todos[index].title)
+}
+</code></pre><p>这样的代码不仅速度慢，而且编辑单个项目会导致 SwiftUI 重新渲染整个元素<strong>列表</strong>，从而导致 UI 闪烁和更新缓慢。</p><p>使用 SwiftUI 3，我们可以将绑定传递给元素集合，SwiftUI 将在内部处理 绑定到闭包中指定的当前元素。由于我们的整个集合都符合<strong>Identifiable</strong>协议，因此我们的每个列表项都可以通过其<strong>id</strong>参数来唯一标识；因此，从列表中添加或删除项目不会更改列表项目索引，也不会导致整个列表重新呈现。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑019-添加sections到List中]]></title>
+        <id>/2021/11/22/SwiftUI专辑-019-添加sections到List中</id>
+        <link href="https://gouxin.fun/2021/11/22/SwiftUI专辑-019-添加sections到List中"/>
+        <updated>2021-11-22T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+本章我们将用section实现一个静态List。</p><h2>Getting ready</h2><p>首先，我们新建一个SwiftUI项目<strong>ListWithSections</strong></p><h2>How to do it…</h2><ol><li>首先添加一个<strong>NavigationView</strong>，和List。</li></ol><pre><code class="language-swift">NavigationView {
+    List {
+
+    }.navigationTitle(&quot;Continents and Countries&quot;)
+        .navigationBarTitleDisplayMode(.inline)                
+}
+</code></pre><ol start="2"><li>添加sections到List中</li></ol><pre><code class="language-swift"> List {
+    Section(header: Text(&quot;Africa&quot;)) {
+        Text(&quot;Nigeria&quot;)
+        Text(&quot;Ghana&quot;)
+        Text(&quot;Kenya&quot;)
+        Text(&quot;Senegal&quot;)
+    }
+    Section(header: Text(&quot;Europe&quot;)) {
+        Text(&quot;Spain&quot;)
+        Text(&quot;France&quot;)
+        Text(&quot;Sweden&quot;)
+        Text(&quot;Finland&quot;)
+        Text(&quot;UK&quot;)
+    }
+}
+</code></pre><p>运行，我们将看到</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxrdcyfgwnj30jo0u4t9t.jpg" alt="image-20211226173605636"/></p><h2>How it works…</h2><p><strong>Section</strong>用来将items组合成group。</p><p>section可以通过一个可选的header，用于显示在group的顶部。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑018-移动List中的rows]]></title>
+        <id>/2021/11/21/SwiftUI专辑-018-移动List中的rows</id>
+        <link href="https://gouxin.fun/2021/11/21/SwiftUI专辑-018-移动List中的rows"/>
+        <updated>2021-11-21T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+本章我们将实现一个List， 允许用户移动，重新组织rows。</p><h2>Getting ready</h2><p>首先创建一个新的SwiftUI项目<strong>MovingListRows</strong></p><h2>How to do it…</h2><ol><li>还是准备数据</li></ol><pre><code class="language-swift">@State var countries = [&quot;USA&quot;, &quot;Canada&quot;, &quot;England&quot;, &quot;Cameroon&quot;, &quot;South Africa&quot;, &quot;Mexico&quot; , &quot;Japan&quot;, &quot;South Korea&quot;]
+</code></pre><ol start="2"><li>构建一个NavigationView, EditButton, List，只是ForEach的时候我们添加上<strong>onMove</strong></li></ol><pre><code class="language-swift">struct ContentView: View {
+    @State var countries = [&quot;USA&quot;, &quot;Canada&quot;, &quot;England&quot;, &quot;Cameroon&quot;, &quot;South Africa&quot;, &quot;Mexico&quot; , &quot;Japan&quot;, &quot;South Korea&quot;]
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(countries, id: \.self) { country in
+                    Text(country)
+                }.onMove(perform: self.moveRow)
+            }.navigationTitle(&quot;Countries&quot;)
+                .navigationBarTitleDisplayMode(.inline)
+                .navigationBarItems(trailing: EditButton())
+        }
+    }
+   
+    private func moveRow(source: IndexSet, destination: Int){
+            
+    }
+}
+</code></pre><ol start="3"><li>实现moveRow</li></ol><pre><code class="language-swift">private func moveRow(source: IndexSet, destination: Int){   
+  countries.move(fromOffsets: source, toOffset: destination)
+}
+</code></pre><p>当我们点击Edit时</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxrcp8ng6zj30ig0r03zb.jpg" alt="image-20211226171317473"/></p><h2>How it works…</h2><p>首先我们需要一个EditButton来进入编辑模式。</p><p>在ForEach时，我们提供onMove这个modifier，当我们移动时会触发对应回调。</p><p><strong>moveRow</strong>函数有两个参数，<strong>source</strong> 和<strong>destination</strong>。分别代表当前index和移动后的index。</p><p>在回调中，我们修改数据源移动数据位置。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑017-创建一个可编辑的List]]></title>
+        <id>/2021/11/20/SwiftUI专辑-017-创建一个可编辑的List</id>
+        <link href="https://gouxin.fun/2021/11/20/SwiftUI专辑-017-创建一个可编辑的List"/>
+        <updated>2021-11-20T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+本章我们将演示，如何通过EditButton来让列表进入可编辑模式。</p><h2>Getting ready</h2><p>新建一个SwiftUI项目<strong>ListRowEdit</strong></p><h2>How to do it…</h2><p>我们将沿用上个例子的代码</p><ol><li>复制上个项目中ContentView中的代码过来</li></ol><pre><code class="language-swift">struct ContentView: View {
+    @State var countries = [&quot;USA&quot;, &quot;Canada&quot;, &quot;England&quot;, &quot;Cameroon&quot;, &quot;South Africa&quot;, &quot;Mexico&quot; , &quot;Japan&quot;, &quot;South Korea&quot;]
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(countries, id: \.self) { country in
+                    Text(country)
+                }.onDelete(perform: self.deleteItem)
+            }.navigationTitle(&quot;Countries&quot;)
+                .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+   
+    func deleteItem(at indexSet: IndexSet) {
+        self.countries.remove(atOffsets: indexSet)
+    }
+}
+</code></pre><ol start="2"><li>为navigation bar添加一个editButton</li></ol><pre><code class="language-swift">.navigationBarItems(trailing: EditButton())
+</code></pre><ol start="3"><li>点击Edit按钮，进入编辑模式，点击“-” ，将出现delete按钮，选择delete，将删除Item</li></ol><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxrcaycba8j30hi0j8q3g.jpg" alt="image-20211226165934238"/></p><h2>How it works…</h2><p><strong>.navigationBarItems(trailing: EditButton())</strong>在右上角增加了一个按钮。点击后，将在每个Cell前出现一个减号。点击减号，将出现delete按钮，选择delete将删除cell。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑016-从List中删除rows]]></title>
+        <id>/2021/11/19/SwiftUI专辑-016-从List中删除rows</id>
+        <link href="https://gouxin.fun/2021/11/19/SwiftUI专辑-016-从List中删除rows"/>
+        <updated>2021-11-19T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+之前我们已经知道了如何添加rows。
+现在我们来学习一下如何用swipe手势删除rows。</p><h2>Getting ready</h2><p>首先，我们新建一个SwiftUI项目:<strong>ListRowDelete</strong></p><h2>How to do it…</h2><ol><li>首先，在ContentView中准备一点数据</li></ol><pre><code class="language-swift">@State var countries = [&quot;USA&quot;, &quot;Canada&quot;, &quot;England&quot;, &quot;Cameroon&quot;, &quot;South Africa&quot;, &quot;Mexico&quot; , &quot;Japan&quot;, &quot;South Korea&quot;]
+</code></pre><ol start="2"><li>在body中显示出来，并加上<strong>onDelete</strong></li></ol><pre><code class="language-swift">struct ContentView: View {
+    @State var countries = [&quot;USA&quot;, &quot;Canada&quot;, &quot;England&quot;, &quot;Cameroon&quot;, &quot;South Africa&quot;, &quot;Mexico&quot; , &quot;Japan&quot;, &quot;South Korea&quot;]
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(countries, id: \.self) { country in
+                    Text(country)
+                }.onDelete(perform: self.deleteItem)
+            }.navigationTitle(&quot;Countries&quot;)
+                .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+  
+    func deleteItem(at indexSet: IndexSet) {
+        
+    }
+}
+</code></pre><ol start="3"><li>实现deleteItem</li></ol><pre><code class="language-swift">private func deleteItem(at indexSet: IndexSet){
+    self.countries.remove(atOffsets: indexSet)
+}
+</code></pre><p>最终结果</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxrbw8m86tj30jg0rsdgp.jpg" alt="image-20211226164525655"/></p><h2>How it works…</h2><p>我们看到了一个新的modifier: <strong>.onDelete</strong> 。他会在我们点击删除时，执行设置的回调。</p><p>本例中点击后会执行<strong>deleteItem</strong>。这个函数有一个<strong>IndexSet</strong>参数，他里面包含需要被删除的index。</p><p>然后我们修改数据源，移除这些Index。</p><p>当然，我们还可以通过添加<strong>EditButton</strong>来进入编辑模式，实现对rows的删除。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑015-添加rows到List中]]></title>
+        <id>/2021/11/18/SwiftUI专辑-015-添加rows到List中</id>
+        <link href="https://gouxin.fun/2021/11/18/SwiftUI专辑-015-添加rows到List中"/>
+        <updated>2021-11-18T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+用户对列表最常见的操作无外乎：增、删、改。
+本章将介绍如何增加rows。</p><h2>Getting ready</h2><p>新建一个SwiftUI工程，叫做<strong>ListRowAdd</strong></p><h2>How to do it…</h2><p>让我们最顶部创建一个Button，用于往列表中加rows。</p><ol><li>在<strong>ContentView</strong>中创建一个数组</li></ol><pre><code class="language-swift">@State var numbers = [1,2,3,4]
+</code></pre><ol start="2"><li>添加一个<strong>NavigationView</strong>和一个<strong>List</strong></li></ol><pre><code class="language-swift">struct ContentView: View {
+    @State var numbers = [1,2,3,4]
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(numbers, id: \.self) { number in
+                    Text(&quot;\(number)&quot;)
+                }
+            }
+        }
+    }
+}
+</code></pre><ol start="3"><li>给List添加一个NavigationBarTitle</li></ol><pre><code class="language-swift">.navigationTitle(&quot;NumberList&quot;)
+.navigationBarTitleDisplayMode(.inline)
+</code></pre><ol start="4"><li>给navigation bar添加一个button</li></ol><pre><code class="language-swift">.navigationBarItems(trailing: Button(&quot;Add&quot;, action: self.addItemToRow))
+</code></pre><ol start="5"><li>实现addItemToRow方法</li></ol><pre><code class="language-swift">private func addItemToRow() {
+    self.numbers.append(Int.random(in: 5 ..&lt; 100))
+}
+</code></pre><p>最终，我们点击add时，能够看到新的cell。</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gxrb7om4nlj30im0nk3yw.jpg" alt="image-20211226162149439"/></p><h2>How it works…</h2><p>我们定义了一个State： numbers，然后使用ForEach，将numbers显示出来。</p><p>我们使用<strong>navigationBarTitle</strong>增加了一个navigationBar。</p><p>然后使用<strong>navigationbartItems</strong>在右边增加了一个按钮，并绑定点击事件。</p><p>我们在点击事件中，修改State：numbers。由于数据源变了，View自动刷新，将新添加的数字显示了出来。</p><p>上面的例子可能有点小问题，注意我们的ForEach中使用了<!-- -->\<!-- -->.self。而ForEach的id应该是唯一的，我们的随机数可能产生相同的数字，而相同的id可能导致一些异常行为。这里只是一个例子，我们只要记住id应该具有唯一性就好。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑014-List中使用自定义Cell]]></title>
+        <id>/2021/11/17/SwiftUI专辑-014-List中使用自定义Cell</id>
+        <link href="https://gouxin.fun/2021/11/17/SwiftUI专辑-014-List中使用自定义Cell"/>
+        <updated>2021-11-17T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+如果我们每次都要用到相同的Cell，而每次都重复写一些HStack肯定不是一个好的选择，此时我们可以把这些View封装成一个Cell，增加代码的可重用性。</p><h2>Getting ready</h2><p>首先，新建一个SwiftUI项目：<strong>CustomRows</strong></p><h2>How to do it…</h2><p>首先，把上个项目的代码复制过来。</p><ol><li>新建一个SwiftUI View文件<strong>WeatherRow</strong>，在这里定义cell</li></ol><pre><code class="language-swift">struct WeatherRow: View {
+    var weather: WeatherInfo
+    var body: some View {
+        HStack {
+            Image(systemName: weather.image)
+                .frame(width: 50, alignment: .leading)
+            Text(&quot;\(weather.temp)°F&quot;)
+                .frame(width: 80, alignment: .leading)
+            Text(weather.city)
+        }
+        .font(.system(size: 25))
+        .padding()
+    }
+}
+</code></pre><ol start="2"><li>如果你要预览的话，可以在<strong>WeatherRow_Previews</strong>增加点数据</li></ol><pre><code class="language-swift">struct WeatherRow_Previews: PreviewProvider {
+    static var previews: some View {
+        WeatherRow(weather: WeatherInfo(image: &quot;snow&quot;, temp: 5, city:&quot;New York&quot;))
+    }
+}
+</code></pre><ol start="3"><li>修改ContentView.swift，使用我们的WeatherRow</li></ol><pre><code class="language-swift">List {
+    ForEach(self.weatherData) { weather in
+       WeatherRow(weather: weather)
+    }
+}.listStyle(.grouped)
+
+</code></pre><p>最终得到同样的结果：</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxraiqq2f9j30iq0wowfo.jpg" alt="image-20211226155748936"/></p><h2>How it works…</h2><p>我们将cell的代码单独抽离到WeatherRow中，其他地方如果需要相同的View，那么就可以直接使用WeatherRow了。</p>]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[SwiftUI专辑013-创建static items List]]></title>
         <id>/2021/11/16/SwiftUI专辑-013-创建static-items-List</id>
