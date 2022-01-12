@@ -2,11 +2,2279 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://gouxin.fun/</id>
     <title>Gx'sBlog Blog</title>
-    <updated>2021-12-01T00:00:00.000Z</updated>
+    <updated>2022-01-06T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://gouxin.fun/"/>
     <subtitle>Gx'sBlog Blog</subtitle>
     <icon>https://gouxin.fun/img/favicon.ico</icon>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑064-创建一个card stack]]></title>
+        <id>/2022/01/06/SwiftUI专辑-064-实现点赞动画</id>
+        <link href="https://gouxin.fun/2022/01/06/SwiftUI专辑-064-实现点赞动画"/>
+        <updated>2022-01-06T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+还记得我们自定义UICollectionLayout时做的那种卡片效果么，多个卡片叠在一起，我们可以用滑动手势将顶部卡片移走，显示出下面的卡片。现在我们用swiftui实现同样的功能。</p><h2>Getting ready</h2><p>首先，创建一个新项目：<strong>SwipeableCards</strong></p><h2>How to do it…</h2><ol><li>首先，我们创建一个User数据结构代表每个卡片的数据</li></ol><pre><code class="language-swift">struct User: Identifiable, Equatable {
+    var id: Int
+    let firstName: String
+    let lastName: String
+    let start: Color
+    let end: Color
+}
+</code></pre><ol start="2"><li>在ContentView中准备一点数据</li></ol><pre><code class="language-swift">struct ContentView: View {
+    @State  private var users: [User] = [
+        User(id: 0, firstName: &quot;Mark&quot;, lastName: &quot;Bennett&quot;, start: .red, end: .green),
+        User(id: 1, firstName: &quot;John&quot;, lastName: &quot;Lewis&quot;, start: .green, end: .orange),
+        User(id: 2, firstName: &quot;Joan&quot;, lastName: &quot;Mince&quot;, start: .blue, end: .green),
+        User(id: 3, firstName: &quot;Liz&quot;, lastName: &quot;Garret&quot;, start: .orange, end: .purple),
+        User(id: 4, firstName: &quot;Lola&quot;, lastName: &quot;Pince&quot;, start: .yellow, end: .gray),
+        User(id: 5, firstName: &quot;Jim&quot;, lastName: &quot;Beam&quot;, start: .pink, end: .yellow),
+        User(id: 6, firstName: &quot;Tom&quot;, lastName: &quot;Waits&quot;, start: .purple, end: .blue),
+        User(id: 7, firstName: &quot;Mike&quot;, lastName: &quot;Rooney&quot;, start: .black, end: .gray),
+        User(id: 8, firstName: &quot;Jane&quot;, lastName: &quot;Doe&quot;, start: .red, end: .green),
+    ]
+    var body: some View {
+    }
+}
+</code></pre><ol start="3"><li>添加一个CardView到ContentView中</li></ol><pre><code class="language-swift">var body: some View {
+    GeometryReader { geometry in
+        ZStack {
+            ForEach(users) { user in
+                if user.id &gt; users.maxId - 4 {
+                    CardView(user: user, onRemove: { removedUser in
+                        users.removeAll { $0.id == removedUser.id }
+                    }).animation(.spring(), value: users)
+                        .frame(width: users.cardWidth(in: geometry, userId: user.id), height: 400)
+                        .offset(x: 0, y: users.cardOffset(userId: user.id))
+                }
+            }
+        }
+    }.padding()
+}
+</code></pre><ol start="4"><li>再添加一个extention计算maxId</li></ol><pre><code class="language-swift">extension Array where Element == User {
+    var maxId: Int { map { $0.id }.max() ?? 0 }
+    func cardOffset(userId: Int) -&gt; Double {
+        Double(count - 1 - userId) * 8.0
+    }
+    func cardWidth(in geometry: GeometryProxy, userId: Int) -&gt; Double {
+        geometry.size.width - cardOffset(userId: userId)
+    }
+}
+</code></pre><ol start="5"><li>实现我们的CardView</li></ol><pre><code class="language-swift">extension DragGesture.Value {
+    func percentage(in geometry: GeometryProxy) -&gt; Double {
+        abs(translation.width / geometry.size.width)
+    }
+}
+struct CardView: View {
+    @State private var translation: CGSize = .zero
+    private var user: User
+    private var onRemove: (_ user: User) -&gt; Void
+    private var threshold: CGFloat = 0.5
+    init(user: User, onRemove: @escaping (_ user: User)-&gt; Void) {
+        self.user = user
+        self.onRemove = onRemove
+    }
+    var body: some View {
+        GeometryReader { geometry in
+            VStack(alignment: .leading, spacing: 20) {
+                Rectangle()
+                    .fill(LinearGradient(gradient:Gradient(colors: [user.start, user.end]), startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .cornerRadius(10)
+                    .frame(width: geometry.size.width - 40, height: geometry.size.height * 0.65)
+                Text(&quot;\(user.firstName) \(user.lastName)&quot;)
+                    .font(.title)
+                    .bold()
+            }.padding(20)
+            .background(Color.white)
+            .cornerRadius(8)
+            .shadow(radius: 5)
+            .animation(.spring(), value: translation)
+            .offset(x: translation.width, y: 0)
+            .rotationEffect(.degrees(Double(translation.width / geometry.size.width) * 20), anchor: .bottom)
+            .gesture(
+                DragGesture().onChanged({ value in
+                    translation = value.translation
+                }).onEnded({ value in
+                    if value.percentage(in: geometry) &gt; self.threshold {
+                        onRemove(user)
+                    } else {
+                        translation = .zero
+                    }
+                })
+            )
+        }
+}
+
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gya5i4nw25j30b40b9mxi.jpg" alt="Figure_8.23_B17962"/></p><h2>How it works…</h2><p>尽管代码比较长，但是还是挺简单的。</p><p>我们通过限制，只显示4个卡片,如果你想要显示更多，可修改设置</p><pre><code class="language-swift">if user.id &gt; self.users.maxId - 4 {
+</code></pre>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑063-实现点赞动画]]></title>
+        <id>/2022/01/05/SwiftUI专辑-063-实现点赞动画</id>
+        <link href="https://gouxin.fun/2022/01/05/SwiftUI专辑-063-实现点赞动画"/>
+        <updated>2022-01-05T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+还记得各种直播间中的底部不断飘起各种颜色的小红心么？</p><p>我们来实现一个这种效果。</p><h2>Getting ready</h2><p>新建一个项目：<strong>FloatingHearts</strong></p><p>引入三方库：pod &quot;SwiftCubicSpline&quot;，来实现小红心漂移路径。</p><h2>How to do it…</h2><ol><li>首先，实现我们的动效</li></ol><pre><code class="language-swift">import SwiftCubicSpline
+
+struct MoveShakeScale: GeometryEffect {
+    private(set) var pct: CGFloat
+    private let xPosition = UIScreen.main.bounds.width/4 + CGFloat.random(in: -20..&lt;20)
+    private let scaleSpline = CubicSpline(points: [
+        Point(x: 0, y: 0.0),
+        Point(x: 0.3, y: 3.5),
+        Point(x: 0.4, y: 3.1),
+        Point(x: 1.0, y: 2.1),
+    ])
+
+    private let xSpline = CubicSpline(points: [
+        Point(x: 0.0,  y: 0.0),
+        Point(x: 0.15, y: 20.0),
+        Point(x: 0.3,  y: 12),
+        Point(x: 0.5,  y: 0),
+        Point(x: 1.0,  y: 8),
+    ])
+
+    var animatableData: CGFloat {
+        get { pct }
+        set { pct = newValue }
+    }
+    
+    func effectValue(size: CGSize) -&gt; ProjectionTransform {
+        let scale = scaleSpline[x: Double(pct)]
+        let xOffset = xSpline[x: Double(pct)]
+        let yOffset = UIScreen.main.bounds.height/2 - pct * UIScreen.main.bounds.height/4*3
+        let transTrasf = CGAffineTransform(translationX: xPosition + CGFloat(xOffset), y: yOffset)
+        let scaleTrasf = CGAffineTransform(scaleX: CGFloat(scale), y: CGFloat(scale))
+        return ProjectionTransform(scaleTrasf.concatenating(transTrasf))
+    }
+}
+</code></pre><ol start="2"><li>定义我们的桃心View</li></ol><pre><code class="language-swift">
+extension Color {
+    init(r: Double, g: Double, b: Double) {
+      self.init(red: r/255, green: g/255, blue: b/255)
+    }
+    static func random() -&gt; Color {
+        Color(r: .random(in: 100...144),
+              g: .random(in: 10...200),
+              b: .random(in: 200...244))
+    }
+}
+@available(iOS 15.0, *)
+struct Heart: View, Identifiable {
+    let id = UUID()
+    @State private var opacity = 1.0
+    @State private var scale: CGFloat = 1.0
+    @State private var toAnimate = false
+    var body: some View {
+        Image(systemName: &quot;heart.fill&quot;)
+            .foregroundColor(.random())
+            .opacity(opacity)
+            .modifier(MoveShakeScale(pct: toAnimate ? 1 : 0))
+            .animation(Animation.easeIn(duration:5.0), value: toAnimate)
+            .task {
+                toAnimate.toggle()
+                withAnimation(.easeIn(duration: 5)) {
+                    opacity = 0
+                }
+            }
+    }
+}
+@available(iOS 15.0, *)
+extension Heart: Equatable {
+    static func == (lhs: Heart, rhs: Heart) -&gt; Bool {
+        lhs.id == rhs.id
+    }
+}
+extension Array where Element: Equatable {
+    mutating func remove(object: Element) {
+        guard let index = firstIndex(of: object) else { return }
+        remove(at: index)
+    }
+
+}
+@available(iOS 15.0, *)
+class Hearts: ObservableObject {
+    @Published
+    private(set) var all: [Heart] = []
+
+    func new() {
+        let heart = Heart()
+        all.append(heart)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) {
+            self.all.remove(object: heart)
+        }
+    }
+}
+@available(iOS 15.0, *)
+struct HeartsView: View {
+    @ObservedObject
+    var hearts: Hearts
+    var body: some View {
+        ForEach(hearts.all) { $0 }
+    }
+}
+
+</code></pre><ol start="3"><li>添加到ContentView中</li></ol><pre><code class="language-swift">struct ContentView: View {
+    var hearts = Hearts()
+    var body: some View {
+        VStack {
+            Spacer()
+            HStack {
+                Button {
+                    hearts.new()
+                } label: {
+                    Image(systemName: &quot;heart&quot;)
+                        .font(.title)
+                        .frame(width: 80, height: 80)
+                        .foregroundColor(.white)
+                        .background(.blue)
+                        .clipShape(Circle())
+                        .shadow(radius: 10)
+                    }
+                    Spacer()
+                }.padding(.horizontal, 30)
+            }
+            .overlay(HeartsView(hearts: hearts))
+        }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy9wq95jpzj30b40o2q34.jpg" alt="kdkd"/></p><h2>How it works…</h2><p>基本思想是让四个动画并行：</p><ul><li>从底部移动到顶部</li><li>变淡</li><li>放大和缩小</li><li>向上移动时轻微晃动</li></ul><p>水平运动的曲线是一种锯齿形，我们使用<strong>SwiftCubicSpline</strong>库来进行插值。</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy9x5qfawzj31ia0emgm3.jpg" alt="image-20220111184118149"/></p><p>GeometryEffect返回一系列的transformation应用到View上。这里我们使用时间作为动画属性，计算出移动和缩放的值，把这两个作为一个transform应用到View上。</p><p>透明度的变化是线性的，不能是曲线，所以单独处理。</p><p>动画结束后似乎没有什么回调供我们调用，因此我们使用DispatchQueue.main.asyncAfter来移除</p><pre><code class="language-swift">DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) {
+    self.all.remove(object: heart)
+}
+</code></pre>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑062-创建一个弹性Header]]></title>
+        <id>/2022/01/04/SwiftUI专辑-062-创建一个弹性Header</id>
+        <link href="https://gouxin.fun/2022/01/04/SwiftUI专辑-062-创建一个弹性Header"/>
+        <updated>2022-01-04T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+什么是弹性Header？还记得你有个TableView，header是一个图片，当往下拉动tableview时，header的图片会放大。</p><p>本文将用SwiftUI实现一个类似的效果。</p><h2>Getting ready</h2><p>首先创建一个新的项目：<strong>StretchableHeader</strong></p><p>准备2张图片。</p><h2>How to do it…</h2><ol><li>我们创建一个Row， 类似于Tableview的cell</li></ol><pre><code class="language-swift">struct Row: View {
+    var body: some View {
+        HStack {
+            Image(&quot;avatar&quot;)
+                .resizable()
+                .frame(width: 50, height: 50)
+                .clipShape(Circle())
+            Spacer()
+            VStack(alignment: .trailing) {
+                Text(&quot;Billie Eilish&quot;)
+                    .fontWeight(.heavy)
+                Text(&quot;Happier Than Ever&quot;)
+            }
+        }.padding(.horizontal, 15)
+    }
+}
+</code></pre><ol start="2"><li>准备一个列表</li></ol><pre><code class="language-swift">struct ContentView: View {
+    
+    var body: some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack {
+                ForEach(0..&lt;6) { _ in
+                    Row()
+                    Divider()
+                }
+
+            }
+        }.edgesIgnoringSafeArea(.all)
+    }
+}
+</code></pre><ol start="3"><li>创建我们的弹性Header</li></ol><pre><code class="language-swift">extension GeometryProxy {
+    private var offset: CGFloat {
+        frame(in: .global).minY
+    }
+    var height: CGFloat {
+        size.height + (offset &gt; 0 ? offset : 0)
+    }
+
+    var verticalOffset: CGFloat {
+        offset &gt; 0 ? -offset : 0
+    }
+}
+
+struct StretchableHeader: View {
+    let imageName: String
+    var body: some View {
+        GeometryReader { geometry in
+            Image(self.imageName)
+                .resizable()
+                .scaledToFill()
+                .frame(width: geometry.size.width, height: geometry.height)
+                .offset(y: geometry.verticalOffset)
+        }.frame(height: 350)
+    }
+}
+</code></pre><ol start="4"><li>添加到Vstack中</li></ol><pre><code class="language-swift">struct ContentView: View {
+//...
+    VStack {
+        StretchableHeader(imageName: &quot;header&quot;)
+        ForEach(0..&lt;6) { _ in
+//...
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy9vw89n2pj30bo0oe75g.jpg" alt="image-20220111175733278"/></p><h2>How it works…</h2><p>诀窍在于我们计算verticalOffset的方式：当我们尝试向下滑动图像时，图像顶部变得大于<strong>0</strong>，因此我们应用负偏移来补偿由滑动引起的偏移，并且图像贴在顶部。</p><p>高度也是一样：当图像向上移动时，高度是正常的，但是当它被粘到顶部后向下移动时，高度会随着拖动而增加。</p><p>请注意，图像是用<strong>.scaledToFill()</strong>修改的，这样当e 高度增加， 宽度按比例增加，并且 有放大效应。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑061-使用Lottie动画]]></title>
+        <id>/2022/01/03/SwiftUI专辑-061-使用Lottie动画</id>
+        <link href="https://gouxin.fun/2022/01/03/SwiftUI专辑-061-使用Lottie动画"/>
+        <updated>2022-01-03T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+SwiftUi使用Lottie动画还得借助于UIKit。</p><p>我们来看看如何在SwiftUI中使用Lottie动画。</p><h2>Getting ready</h2><p>新建一个SwiftUI工程</p><p>pod中加入<code>pod &#x27;lottie-ios&#x27;</code></p><p>准备好一个lottie动画的json文件</p><h2>How to do it…</h2><ol><li>创建一个LottieAnimation,把UIKit的Lottie包裹为SwiftUI View</li></ol><pre><code class="language-swift">import Lottie
+import SnapKit
+
+struct LottieAnimation: UIViewRepresentable {
+    private let animationView = AnimationView()
+    var animationName = &quot;&quot;
+    @Binding var play: Bool
+
+    func makeUIView(context: Context) -&gt; some UIView {
+        let view = UIView()
+        animationView.animation = Animation.named(animationName)
+        animationView.contentMode = .scaleAspectFit
+        animationView.scalesLargeContentImage = true
+        view.addSubview(animationView)
+        animationView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        return view
+    }
+
+    func updateUIView(_ uiView: UIViewType, context: Context) {
+        guard play else { return }
+        animationView.play { _ in
+            play = false
+        }
+    }
+}
+</code></pre><ol start="2"><li>添加View到ContentView中</li></ol><pre><code class="language-swift">struct ContentView: View {
+    @State var play = false
+
+    var body: some View {
+        ZStack {
+            Color.yellow.edgesIgnoringSafeArea(.all)
+            VStack {
+                LottieAnimation(animationName:&quot;fill-heart&quot;,play: $play)
+                    .padding(.horizontal, 30)
+                Button {
+                      play = true
+                } label: {
+                    Text(&quot;Fill me!&quot;)
+                        .fontWeight(.heavy)
+                        .padding(15)
+                        .background(.white)
+                        .cornerRadius(10)
+                }
+
+            }
+        }
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy9v2da8vcj30c00oe74o.jpg" alt="image-20220111172851670"/></p><h2>How it works…</h2><p>Lottie有个<strong>AnimationView</strong>，我们设置动画的名称就可以进行动画。</p><p>但其是UIView的子类，所以我们需要将其包裹为一个SwiftUI View。</p><p>同时我们提供了play来控制是否进行动画。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑060-创建一个hero transition]]></title>
+        <id>/2022/01/02/SwiftUI专辑-060-创建一个herotransition</id>
+        <link href="https://gouxin.fun/2022/01/02/SwiftUI专辑-060-创建一个herotransition"/>
+        <updated>2022-01-02T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+什么是hero transition？还记得我们的商品列表有个图片，点击图片，然后图片慢慢变大，成为新界面顶部的header，我们称这种为hero transition。比如：appstroe中就很常见。</p><h2>Getting ready</h2><p>首先，新建一个项目：<strong>HeroViewTransition</strong></p><p>准备7张图片，加入项目中。</p><h2>How to do it…</h2><ol><li>首先创建一个Item来代表列表中的数据</li></ol><pre><code class="language-swift">struct Item: Identifiable {
+    let id = UUID()
+    let image : String
+    let title : String
+    let details : String
+}
+</code></pre><ol start="2"><li>准备列表的数据</li></ol><pre><code class="language-swift">let data = [
+    Item(image: &quot;california&quot;, title: &quot;California&quot;, details: &quot;California, the most populous state in the United States and the third most extensive by area, is located on the western coast of the USA and is bordered by Oregon to the north, Nevada, to the east and northeast, Arizona to the southeast and it shares an international border with the Mexican state of Baja California to the south.&quot;),
+    Item(image: &quot;miami&quot;, title: &quot;Miami&quot;, details: &quot;Miami is an international city at Florida’s south-eastern tip. Its Cuban influence is reflected in the cafes and cigar shops that line Calle Ocho in Little Havana. On barrier islands across the turquoise waters of Biscayne Bay is Miami Beach, home to South Beach. This glamorous neighbourhood is famed for its colourful art deco buildings, white sand, surfside hotels and trendsetting nightclubs.&quot;),
+    Item(image: &quot;las-vegas&quot;, title: &quot;Las Vegas&quot;, details: &quot;Las Vegas, is a resort city famed for its vibrant nightlife, centered around 24-hour casinos and other entertainment options. Its main street and focal point is the Strip, just over 4 miles long.Nevada is a western U.S. state defined by its great expanses of desert, and by the 24-hour casinos and entertainment for which its largest city, Las Vegas, in Nevada’s Mojave Desert.&quot;),
+    Item(image: &quot;paris&quot;, title: &quot;Paris&quot;, details: &quot;Paris is the capital and most-populous city of France. Situated on the Seine River, in the north of the country, it is in the centre of the Île-de-France region, also known as the région parisienne. Paris has an area of 105.4 square kilometres and with a population of 2,273,305 people within its city limits is the most populous urban area in the European Union.&quot;),
+    Item(image: &quot;dublin&quot;, title: &quot;Dublin&quot;, details: &quot;Dublin, capital of the Republic of Ireland, is on Ireland’s east coast at the mouth of the River Liffey. Its medieval buildings include 13th-century Dublin Castle and imposing St. Patrick’s Cathedral, founded in 1191. Temple Bar is a riverside nightlife and cultural quarter, home to the Irish Film Institute. Bustling, largely pedestrianised Grafton Street is the city’s principal shopping area, also famed for its buskers.&quot;),
+    Item(image: &quot;bali&quot;, title: &quot;Bali&quot;, details: &quot;Bali “the world’s best island resort” with its enchanting culture, beaches, dynamic dances and music, with grand mountain views, green rainforests to trek through, rolling waves to surf and deep blue pristine seas to dive in where one can swim with dugongs, dolphins and large mantarays. Covering less than 6,000 square kilometers, this lush isle has startling geographical contrasts; verdant rice terraces and sacred, mist-wreathed volcanoes, white-sand beaches and dense tropical rain forest. as well as being home to one of the world’s most vibrant cultures of  dance and music, lavish ceremonies and artistic achievements.&quot;),
+    Item(image: &quot;singapore&quot;, title: &quot;Singapore&quot;, details: &quot;Singapore, an island city-state off southern Malaysia, is a bustling cosmopolitan city that offers a world-class living environment, with a landscape populated by high-rise buildings and gardens, and is a great place to visit for a couple of days if you are travelling to Asia. In circa-1820 Chinatown stands the red-and-gold Buddha’s Tooth Relic Temple, Little India offers colourful souvenirs and Arab Street is lined with fabric shops. Singapore is also known for eclectic street fare, served in hawker centres such as Tiong Bahru and Maxwell Road.&quot;),
+]
+</code></pre><ol start="3"><li>准备我们的列表，和跳转后的详情界面</li></ol><pre><code class="language-swift">struct DestinationListView: View {
+    @Binding var selectedItem: Item!
+    @Binding var showDetail: Bool
+    let animation: Namespace.ID
+    var body: some View {
+        ScrollView(.vertical) {
+            VStack(spacing: 20) {
+                ForEach(data) { item in
+                    Image(item.image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .cornerRadius(10)
+                        .shadow(radius: 5)
+                        .matchedGeometryEffect(id: item.image, in: animation)
+                        .onTapGesture {
+                            selectedItem = item
+                            withAnimation {
+                                showDetail.toggle()
+                            }
+                        }
+                }
+            }.padding(.all, 20)
+        }
+    }
+}
+
+struct DestinationDetailView: View {
+    var selectedItem: Item
+    @Binding var showDetail: Bool
+    let animation: Namespace.ID
+    var body: some View {
+        ZStack(alignment: .topTrailing){
+            VStack{
+                Image(selectedItem.image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .matchedGeometryEffect(id: selectedItem.image, in: animation)
+                Text(selectedItem.title)
+                    .font(.title)
+                Text(selectedItem.details)
+                    .font(.callout)
+                    .padding(.horizontal)
+                Spacer()
+            }.ignoresSafeArea(.all)
+            Button {
+                withAnimation {
+                    showDetail.toggle()
+                }
+            } label: {
+                Image(systemName: &quot;xmark&quot;)
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(.black.opacity(0.8))
+                    .clipShape(Circle())
+            }.background(Color.white.ignoresSafeArea(.all))
+    }
+}
+</code></pre><ol start="3"><li>在ContentView中添加List</li></ol><pre><code class="language-swift">struct ContentView: View {
+    @State private var selectedItem: Item!
+    @State private var showDetail = false
+    @Namespace var animation
+    var body: some View {
+        ZStack {
+            DestinationListView(selectedItem: $selectedItem, showDetail: $showDetail, animation: animation)
+                .opacity(showDetail ? 0 : 1)
+            if showDetail {
+                DestinationDetailView(selectedItem: selectedItem, showDetail: $showDetail, animation: animation)
+            }
+        }
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy9t6d7vkug306a0ck45k.gif" alt="Untitled"/></p><h2>How it works…</h2><p>您可以在<strong>.matchedGeometryEffect</strong>里设置开始组件和结束组件，然后 SwiftUI 会神奇地为您创建动画。</p><p><strong>.matchedGeometryEffect</strong>会设置开始组件和结束组件间的关系，然后SwiftUI可以根据关系创建从开始位置到结束位置的动画。为了存储这种关系，<strong>.matchedGeometryEffect</strong>需要一个标识符和一个保存关系的地方。在我们的代码中，这是在以下行中完成的：</p><pre><code class="language-swift">//我们以image为标识符，存储在animation中。
+.matchedGeometryEffect(id: item.image, in: animation)
+</code></pre><p>SwiftUI提供了一个property warpper:<strong>@Namespace</strong>。他会将view动画相关的一些属性存储在全局的某个地方，SwiftUI使用这些属性来创建动画，然后渲染。</p><p>简单来说就是：通过<strong>.matchedGeometryEffect</strong>，我们定义了一个开始组件和一个结束组件。然后我们告诉SwiftUI，他们是同一个组件，然后SwiftUI自己会确定如何进行动画。在我们的例子中，动画就包括：</p><ul><li>y offset的改变</li><li>size的改变</li><li>圆角的改变</li></ul>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑059-自定义view transitions]]></title>
+        <id>/2022/01/01/SwiftUI专辑-059-自定义viewtransitions</id>
+        <link href="https://gouxin.fun/2022/01/01/SwiftUI专辑-059-自定义viewtransitions"/>
+        <updated>2022-01-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+SwiftUI能够在view出现和消失时添加动画，我们称这个未transition。</p><p>本章，我们将演示如何创建自定义的出现和消失的transitions。</p><h2>Getting ready</h2><p>首先，创建一个新的项目<strong>CustomViewTransition</strong></p><h2>How to do it…</h2><ol><li>创建2个view</li></ol><pre><code class="language-swift">extension Image {
+    func custom() -&gt; some View {
+        self
+        .resizable()
+        .aspectRatio(contentMode: .fit)
+        .cornerRadius(20)
+        .shadow(radius: 10)
+    }
+}
+
+struct FirstComponent: View {
+    var body: some View {
+        Image(systemName: &quot;gamecontroller&quot;).custom()
+    }
+}
+
+struct SecondComponent: View {
+    var body: some View {
+        Image(systemName: &quot;car&quot;).custom()
+    }
+}
+</code></pre><ol start="2"><li>添加到ContentView中, 这个时候点击change，是一个渐变的消失和显示的过程</li></ol><pre><code class="language-swift">struct ContentView: View {
+    @State var showFirst = true
+    var body: some View {
+        VStack(spacing: 24){
+            if showFirst {
+                FirstComponent()
+            } else{
+                SecondComponent()
+            }
+            Button {
+                showFirst.toggle()
+            } label: {
+                Text(&quot;Change&quot;)
+            }
+        }.animation(.easeIn, value: showFirst)
+            .padding(.horizontal, 20)
+    }
+}
+</code></pre><ol start="3"><li>让我们创建一个transition，并设置两个component的transiton为这个自定义的transition</li></ol><pre><code class="language-swift">extension AnyTransition {
+    static var moveScaleAndFade: AnyTransition {
+        let insertion = AnyTransition
+            .scale
+            .combined(with: .move(edge: .leading))
+            .combined(with: .opacity)
+        let removal = AnyTransition
+            .scale
+            .combined(with: .move(edge: .top))
+            .combined(with: .opacity)
+        return .asymmetric(insertion: insertion, removal: removal)
+    }
+}
+
+...
+if showFirst {
+    FirstComponent().transition(.moveScaleAndFade)
+} else{
+    SecondComponent().transition(.moveScaleAndFade)
+}
+....
+</code></pre><p>点击change, appear的图片从左侧逐渐放大移入，disappear的从上面逐渐缩小移除。</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy9rutfd80j30ay0nst90.jpg" alt="image-20220111153748091"/></p><h2>How it works…</h2><p>transition基本上就是在appear和disappear时应用的一系列transformations。</p><p>我们使用<strong>.combined</strong>函数，可以将transition与其他transition组合以创建更复杂的动画。</p><p>我们使用了<strong>.asymmetric</strong> transition。这意味着删除看起来与插入不同。但当然，我们也可以有一个对称的transition。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑058-同时进行多个animation]]></title>
+        <id>/2021/12/31/SwiftUI专辑-058-同时进行多个animation</id>
+        <link href="https://gouxin.fun/2021/12/31/SwiftUI专辑-058-同时进行多个animation"/>
+        <updated>2021-12-31T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+SwiftUI 允许 我们可以同时为多个属性设置动画，也可以使用不同的持续时间和不同的动画曲线对它们进行动画处理。</p><p>本章，我们将学习如何为两组特征设置动画，以及如何使结果看起来像一个单一的、平滑的动画。</p><h2>Getting ready</h2><p>首先，新建一个项目：<strong>MultipleAnimations</strong></p><h2>How to do it…</h2><ol><li>创建个rectangle，根据State改变多个属性</li></ol><pre><code class="language-swift">struct ContentView: View {
+    @State var initialState = true
+    var body: some View {
+        VStack(spacing: 30) {
+            Rectangle()
+                .fill(initialState ? .blue : .red)
+                .cornerRadius(initialState ? 50 : 0)
+                .offset(y: initialState ? 0 : -200)
+                .rotation3DEffect(initialState ? .degrees(0): .degrees(45), axis: (x: 1, y: 0, z: 0))
+                .animation(.easeInOut(duration: 2), value: initialState)
+               .frame(width:300, height:200)
+        }
+    }
+}
+</code></pre><ol start="2"><li>VStack中添加个按钮触发动画</li></ol><pre><code class="language-swift">Button {
+    initialState.toggle()
+} label: {
+    Text(&quot;Animate&quot;)
+        .fontWeight(.heavy)
+        .foregroundColor(.white)
+        .padding()
+        .background(.green)
+        .cornerRadius(5)
+}
+</code></pre><ol start="3"><li>尝试在添加2中变化</li></ol><pre><code class="language-swift">Rectangle()
+.fill(initialState ? .blue : .red)
+.cornerRadius(initialState ? 50 : 0)
+.offset(y: initialState ? 0 : -200)
+.rotation3DEffect(initialState ? .degrees(0): .degrees(45), axis: (x: 1, y: 0, z: 0))
+.scaleEffect(initialState ? 1 : 0.8)
+.rotationEffect(initialState ? Angle(degrees:0) : Angle(degrees:-90))
+.animation(.linear(duration: 1), value: initialState)
+.frame(width: 300, height: 200)
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy9qht0ovfj30hw0bq3z1.jpg" alt="Figure_8.7_B17962"/></p><h2>How it works…</h2><p>animation是对之前的所有修饰符，所以我们在animate修饰符前直接修改对应的属性就行。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑057-用withAnimation创建一组动画]]></title>
+        <id>/2021/12/30/SwiftUI专辑-057-用withAnimation创建一组动画</id>
+        <link href="https://gouxin.fun/2021/12/30/SwiftUI专辑-057-用withAnimation创建一组动画"/>
+        <updated>2021-12-30T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+创建动画有2中方式：</p><ul><li>使用 <strong>.animation()</strong> 修饰符</li><li>使用 <strong>withAnimation</strong> 函数</li></ul><p>上一章，我们介绍了用animation修饰符创建一组动画，本章我们将介绍用withAnimation函数结合delay创建一组动画。</p><h2>Getting ready</h2><p>首先新建一个项目：<strong>DelayedAnimations</strong></p><h2>How to do it…</h2><ol><li>首先定义个extention，方便我们处理样式</li></ol><pre><code class="language-swift">struct CustomText: ViewModifier {
+    let foreground: Color
+    let background: Color
+    let cornerRadius: Double
+
+    func body(content: Content) -&gt; some View {
+        content
+            .foregroundColor(foreground)
+            .frame(width: 200)
+            .padding()
+            .background(background)
+            .cornerRadius(cornerRadius)
+    }
+}
+
+extension Text {
+    func styled(color: Color) -&gt; some View {
+            modifier(CustomText(foreground: .white,
+                                background: color,
+                                cornerRadius: 10))    
+        }
+}
+</code></pre><ol start="2"><li>添加3个Text</li></ol><pre><code class="language-swift">struct ContentView: View {
+    @State var hideFirst = true
+    @State var hideSecond = true
+    @State var hideThird = true
+    
+    var body: some View {
+        VStack {
+            VStack {
+                Text(&quot;First&quot;).styled(color: .red).opacity(hideFirst ? 0 : 1)
+                Text(&quot;Second&quot;).styled(color: .red).opacity(hideSecond ? 0 : 1)
+                Text(&quot;Third&quot;).styled(color: .red).opacity(hideThird ? 0 : 1)
+            }
+        }
+    }
+}
+</code></pre><ol start="3"><li>在第一个Vstack中加个Spacer和一个Button来触发动画</li></ol><pre><code class="language-swift">Spacer()
+Button {
+    withAnimation(.easeInOut) {
+        hideFirst.toggle()
+    }
+    withAnimation(.easeInOut.delay(0.3)) {
+        hideSecond.toggle()
+    }
+    withAnimation(.easeInOut.delay(0.6)) {
+        hideThird.toggle()
+    }
+} label: {
+    Text(&quot;Animate&quot;).fontWeight(.heavy).styled(color: .green)
+}
+</code></pre><p>点击animate，我们能够看到3个按钮依次出现，再点一次依次消失</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy9pbwnj1bj30ce0p2q3f.jpg" alt="image-20220111141025243"/></p><h2>How it works…</h2><p>这个原理和animate修饰符一样，都是通过delay来实现一组动画。我们还是期待官方提供更合适的方法来实现一组动画。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑056-用修饰符的delay创建一组动画]]></title>
+        <id>/2021/12/29/SwiftUI专辑-056-用修饰符的delay创建一组动画</id>
+        <link href="https://gouxin.fun/2021/12/29/SwiftUI专辑-056-用修饰符的delay创建一组动画"/>
+        <updated>2021-12-29T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+目前已经是SwiftUI 3 了，但仍然无法将不同的动画连接在一起以创建一组动画。这肯定会在以后的 SwiftUI 版本中修复，但目前，我们可以使用延迟来实现一组动画。</p><p>我们知道，定义动画有两种方法：</p><ul><li>使用<strong>.animation()</strong>修饰符</li><li>使用<strong>withAnimation</strong>函数</li></ul><p>本章，我们将看到如何使用<strong>.animation()</strong>修饰符来创建一组动画，我们将在下一章中介绍<strong>withAnimation</strong>函数来创建一组动画。</p><h2>Getting ready</h2><p>首先，创建一个新的项目：<strong>DelayedAnimations</strong></p><h2>How to do it…</h2><p>此次我们将创建一个长方形，并加上一组动画：</p><ul><li>修改y offset</li><li>修改scale</li><li>围绕x轴的一个3D旋转</li></ul><ol><li>创建我们的长方形</li></ol><pre><code class="language-swift">struct ContentView: View {
+    let duration = 1.0
+    @State var change = false
+    
+    var body: some View {
+        VStack(spacing: 30) {
+            Rectangle()
+                .fill(.blue)
+                .offset(y: change ? -300 : 0)
+                .animation(.easeInOut(duration: duration).delay(0), value: change)
+                .scaleEffect(change ? 0.5 : 1)
+                .animation(.easeInOut(duration: duration).delay(duration), value: change)
+                .rotation3DEffect(change ? .degrees(45) : .degrees(0), axis: (x: 1, y: 0, z: 0))
+                .animation(.easeInOut(duration: duration).delay( 2 * duration), value: change)
+                .frame(width: 200, height: 200)
+        }
+    }
+}
+</code></pre><ol start="2"><li>创建一个按钮，触发动画</li></ol><pre><code class="language-swift">Button  {
+    change.toggle()
+} label: {
+    Text(&quot;Animate&quot;)
+        .fontWeight(.heavy)
+        .foregroundColor(.white)
+        .padding()
+        .background(.green)
+        .cornerRadius(5)
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy9l40cqryj30bu0oumxd.jpg" alt="image-20220111114426505"/></p><h2>How it works…</h2><p>当我们定义动画的时候，我们可以给他一个延迟。</p><p>每一个animate都是基于之前的修饰符进行动画的。</p><p>首先执行的是offset动画，结束后，第二个动画刚开始，他是基于当前offset进行scaleEffect。同理第三个rotation3DEffect。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑055-创建spring动画]]></title>
+        <id>/2021/12/28/SwiftUI专辑-055-创建spring动画</id>
+        <link href="https://gouxin.fun/2021/12/28/SwiftUI专辑-055-创建spring动画"/>
+        <updated>2021-12-28T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+我们将演示如何让一个banner做spring动画。</p><h2>Getting ready</h2><p>首先，创建一个新的项目：<strong>BannerWithASpringAnimation</strong></p><h2>How to do it…</h2><ol><li>实现我们的banner</li></ol><pre><code class="language-swift">struct BannerView: View {
+    let message: String
+    var show: Bool
+    
+    var body: some View {
+        Text(message)
+            .font(.title)
+            .frame(width:UIScreen.main.bounds.width - 20, height: 100)
+            .foregroundColor(.white)
+            .background(Color.green)
+            .cornerRadius(10)
+            .offset(y: show ? -UIScreen.main.bounds.height / 3 : -UIScreen.main.bounds.height)
+            .animation(.interpolatingSpring(mass: 2.0,  stiffness: 100.0, damping: 10, initialVelocity: 0), value: show)
+    }
+}
+</code></pre><ol start="2"><li>添加Banner和一个按钮到ContentView中</li></ol><pre><code class="language-swift">struct ContentView: View {
+    @State var show = false
+    
+    var body: some View {
+        VStack {
+            BannerView(message: &quot;Hello world&quot;, show: show)
+            Button {
+                show.toggle()
+            } label: {
+                Text(show ? &quot;Hide&quot; : &quot;Show&quot;)
+                    .padding()
+                    .frame(width: 100)
+                    .foregroundColor(.white)
+                    .background(show ? .red : .blue)
+                    .cornerRadius(10)
+            }
+        }
+    }
+}
+</code></pre><p>最终结果:</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy9k8curm7j30c60p03yu.jpg" alt="image-20220111111402096"/></p><p>我们再复习一下动画的3个要素：</p><ul><li>触发器：我们的按钮</li><li>数据变化：show</li><li>UI变化：offset(y:)</li></ul><p>我们再来看看spring动画的一些参数：</p><ul><li><strong>mass</strong>：这是附着在弹簧上的物体的质量——它越大，它获得的惯性越大，所以它反弹得更多。</li><li><strong>stiffness</strong>：这是施加力时弹簧的抵抗力——阻力越大，弹簧的刚度越大。</li><li><strong>damping</strong>：这是弹簧抵抗变化的程度——阻力越大，弹簧的弹跳越小。</li><li><strong>initialVelocity</strong>：这是动画开始的初始速度。</li></ul>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑054-自定义动画属性]]></title>
+        <id>/2021/12/27/SwiftUI专辑-054-自定义动画属性</id>
+        <link href="https://gouxin.fun/2021/12/27/SwiftUI专辑-054-自定义动画属性"/>
+        <updated>2021-12-27T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+上一篇文章中我们知道了，Swiftui能够对一些通用属性进行动画，比如：位置、颜色、大小等。</p><p>但如果我们想要动画的东西不属于framework的一部分呢？</p><p>在这篇文章中，我们将创建一个三角形，其高度等于宽度乘以一个比例。当我们点击三角形时，我们将该比例设置为一个随机数，从而改变高度。</p><p>我们如何让SwiftUI 能够对比例的变化进行动画呢？我们将看到所需的代码很简单，但底层引擎却相当复杂。</p><h2>Getting ready</h2><p>首先，创建一个新的项目：<strong>AnimateTriangleShape</strong></p><h2>How to do it…</h2><ol><li>首先，创建一个三角形<strong>Triangle</strong></li></ol><pre><code class="language-swift">struct Triangle: Shape {
+    var multiplier: CGFloat
+    func path(in rect: CGRect) -&gt; Path {
+        Path { path in
+            path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+            path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY - rect.width * multiplier))
+            path.closeSubpath()
+        }
+    }
+}
+</code></pre><ol start="2"><li>将三角形添加到ContentView中</li></ol><pre><code class="language-swift">struct ContentView: View {
+    @State var multiplier = 1.0
+    var body: some View {
+        Triangle(multiplier: multiplier)
+            .fill(.red)
+            .frame(width: 300, height: 300)
+            .onTapGesture {
+              
+                withAnimation(.easeOut(duration: 1.0)) {
+                    multiplier = .random(in: 0.3...1.5)
+                }
+            }
+    }
+}
+</code></pre><ol start="3"><li>此时点击，虽然shape变化了，但是却没有动画，因为SwiftUI并不知道他应该animate哪个数据，因此我们添加一个<strong>animatableData</strong>到Triangle中, 让swiftui知道应该animate multiplier这个数据。</li></ol><pre><code class="language-swift">var animatableData: CGFloat {
+    get { multiplier }
+    set { multiplier = newValue }
+}
+</code></pre><p>此时点击，就能看到动画了</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gy9jia1lgkj30c00oiglw.jpg" alt="image-20220111104856015"/></p><h2>How it works…</h2><p>SwiftUI只能对遵循了<strong>Animatable</strong>协议的组件进行动画。这意味着他应该拥有一个<strong>animatableData</strong>，SwiftUI从这个值里保存和获取动画的中间值。</p><p>我们可以在set方法里打印出中间值</p><pre><code class="language-swift">set {
+    multiplier = newValue
+    print(&quot;value: \(multiplier)&quot;)
+}
+</code></pre><p>另外还注意一下，我们使用的是<strong>withAnimation</strong>进行动画的。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑053-创建基本动画]]></title>
+        <id>/2021/12/26/SwiftUI专辑-053-创建基本动画</id>
+        <link href="https://gouxin.fun/2021/12/26/SwiftUI专辑-053-创建基本动画"/>
+        <updated>2021-12-26T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+我们来实现，将2个圆圈从顶部移动到底部。</p><h2>Getting ready</h2><p>首先，创建一个新的SwiftUI工程：<strong>BasicAnimations</strong></p><h2>How to do it…</h2><ol><li>首先，我们定义一个包含默认时间曲线的类型，供我们List选择</li></ol><pre><code class="language-swift">struct AnimationType {
+    let name: String
+    let animation: Animation
+    static var all: [AnimationType]  = [
+      .init(name: &quot;default&quot;, animation: .default),
+      .init(name: &quot;easeIn&quot;, animation: .easeIn),
+      .init(name: &quot;easeOut&quot;, animation: .easeOut),
+      .init(name: &quot;easeInOut&quot;, animation: .easeInOut),
+      .init(name: &quot;linear&quot;, animation: .linear),
+      .init(name: &quot;spring&quot;, animation: .spring()),
+    ]
+}
+</code></pre><ol start="2"><li>然后在ContentView中添加几个状态，供我们使用</li></ol><pre><code class="language-swift">struct ContentView: View {
+    @State var onTop = false //是否在顶部，控制是从上到下，还是从下到上
+    @State var showSelection = false //是否显示动画选择界面
+  //当前选择的动画类型
+    @State var type = AnimationType(name: &quot;default&quot;, animation: .default)
+
+    var body: some View {
+        Text(&quot;&quot;)
+    }
+}
+</code></pre><ol start="3"><li>添加两个圆圈</li></ol><pre><code class="language-swift">var body: some View {
+    VStack(spacing: 12) {
+        GeometryReader { geometry in
+            HStack {
+                Circle()
+                    .fill(.blue)
+                    .frame(width: 80, height: 80)
+                    .offset(y: onTop ? -geometry.size.height/2 : geometry.size.height/2)
+                    .animation(.default, value: onTop)
+                Spacer()
+                Circle()
+                    .fill(.red)
+                    .frame(width: 80, height: 80)
+                    .offset(y: onTop ? -geometry.size.height/2 : geometry.size.height/2)
+                    .animation(type.animation, value: onTop)
+            }.padding(.horizontal, 30)
+        }
+    }
+}
+</code></pre><ol start="4"><li>添加个actionsheet，让我们选择动画类型</li></ol><pre><code class="language-swift">var actionSheet: ActionSheet {
+    ActionSheet(title: Text(&quot;Animations&quot;),
+                message: nil,
+                buttons: AnimationType.all.map{ type in
+            .default(Text(type.name)) {
+                self.type = type
+            }
+    } + [.destructive(Text(&quot;Cancel&quot;))])
+}   
+</code></pre><ol start="5"><li>在VStack中添加2个按钮，来触发动画，和选择动画类型</li></ol><pre><code class="language-swift">Button(&quot;Animate&quot;) {
+    onTop.toggle()
+}
+Button(&quot;Choose Animation&quot;) {
+    showSelection.toggle()
+}.actionSheet(isPresented: $showSelection) {
+    actionSheet
+}
+Text(&quot;Current: \(type.name)&quot;)
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gy6eo50lgfj30bu0oiq39.jpg" alt="image-20220108174450179"/></p><h2>How it works…</h2><p>我们可以看到做动画有3步：</p><ul><li>某个触发动画的事件，比如我们的按钮点击</li><li>某个状态，我们根据这个状态修改数据，比如onTop</li><li>UI状态的改变，比如我们的offset(y:)</li></ul><p>有了这3点，我们添加一个 <strong>.animation()</strong>修饰符，SwiftUI就会在触发时完成动画。</p><p>如果你希望动画慢一点，好看清不同动画的区别，那么你可以设置speed</p><pre><code class="language-swift">.animation(Animation.default.speed(0.1), value: onTop)
+</code></pre><h2>Animation的Api</h2><h3>Instance Methods</h3><pre><code class="language-swift">func delay(_ delay: Double) -&gt; Animation//延迟
+func repeatCount(_ repeatCount: Int, autoreverses: Bool = true) -&gt; Animation//重复
+func repeatForever(autoreverses: Bool = true) -&gt; Animation
+func speed(_ speed: Double) -&gt; Animation
+</code></pre><h3>Type Methods</h3><pre><code class="language-swift">//我们熟悉的时间曲线，动画时间是一个参数，并不是单独的修饰符
+static func easeIn(duration: Double) -&gt; Animation
+static func easeInOut(duration: Double) -&gt; Animation
+static func easeOut(duration: Double) -&gt; Animation
+static func interactiveSpring(response: Double = 0.15, dampingFraction: Double = 0.86, blendDuration: Double = 0.25) -&gt; Animation
+static func interpolatingSpring(mass: Double = 1.0, stiffness: Double, damping: Double, initialVelocity: Double = 0.0) -&gt; Animation
+static func linear(duration: Double) -&gt; Animation
+static func spring(response: Double = 0.55, dampingFraction: Double = 0.825, blendDuration: Double = 0) -&gt; Animation
+static func timingCurve(_ c0x: Double, _ c0y: Double, _ c1x: Double, _ c1y: Double, duration: Double = 0.35) -&gt; Animation
+</code></pre>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑052-绘制饼状图]]></title>
+        <id>/2021/12/25/SwiftUI专辑-052-绘制饼状图</id>
+        <link href="https://gouxin.fun/2021/12/25/SwiftUI专辑-052-绘制饼状图"/>
+        <updated>2021-12-25T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+我们知道饼图是一种通过使用形成圆圈的切片来表示比例数值的方法。饼图由一个切片和一个圆组成, 在 SwiftUI 中实现它们非常简单。</p><p>本章将显示用饼状图显示三个不同欧洲城市的宠物数量。</p><h2>Getting ready</h2><p>首先，创建一个新的SwiftUI项目：<strong>PieChart</strong></p><h2>How to do it…</h2><ol><li>首先，定义数据结构</li></ol><pre><code class="language-swift">enum Animal: String {
+   case cat
+   case dog
+   case fish
+   case horse
+   case hamster
+   case rabbit
+   case bird
+   var color: Color {
+       switch self {
+       case .cat: return .red
+       case .dog: return .blue
+       case .fish: return .green
+       case .horse: return .orange
+       case .hamster: return .purple
+       case .rabbit: return .gray
+       case .bird: return .yellow
+       }
+   }
+}
+
+struct PetData {
+    let value: Double
+    let animal: Animal
+    var color: Color {
+        animal.color
+    }
+    var name: String {
+        animal.rawValue.capitalized
+    }
+}
+
+struct DataPoint: Identifiable {
+    let id = UUID()
+    let label: String
+    let value: Double
+    let color: Color
+    var percentage = 0.0
+    var startAngle = 0.0
+    var formattedPercentage: String {
+        String(format: &quot;%.2f %%&quot;, percentage * 100)
+    }
+}
+
+struct DataPoints {
+    var points = [DataPoint]()
+    mutating func add(value: Double, label: String, color: Color) {
+        points.append(DataPoint(label: label, value: value, color: color))
+        let total = points.map(\.value).reduce(0.0,+)
+        points = points.map {
+            var point = $0
+            point.percentage = $0.value / total
+            return point
+        }
+
+        for i in 1..&lt;points.count {
+            let previous =  points[i - 1]
+            let angle = previous.startAngle + previous.value*360/total
+            var current = points[i]
+            current.startAngle = angle
+            points[i] = current
+        }
+    }
+}
+</code></pre><ol start="2"><li>准备数据</li></ol><pre><code class="language-swift">struct DataSet {
+    static let dublin: [PetData] = [
+        .init(value: 2344553, animal: .cat),
+        .init(value: 1934345, animal: .dog),
+        .init(value: 323454, animal: .fish),
+        .init(value: 403400, animal: .rabbit),
+        .init(value: 1003445, animal: .horse),
+        .init(value: 1600494, animal: .hamster),
+    ]
+
+    static let milan: [PetData] = [
+        .init(value: 3344553, animal: .cat),
+        .init(value: 2004345, animal: .dog),
+        .init(value: 923454, animal: .fish),
+        .init(value: 803400, animal: .rabbit),
+        .init(value: 1642345, animal: .bird),
+        .init(value: 804244, animal: .hamster),
+    ]
+
+    static let london: [PetData] = [
+        .init(value: 3355553, animal: .cat),
+        .init(value: 4235345, animal: .dog),
+        .init(value: 1913454, animal: .fish),
+        .init(value: 1103400, animal: .rabbit),
+        .init(value: 683445, animal: .horse),
+        .init(value: 3300494, animal: .hamster),
+    ]
+}
+</code></pre><ol start="3"><li>定义饼的形状</li></ol><pre><code class="language-swift">struct PieSliceShape: InsettableShape {
+    var percent: Double
+    var startAngle: Angle
+    var insetAmount: CGFloat = 0
+
+    func inset(by amount: CGFloat) -&gt; some InsettableShape {
+        var slice = self
+        slice.insetAmount += amount
+        return slice
+    }
+
+    func path(in rect: CGRect) -&gt; Path {
+        Path { path in
+            path.addArc(center: CGPoint(x: rect.size.width / 2, y: rect.size.width / 2), radius: rect.size.width / 2 - insetAmount, startAngle: startAngle, endAngle: startAngle + Angle(degrees: percent * 360), clockwise: false)
+        }
+    }
+}
+
+struct PieSlice: View {
+    var percent: Double
+    var degrees: Double
+    var color: Color
+
+    var body: some View {
+        GeometryReader { geometry in
+            PieSliceShape(percent: percent, startAngle: Angle(degrees: degrees))
+                .strokeBorder(color, lineWidth:geometry.size.width/2)
+                .rotationEffect(.degrees(-90))
+               .aspectRatio(contentMode: .fit)
+        }
+    }
+}
+</code></pre><ol start="4"><li>定义整个饼图</li></ol><pre><code class="language-swift">struct PieChart: View {
+    var dataPoints: DataPoints
+    var body: some View {
+        VStack(alignment: .leading, spacing: 30) {
+            VStack(alignment: .leading) {
+                ForEach(dataPoints.points) { p in
+                    HStack(spacing: 16) {
+                        Rectangle()
+                       .foregroundColor(p.color)
+                       .frame(width: 16, height: 16)
+                        Text(&quot;\(p.label): \(p.formattedPercentage)&quot;)
+                    }
+                }
+            }
+            ZStack {
+                ForEach(dataPoints.points) { point in
+                  PieSlice(percent: point.percentage, degrees: point.startAngle, color: point.color)
+                }
+            }.aspectRatio(contentMode: .fill)
+        }
+    }
+}
+</code></pre><ol start="5"><li>显示数据</li></ol><pre><code class="language-swift">struct ContentView: View {
+    var dataSet: [DataPoints] = [
+        DataSet.dublin.reduce(into: DataPoints()) {
+          $0.add(value: $1.value, label: $1.name, color: $1.color)
+        },
+        DataSet.milan.reduce(into: DataPoints()) {
+            $0.add(value: $1.value, label: $1.name, color: $1.color)
+        },
+        DataSet.london.reduce(into: DataPoints()) {
+            $0.add(value: $1.value, label: $1.name, color: $1.color)
+        },
+    ]
+
+    @State var selectedCity = 0
+    var body: some View {
+        VStack (spacing: 50) {
+            Text(&quot;Most Popular Pets&quot;)
+                .font(.system(size: 32))
+
+            Picker(selection: self.$selectedCity, label: Text(&quot;Most Popular Pets&quot;)) {
+                Text(&quot;Dublin&quot;).tag(0)
+                Text(&quot;Milan&quot;).tag(1)
+                Text(&quot;London&quot;).tag(2)
+            }.pickerStyle(SegmentedPickerStyle())
+            PieChart(dataPoints: dataSet[selectedCity])
+                .aspectRatio(1, contentMode: .fit)
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gy4fedd6c9j30ca0oqdgs.jpg" alt="image-20220107003859213"/></p><h2>How it works</h2><p>我们使用了<strong>InsettableShape</strong>， 这允许我们使用<strong>strokeBorder()</strong>而不是<strong>stroke()</strong>。之前我们已经介绍过他们的区别了：</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gy4fggol78j309q04paa0.jpg" alt="Figure_7.15_B17962"/></p><p>有了strokeBorder()，我们只要让border等于圆的半径，那么就能看到一块圆饼。</p><p>为了拿到圆的半径，我们使用了GeometryReader，能够通过geometry.size拿到大小。</p><p>使用rotationEffect，将绘制开始的位置变为中间，这样每个圆饼的中间都会是分割线。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑051-绘制柱状图]]></title>
+        <id>/2021/12/24/SwiftUI专辑-051-绘制柱状图</id>
+        <link href="https://gouxin.fun/2021/12/24/SwiftUI专辑-051-绘制柱状图"/>
+        <updated>2021-12-24T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+使用简单的形状，可以构建一些不错的功能。例如，只需使用一堆矩形，我们就可以创建一个柱状图。</p><p>本文，我们将创建一个条形图显示了三个欧洲城市的平均月降水量：都柏林、米兰和伦敦。</p><h2>Getting ready</h2><p>首先，创建一个新的项目：<strong>BarChart</strong>。</p><h2>How to do it…</h2><ol><li>定义数据model</li></ol><pre><code class="language-swift">enum Month: String, CaseIterable {
+    case jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec
+}
+
+struct MonthDataPoint: Identifiable {
+    var id: String { month.rawValue }
+    let month: Month
+    let value: Double
+    var name: String {
+        month.rawValue.capitalized
+    }
+}
+extension Array where Element == Double {
+    func monthDataPoints() -&gt; [MonthDataPoint] {
+        zip(Month.allCases, self)
+            .map(MonthDataPoint.init)
+    }
+}
+
+</code></pre><ol start="2"><li>准备数据</li></ol><pre><code class="language-swift">struct DataSet {
+    static let dublin = [ 0.65, 0.50, 0.55, 0.55, 0.60, 0.65, 0.55, 0.75, 0.60, 0.80, 0.75, 0.75].monthDataPoints()
+    static let milan = [0.65, 0.65, 0.80, 0.80, 0.95, 0.65,0.70, 0.95, 0.70, 1.00, 1.00, 0.60].monthDataPoints()
+    static let london = [ 0.55, 0.40, 0.40, 0.45, 0.50, 0.45,0.45, 0.50, 0.50, 0.70, 0.60, 0.55,].monthDataPoints()
+}
+</code></pre><ol start="3"><li>定义我们的柱状图</li></ol><pre><code class="language-swift">struct BarView: View {
+    var dataPoint: MonthDataPoint
+    var body: some View {
+        VStack {
+            ZStack (alignment: .bottom) {
+                Rectangle()
+                    .fill(.blue)
+                    .frame(width: 18, height: 180)
+                Rectangle()
+                    .fill(.white)
+                    .frame(width: 18, height: dataPoint.value * 180.0)
+            }
+            Text(dataPoint.name)
+                .font(.system(size: 11))
+                .rotationEffect(.degrees(-45))
+        }
+    }
+}
+
+struct BarChartView: View {
+    var dataPoints: [MonthDataPoint]
+    var body: some View {
+        HStack (spacing: 12) {
+            ForEach(dataPoints) {
+                BarView(dataPoint: $0)
+            }
+        }
+    }
+}
+</code></pre><ol start="4"><li>用Picker将3个城市的数据显示出来</li></ol><pre><code class="language-swift">struct ContentView: View {
+    let dataSet = [
+        DataSet.dublin,
+        DataSet.milan,
+        DataSet.london,
+    ]
+    @State var selectedCity = 0
+    var body: some View {
+        VStack(spacing: 24) {
+            Spacer()
+            Text(&quot;Average Precipitation&quot;)
+                .font(.system(size: 32))
+            Picker(selection: self.$selectedCity, label: Text(&quot;Average Precipitation&quot;)) {
+                Text(&quot;Dublin&quot;).tag(0)
+                Text(&quot;Milan&quot;).tag(1)
+                Text(&quot;London&quot;).tag(2)
+            }.pickerStyle(SegmentedPickerStyle())
+            BarChartView(dataPoints: dataSet[selectedCity])
+            Spacer()
+        }
+        .padding(.horizontal, 10)
+        .background( .mint, ignoresSafeAreaEdges: .vertical)
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gy4es1j0byj30ca0p2gmj.jpg" alt="image-20220107001731926"/></p><h2>How it works…</h2><p>我们用一个ZStack和2个Rectangle做成了一个柱状图，一个空矩形 用于背景和一个矩形显示百分比。再将多个柱状图组合起来形成图表。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑050-使用渐变]]></title>
+        <id>/2021/12/23/SwiftUI专辑-050-使用渐变</id>
+        <link href="https://gouxin.fun/2021/12/23/SwiftUI专辑-050-使用渐变"/>
+        <updated>2021-12-23T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+SwiftUI 有几种渲染渐变的方式。渐变可用于填充 一个Shape，填充一个边框等。</p><p>本文，我们将了解我们可以在 SwiftUI 中使用哪些类型的渐变以及如何定义它们。</p><h2>Getting ready</h2><p>首先 ，创建一个SwiftUI工程：<strong>GradientViews</strong></p><h2>How to do it…</h2><p>SwiftUI有3中类型的渐变：</p><ul><li>Linear gradients</li><li>Radial gradients</li><li>Angular gradients</li></ul><ol><li>首先，我们先添加一个自定义样式, 方便我们之后使用</li></ol><pre><code class="language-swift">extension Text {
+    func bigLight() -&gt; some View {
+        font(.system(size: 80))
+            .fontWeight(.thin)
+            .multilineTextAlignment(.center)
+            .foregroundColor(.white)
+    }
+}
+</code></pre><ol start="2"><li>创建一个线性渐变View：</li></ol><pre><code class="language-swift">struct LinearGradientView: View {
+    var body: some View {
+        ZStack {
+            LinearGradient(gradient: Gradient(colors:[.orange, .green, .blue, .black]), startPoint: .topLeading, endPoint: .bottomTrailing)
+            Text(&quot;Linear Gradient&quot;)
+                .bigLight()
+        }
+    }
+}
+</code></pre><ol start="3"><li>同理，在创建RadialGradientView</li></ol><pre><code class="language-swift">struct RadialGradientView: View {
+    var body: some View {
+        ZStack {
+            RadialGradient(gradient:Gradient(colors:[.orange, .green,.blue, .black]), center: .center, startRadius: 20, endRadius: 500)
+            Text(&quot;Radial Gradient&quot;)
+                .bigLight()
+        }
+    }
+}
+</code></pre><ol start="4"><li>同理，再创建AngularGradientView</li></ol><pre><code class="language-swift">struct AngularGradientView: View {
+    var body: some View {
+        ZStack {
+            AngularGradient(gradient: Gradient(colors: [.orange, .green,.blue, .black,.black, .blue,.green, .orange]),center: .center)
+            Text(&quot;Angular Gradient&quot;)
+                .bigLight()
+        }
+    }
+}
+</code></pre><ol start="5"><li>用Picker显示出来</li></ol><pre><code class="language-swift">struct ContentView: View {
+    @State private var selectedGradient = 0
+    @ViewBuilder var content: some View {
+        switch selectedGradient {
+        case 0: LinearGradientView()
+        case 1: RadialGradientView()
+        default: AngularGradientView()
+        }
+    }
+    var body: some View {
+        ZStack(alignment: .top) {
+            content.edgesIgnoringSafeArea(.all)
+            Picker(selection: $selectedGradient, label: Text(&quot;Select Gradient&quot;)) {
+                    Text(&quot;Linear&quot;).tag(0)
+                    Text(&quot;Radial&quot;).tag(1)
+                    Text(&quot;Angular&quot;).tag(2)
+                }.pickerStyle(SegmentedPickerStyle())
+                .padding(.horizontal, 32)
+            }
+    }
+}
+</code></pre><p>​	<img src="https://tva1.sinaimg.cn/large/008i3skNly1gy4e9kwec7j309q06ijrr.jpg" alt="Figure_7.12_B17962"/></p><h2>How it works…</h2><p>每种渐变都要color参数，提供渐变的颜色。还有些额外设置，详细的查看下Api文档。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑049-做一个Tic-Tac-Toe小游戏]]></title>
+        <id>/2021/12/22/SwiftUI专辑-049-做一个Tic-Tac-Toe小游戏</id>
+        <link href="https://gouxin.fun/2021/12/22/SwiftUI专辑-049-做一个Tic-Tac-Toe小游戏"/>
+        <updated>2021-12-22T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+本章我们将用SwiftUI实现一个Tic-Tac-Toe小游戏。</p><p>如果不知道规则，可以网上搜索一下，简单来讲就是3子棋，3个连成线就获胜。</p><h2>Getting ready</h2><p>首先，我们新建一个项目：<strong>TicTacToe</strong></p><h2>How to do it…</h2><p>TicTacToe由三部分组成：</p><ul><li>棋盘</li><li>圈圈</li><li>叉叉</li></ul><ol><li>构建圈圈</li></ol><pre><code class="language-swift">struct Nought: View {
+    var body: some View {
+        Circle()
+            .stroke(.red, lineWidth: 10)
+    }
+}
+</code></pre><ol start="2"><li>构建叉叉</li></ol><pre><code class="language-swift">struct CrossShape: Shape {
+    func path(in rect: CGRect) -&gt; Path {
+        Path() { path in
+            path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+            path.move(to: CGPoint(x: rect.maxX, y: rect.minY))
+            path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        }
+    }
+}
+struct Cross: View {
+    var body: some View {
+        CrossShape()
+            .stroke(.green, style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
+    }
+}
+</code></pre><ol start="3"><li>定义Cell来抽象每一个格子</li></ol><pre><code class="language-swift">struct Cell: View {
+    enum CellType {
+        case hidden
+        case nought
+        case cross
+    }
+    @State private var type: CellType = .hidden
+    @Binding var isNextNought: Bool
+    @ViewBuilder private var content: some View {
+        switch type {
+        case .hidden: Color.clear
+        case .nought: Nought()
+        case .cross: Cross()
+        }
+    }
+    var body: some View {
+        content
+            .padding(20)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                guard type == .hidden else {
+                    return
+                }
+                type = isNextNought ? .nought : .cross
+                isNextNought.toggle()
+            }
+    }
+}
+</code></pre><ol start="4"><li>实现棋盘</li></ol><pre><code class="language-swift">struct GridShape: Shape {
+    func path(in rect: CGRect) -&gt; Path {
+        Path() { path in
+            path.move(to: CGPoint(x: rect.width/3, y: rect.minY))
+            path.addLine(to: CGPoint(x: rect.width/3, y: rect.maxY))
+            path.move(to: CGPoint(x: 2*rect.width/3, y: rect.minY))
+            path.addLine(to: CGPoint(x: 2*rect.width/3, y: rect.maxY))
+            path.move(to: CGPoint(x: rect.minX, y: rect.height/3))
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.height/3))
+            path.move(to: CGPoint(x: rect.minX, y: 2*rect.height/3))
+            path.addLine(to: CGPoint(x: rect.maxX, y: 2*rect.height/3))
+        }
+    }
+}
+
+struct Row: View {
+    @Binding var isNextNought: Bool
+    var body: some View {
+        HStack {
+            Cell(isNextNought: $isNextNought)
+            Cell(isNextNought: $isNextNought)
+            Cell(isNextNought: $isNextNought)
+        }
+    }
+}
+struct Grid: View {
+    @State var isNextNought: Bool = false
+    var body: some View {
+        ZStack {
+            GridShape().stroke(.blue, lineWidth: 15)
+            VStack {
+                Row(isNextNought: $isNextNought)
+                Row(isNextNought: $isNextNought)
+                Row(isNextNought: $isNextNought)
+            }
+        }.aspectRatio(contentMode: .fit)
+    }
+}
+</code></pre><ol start="5"><li>在ContentView中使用</li></ol><pre><code class="language-swift">struct ContentView: View {
+    var body: some View {
+        Grid().padding(.horizontal, 20)
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gy4do2ix1sj30ce0p4my8.jpg" alt="image-20220106233906878"/></p><h2>How it works…</h2><p><strong>isNextNought</strong>变量定义 下一个将放置哪种类型的标记。它在<strong>Grid</strong>组件中设置为<strong>false</strong>，这意味着第一个标记将始终是<strong>Cross</strong>。当点击一个单元格时，<strong>isNextNought</strong>变量将被切换。</p><p>有趣的是，在为<strong>onTapGesture</strong>手势应用视图修饰符之前，我们必须设置一个<strong>contentShape()</strong>修饰符。之所以会这样，是因为默认的可点击区域是由组件的可见部分给出的，但是一开始，所有的单元格都是隐藏的，所以该区域是空的！</p><p>然后<strong>contentShape()</strong>修饰符定义可以检测到触摸的命中测试区域。在这种情况下，我们希望它占据整个区域，因此使用<strong>Rectangle</strong>，但我们可以使用<strong>Circle</strong>、<strong>Capsule</strong>，甚至自定义形状。</p><p>不过这个游戏还没有完全完成，还缺少判断赢的逻辑，感兴趣的可以自己补全。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑048-实现一个环形进度条]]></title>
+        <id>/2021/12/21/SwiftUI专辑-048-实现一个环形进度条</id>
+        <link href="https://gouxin.fun/2021/12/21/SwiftUI专辑-048-实现一个环形进度条"/>
+        <updated>2021-12-21T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+本文我们将实现一个类似于Apple Watch上的环形进度条，并用Slider控制进度。</p><h2>Getting ready</h2><p>首先，创建一个新的SwiftUI项目：<strong>ProgressRings</strong></p><h2>How to do it…</h2><ol><li>首先，我们顶一个一个环形的shape: ProgressRing</li></ol><pre><code class="language-swift">struct ProgressRing: Shape {
+    private let startAngle = Angle.radians(1.5 * .pi)
+    @Binding var progress: Double
+    func path(in rect: CGRect) -&gt; Path {
+        Path() { path in
+            path.addArc(center: CGPoint(x: rect.midX, y: rect.midY), radius: rect.width/2.0, startAngle: startAngle, endAngle: startAngle + Angle(radians: 2 * .pi * progress), clockwise: false)            
+        }
+    }
+}
+</code></pre><ol start="2"><li>创建一个ProgressRingsView，用来显示多个同心圆</li></ol><pre><code class="language-swift">struct ProgressRingsView: View {
+    private let ringPadding = 5.0
+    private let ringWidth = 40.0
+    private var ringStrokeStyle: StrokeStyle {
+        StrokeStyle(lineWidth: ringWidth, lineCap: .round, lineJoin: .round)
+    }
+    @Binding var progressExternal: Double
+    @Binding var progressCentral: Double
+    @Binding var progressInternal: Double
+    var body: some View {
+        ZStack {
+            ProgressRing(progress: $progressInternal)
+                .stroke(.blue, style: ringStrokeStyle)
+                .padding(2*(ringWidth + ringPadding))
+            ProgressRing(progress: $progressCentral)
+                .stroke(.red, style: ringStrokeStyle)
+                .padding(ringWidth + ringPadding)
+
+            ProgressRing(progress: $progressExternal)
+                .stroke(.green, style: ringStrokeStyle)
+                .padding(ringWidth)
+        }
+    }
+}
+</code></pre><ol start="3"><li>在ContentView中创建最终的View，加上可调节进度的Slider</li></ol><pre><code class="language-swift">struct ContentView: View {
+    @State private var progressExternal = 0.3
+    @State private var progressCentral = 0.7
+    @State private var progressInternal = 0.5
+
+    var body: some View {
+        ZStack {
+            ProgressRingsView(progressExternal: $progressExternal, progressCentral: $progressCentral, progressInternal: $progressInternal)
+                .aspectRatio(contentMode: .fit)
+
+            VStack(spacing: 10) {
+                Spacer()
+                Slider(value: $progressInternal, in: 0 ... 1, step: 0.01)
+                Slider(value: $progressCentral, in: 0 ... 1, step: 0.01)
+                Slider(value: $progressExternal, in: 0 ... 1, step: 0.01)
+            }.padding(30)
+        }
+    }
+}
+</code></pre><p>最终：</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gy4cye6ryzj30by0p474t.jpg" alt="image-20220106231426582"/></p><h2>How it works…</h2><p><strong>ProgressRing</strong>只是简单的Path+arc，他暴露了progress供外部设置进度。</p><p>之后，我们ProgressRingsView中添加了3个同心圆。分别暴露@Binding供外部设置</p><p>最终我们在ContentView中加上了Slider，并调节进度。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑047-使用Canvas Api绘制]]></title>
+        <id>/2021/12/20/SwiftUI专辑-047-使用CanvasApi绘制</id>
+        <link href="https://gouxin.fun/2021/12/20/SwiftUI专辑-047-使用CanvasApi绘制"/>
+        <updated>2021-12-20T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+UIkit我们可以通过继承UIView，然后在drawRect中使用Core Graphic Api进行绘制。</p><p>SwiftUI通过<strong>Canvas</strong>实现这个功能，我们可以在Canvas中使用Core Graphic 进行绘制。</p><p>我们来实现一个绘图App。</p><h2>Getting ready</h2><p>首先，我们创建一个SwiftUI工程：<strong>Drawing</strong></p><h2>How to do it…</h2><ol><li>首先我们创建个Line数据结构, 并在ContentView中增加一个State</li></ol><pre><code class="language-swift">struct Line {
+    var points: [CGPoint]
+}
+struct ContentView: View {
+    @State var lines: [Line] = []
+    var body: some View {
+        
+    }
+}
+</code></pre><ol start="2"><li>在body中，我们加入Canvas，能够将lines绘制出来</li></ol><pre><code class="language-swift">var body: some View {
+  Canvas { ctx, size in
+      for line in self.lines {
+          var path = Path()
+          path.addLines(line.points)
+          ctx.stroke(path, with: .color(.red),style: .init(lineWidth: 5, lineCap: .round, lineJoin: .round))
+      }
+  }
+}
+</code></pre><ol start="3"><li>我们添加个手势，能够根据手势，更新lines</li></ol><pre><code class="language-swift">var body: some View {
+        Canvas { ctx, size in
+            for line in self.lines {
+                var path = Path()
+                path.addLines(line.points)
+                ctx.stroke(path, with: .color(.red),style: .init(lineWidth: 5, lineCap: .round, lineJoin: .round))
+            }
+        }.gesture(DragGesture(minimumDistance: 0, coordinateSpace: .local).onChanged({ value in
+            let position = value.location
+            if value.translation == .zero {
+                lines.append(Line(points: [position]))
+            } else{
+                guard let lastIdx = lines.indices.last else {
+                    return
+                }
+                lines[lastIdx].points.append(position)
+            }
+        }))
+    }
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy4c3ggzlyj309q0l1aap.jpg" alt="aaaa"/></p><h2>How it works…</h2><p>整个app主要分为2部分：</p><ul><li>通过<strong>points</strong>数组进行绘制：Canvas提供了一个Context，我们能够在里面用CoreGraphic APi进行绘制，我们创建了一个Path，然后将Points传给path , 最后再stroken。</li><li>为每次手指的点移动都创建一个points数组保存。我们用了<strong>DrawGesture</strong>，并用onChange监听移动。如果<strong>translation</strong>为.zero，说明手指按下，因此我们需要添加一条新的Line到数组中。如果translation大于zero，说明手指在移动，此时我们需要更新line里面的points。</li></ul>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑046-自定义shape中绘制曲线]]></title>
+        <id>/2021/12/19/SwiftUI专辑-046-自定义shape中绘制曲线</id>
+        <link href="https://gouxin.fun/2021/12/19/SwiftUI专辑-046-自定义shape中绘制曲线"/>
+        <updated>2021-12-19T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+上一篇文章中，我们介绍了如何绘制自定义shape，但只使用了直线。</p><p>本文将介绍如何绘制曲线。</p><p>我们来绘制一个心形。</p><h2>Getting ready</h2><p>首先创建一个SwiftUI项目：<strong>Heart</strong></p><h2>How to do it…</h2><ol><li>首先，我们创建一个extension，来快速获取矩形的1/4的位置。</li></ol><pre><code class="language-swift">extension CGRect {
+    var quarterX: CGFloat {
+        minX + size.height/4
+    }
+
+    var quarterY: CGFloat {
+        minY + size.height/4
+    }
+
+    var threeQuartersX: CGFloat {
+        minX + 3*size.height/4
+    }
+
+    var threeQuartersY: CGFloat {
+        minY + 3*size.height/4
+    }
+}
+</code></pre><ol start="2"><li>创建心形</li></ol><pre><code class="language-swift">struct Heart: Shape {
+    func path(in rect: CGRect) -&gt; Path {
+        Path() { path in
+            path.move(to: CGPoint(x: rect.midX, y: rect.maxY))
+            path.addCurve(to: CGPoint(x: rect.minX, y: rect.quarterY),
+                          control1: CGPoint(x: rect.midX, y: rect.threeQuartersY),
+                          control2: CGPoint(x: rect.minX, y: rect.midY))
+            path.addArc(center: CGPoint(x: rect.quarterX, y: rect.quarterY),
+                        radius: rect.size.width/4,
+                        startAngle: .radians(.pi),
+                        endAngle: .radians(0),
+                        clockwise: false)
+            path.addArc(center: CGPoint(x: rect.threeQuartersX, y: rect.quarterY),
+                        radius: rect.size.width/4,
+                        startAngle: .radians(.pi),
+                        endAngle: .radians(0),
+                        clockwise: false)
+            path.addCurve(to: CGPoint(x: rect.midX, y: rect.maxY),
+                          control1: CGPoint(x: rect.maxX, y: rect.midY),
+                          control2: CGPoint(x: rect.midX, y: rect.threeQuartersY))
+        }
+    }
+}
+</code></pre><ol start="3"><li>显示</li></ol><pre><code class="language-swift">var body: some View {
+    Heart()
+        .fill(.red)
+        .overlay(Heart().stroke(.orange, lineWidth: 10))
+        .aspectRatio(contentMode: .fit)
+        .padding(.horizontal, 20)
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy46ccdjz7j308k0dewel.jpg" alt="image-20220106192538867"/></p><h2>How it works…</h2><p>我们首先定位到底部中央，然后沿着顺时针绘制。</p><p>我们可以看到<strong>arc()</strong> 函数有个 <strong>clockwise</strong> 参数。但是我们的clockwise设置为false，方向却是顺时针，有点奇怪，这是为什么呢？</p><p>这是因为SwiftUI和UIView一样，也是使用一个flipped coordinate system。所以SwiftUI中的顺时针，对用户来说就是逆时针。所以我们设置为false。</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy46j7n3iyj30dw07zmxa.jpg" alt="Figure_7.8_B17962"/></p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑045-绘制自定义shape]]></title>
+        <id>/2021/12/18/SwiftUI专辑-045-绘制自定义shape</id>
+        <link href="https://gouxin.fun/2021/12/18/SwiftUI专辑-045-绘制自定义shape"/>
+        <updated>2021-12-18T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+自定义shape也只是使用Path组件定义好形状，然后包裹成一个Shape就行了。</p><p>本章，我们将自定义一个菱形。</p><h2>Getting ready</h2><p>首先，创建一个SwiftUI工程：<strong>RhombusApp</strong></p><h2>How to do it…</h2><ol><li>创建菱形</li></ol><pre><code class="language-swift">struct Rhombus: Shape {
+    func path(in rect: CGRect) -&gt; Path {
+        Path() { path in
+            path.move(to: CGPoint(x: rect.midX, y: rect.minY))
+            path.addLine(to: CGPoint(x: rect.minX, y: rect.midY))
+            path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))
+            path.closeSubpath()
+        }
+    }
+}
+</code></pre><ol start="2"><li>显示出来</li></ol><pre><code class="language-swift">var body: some View {
+    Rhombus()
+        .fill(.orange)
+        .aspectRatio(0.7, contentMode: .fit)
+        .padding(.horizontal, 10)
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy45wby22pj30760dkt8q.jpg" alt="image-20220106191015673"/></p><h2>How it works…</h2><p>要创建自定义shape，你需要实现Shape协议</p><p>Shape协议需要实现<code>func path(in rect: CGRect) -&gt; Path </code>。</p><p>我们创建一个Path，在path的闭包中绘制图形。</p><p>注意绘制的坐标系的原点在左上角：</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy45zj4zvoj306y0e00sz.jpg" alt="Figure_7.6_B17962"/></p><h2>Shape的Api</h2><h3>Defining a Shape’s Path</h3><pre><code class="language-swift">//上面演示过了，定义shape的path
+func path(in rect: CGRect) -&gt; Path
+//根据按百分比，截断path
+func trim(from startFraction: CGFloat = 0, to endFraction: CGFloat = 1) -&gt; some Shape
+</code></pre><p>我们来看看trim的demo</p><pre><code class="language-swift">var body: some View {
+  //只要path的0-25%,所以得到的圆弧是1/4，在闭合path
+    Circle().trim(from: 0, to: 0.25)
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gy6c735qsoj30d40b8a9z.jpg" alt="image-20220108161917454"/></p><h3>Transforming a Shape</h3><pre><code class="language-swift">func transform(_ transform: CGAffineTransform) -&gt; TransformedShape&lt;Self&gt;
+func size(_ size: CGSize) -&gt; some Shape
+func scale(_ scale: CGFloat, anchor: UnitPoint = .center) -&gt; ScaledShape&lt;Self&gt;
+func rotation(_ angle: Angle, anchor: UnitPoint = .center) -&gt; RotatedShape&lt;Self&gt;
+func offset(_ offset: CGSize) -&gt; OffsetShape&lt;Self&gt;
+</code></pre><h3>Setting the Stroke Characteristics</h3><pre><code class="language-swift">func stroke&lt;S&gt;(_ content: S, lineWidth: CGFloat = 1) -&gt; some View where S : ShapeStyle
+//StrokeStyle定义了linewidth，连接头的样式，虚线等
+func stroke&lt;S&gt;(_ content: S, style: StrokeStyle) -&gt; some View where S : ShapeStyle
+</code></pre>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑044-使用SwiftUI内置的Shape]]></title>
+        <id>/2021/12/17/SwiftUI专辑-044-使用SwiftUI内置的Shape</id>
+        <link href="https://gouxin.fun/2021/12/17/SwiftUI专辑-044-使用SwiftUI内置的Shape"/>
+        <updated>2021-12-17T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+SwiftUI有5个内置的shape:</p><ul><li>Rectangle</li><li>RoundedRectangle</li><li>Capsule</li><li>Circle</li><li>Ellipse</li></ul><p>我们也可以结合他们，创建更复杂的shape。</p><h2>Getting ready</h2><p>首先 ，我们新建一个SwiftUI工程<strong>BuiltInShapes</strong></p><h2>How to do it…</h2><ol><li>首先创建一个Vstack来显示我们的所有shape</li></ol><pre><code class="language-swift">var body: some View {
+    VStack(spacing: 10){
+
+    }.padding(.horizontal, 20)
+}
+</code></pre><ol start="2"><li>添加shape</li></ol><pre><code class="language-swift">var body: some View {
+  VStack(spacing: 10){
+      Rectangle().stroke(.orange, lineWidth: 15)
+      RoundedRectangle(cornerRadius: 20).fill(.red)
+      Capsule(style: .continuous).fill(.green).frame(height: 100)
+      Capsule(style: .circular).fill(.green).frame(height: 100)
+      Circle().stroke(.blue, lineWidth: 15)
+      Ellipse().fill(.purple)
+  }.padding(.horizontal, 20)
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gy451m4i7aj30bm0om0te.jpg" alt="image-20220106184041907"/></p><h2>How it works…</h2><p>代码比较简单，我们解释下capsule</p><p>capsule有两种圆角</p><ul><li>Continuous： 圆角是平滑过渡到横线的</li><li>Circular：不是平滑过渡，就是半圆</li></ul><p>然后再注意下stroke和stokeBorder的区别</p><p>Stroke: frame是stroke的中线</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy45delyw6j30wq0ecmxr.jpg" alt="image-20220106185204381"/></p><p>strokeBorder：在frame内部创建一个stroke，stroke的外边沿是frame。</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy45flagd8j307q032a9v.jpg" alt="image-20220106185410521"/></p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑043-显示popovers]]></title>
+        <id>/2021/12/16/SwiftUI专辑-043-显示popovers</id>
+        <link href="https://gouxin.fun/2021/12/16/SwiftUI专辑-043-显示popovers"/>
+        <updated>2021-12-16T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+弹出框是一种可以显示在屏幕上以提供有关特定项目的更多信息的视图。它们包括一个箭头，指向它们起源的位置。你可以点击任何其他屏幕区域以关闭弹出窗口。弹出框通常用于较大的屏幕，例如 iPad。</p><p>本文，我们将在 iPad 上创建并显示一个弹出框。</p><h2>Getting ready</h2><p>首先创建一个SwiftUI项目：<strong>DisplayingPopovers</strong></p><h2>How to do it</h2><ol><li>首先定义一个State控制是否显示popover</li></ol><pre><code class="language-swift">@State private var showPopover = false
+</code></pre><ol start="2"><li>创建一个按钮，点击时显示Popover</li></ol><pre><code class="language-swift">var body: some View {
+    Button(&quot;show popover&quot;) {
+        self.showPopover = true
+    }.popover(isPresented: $showPopover, arrowEdge: .bottom) {
+        Text(&quot;Popover content displayed here&quot;)
+            .font(.system(size: 40))
+    }
+}
+</code></pre><ol start="3"><li>预览切换成iPad，或者直接在iPad模拟器上运行</li></ol><pre><code class="language-swift">static var previews: some View {
+      ContentView()
+          .previewDevice(&quot;iPad Pro (9.7-inch)&quot;)
+  }
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gy38h48t3fj30b40fijrh.jpg" alt="008i3skNly1gy38aznqryj30o40xmdgp"/></p><h2>How it works</h2><p><strong>.popover()</strong>有4个参数：<strong>isPresented</strong>, <strong>attachmentAnchor</strong>, <strong>arrowEdge</strong>, 和 <strong>content</strong>.</p><p><strong>isPresented</strong>控制是否显示。</p><p><strong>attachmentAnchor</strong>设置弹窗锚点。</p><p><strong>arrowEdge</strong>控制弹窗的小箭头方向。</p><p><strong>content</strong>控制弹窗内容。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑042-显示context menus]]></title>
+        <id>/2021/12/15/SwiftUI专辑-042-显示contextmenus</id>
+        <link href="https://gouxin.fun/2021/12/15/SwiftUI专辑-042-显示contextmenus"/>
+        <updated>2021-12-15T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+context menus是一个弹出菜单，用于显示开发人员预期用户可能会执行的操作。context menus在 iOS 上是通过 3D Touch 触发和 macOS 上的右键单击触发。</p><p>context menus由一组在隐式<strong>HStack 中</strong>水平显示的按钮<strong>组成</strong>。</p><h2>Getting ready</h2><p>首先，创建一个新的SwiftUI项目：<strong>DisplayingContextMenus</strong></p><h2>How to do it</h2><ol><li>首先定义一个State</li></ol><pre><code class="language-swift">@State private var bulbColor = Color.red
+</code></pre><ol start="2"><li>定义个Image</li></ol><pre><code class="language-swift">Image(systemName: &quot;lightbulb.fill&quot;)
+      .font(.system(size: 60))
+      .foregroundColor(self.bulbColor)
+</code></pre><ol start="3"><li>添加contextMemu</li></ol><pre><code class="language-swift">var body: some View {
+    Image(systemName: &quot;lightbulb.fill&quot;)
+        .font(.system(size: 60))
+        .foregroundColor(self.bulbColor)
+        .contextMenu {
+            Button(&quot;Yellow Bulb&quot;){
+                self.bulbColor = Color.yellow
+            }
+            Button(&quot;Blue Bulb&quot;){
+                self.bulbColor = Color.blue
+            }
+            Button(&quot;Green Bulb&quot;){
+                self.bulbColor = Color.green
+            }
+        }
+}
+</code></pre><p>最终结果，长按图片:</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy37vfiqnvj30d00qugm6.jpg" alt="image-20220105233301390"/></p><h2>How it works</h2><p><strong>.contextMenu()</strong> 修饰符可以添加到任何View上。</p><p>当我们长按View时，会弹出ContextMenu。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑041-显示sheets]]></title>
+        <id>/2021/12/14/SwiftUI专辑-041-显示sheets</id>
+        <link href="https://gouxin.fun/2021/12/14/SwiftUI专辑-041-显示sheets"/>
+        <updated>2021-12-14T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+SwiftUI使用sheets来present新的View(类似于UIKit的present功能)，允许你往下拖动，让弹出的View消失。</p><p>本章将演示如何present一个NavigationView。</p><h2>Getting ready</h2><p>首先，新建一个SwiftUI项目：<strong>PresentingSheets</strong>。</p><h2>How to do it</h2><ol><li>首先创建2个两个State</li></ol><pre><code class="language-swift">@State private var showSheet = false
+@State private var sheetWithNav = false
+</code></pre><ol start="2"><li>创建一个按钮，点击后显示sheet</li></ol><pre><code class="language-swift">var body: some View {
+    VStack {
+        Button(&quot;Display Sheet&quot;) {
+            self.showSheet = true
+        }.sheet(isPresented: $showSheet) {
+
+        } content: {
+            SheetView()
+        }
+    }
+}
+</code></pre><ol start="3"><li>实现SheetView</li></ol><pre><code class="language-swift">struct SheetView: View {
+    var body: some View {
+        Text(&quot;This is the sheet we want to display View&quot;)
+    }
+}
+</code></pre><p>运行</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy2zzs3nuuj30iq11wgm6.jpg" alt="image-20220105190022691"/></p><ol start="4"><li>再创建一个按钮，点了显示带导航的sheet</li></ol><pre><code class="language-swift"> Button(&quot;SheetWithNavigationBar&quot;) {
+      self.sheetWithNav = true
+  }.sheet(isPresented: $sheetWithNav) {
+
+  } content: {
+      SheetWithNavView(sheetWithNav: $sheetWithNav)
+  }
+</code></pre><ol start="5"><li>实现我们的SheetWithNavView</li></ol><pre><code class="language-swift">struct SheetWithNavView: View {
+  //注意是@Binding
+    @Binding var sheetWithNav: Bool
+    var body: some View {
+        NavigationView {
+            Text(&quot;Sheet with navigation&quot;)
+                .navigationTitle(&quot;NaviagtionTitle&quot;)
+                .navigationBarTitleDisplayMode(.inline)
+                .navigationBarItems(trailing: Button(&quot;Done&quot;, action: {
+                    self.sheetWithNav = false
+                }))
+        }
+    }
+}
+
+struct SheetWithNavView_Previews: PreviewProvider {
+    static var previews: some View {
+      //我们可以直接设置@Binding的值：.constant(true)
+        SheetWithNavView(sheetWithNav: .constant(true))
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gy37cq8qwej30ji130755.jpg" alt="image-20220105231502701"/></p><p>ok，现在我们点击Done，界面就会消失</p><h2>How it works</h2><p>首先sheet绑定了是否展示isPresented，一个可选的onDismiss，一个要显示的View。</p><p>之后我们也演示了，如何通过传递绑定的isPresented，让弹出的View能够通过代码dismiss。</p><p>传递的时候，我们使用@Binding接受。</p><p>在preview时，对于@Binding的数据，我们可以通过.constant()来模拟，便于我们预览。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑040-显示confirmationDialog]]></title>
+        <id>/2021/12/13/SwiftUI专辑-040-显示confirmationDialog</id>
+        <link href="https://gouxin.fun/2021/12/13/SwiftUI专辑-040-显示confirmationDialog"/>
+        <updated>2021-12-13T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+Confirmation dialogs 是 iOS 15 开始出现的。</p><p>他和Actionsheet类似，不过Actionsheet已经被废弃了。</p><h2>Getting ready</h2><p>首先新建一个SwiftUI项目：<strong>PresentingConfirmationDialogs</strong></p><h2>How to do it</h2><ol><li>定义个State控制是否显示confirmationDialog</li></ol><pre><code class="language-swift">@State private var showDialog = false
+var title  = &quot;Confirmation Dialog&quot;
+</code></pre><ol start="2"><li>添加个按钮，点击后，显示confirmationDialog</li></ol><pre><code class="language-swift">var body: some View {
+    Button(&quot;Present Confirmation Dialog&quot;) {
+        showDialog = true
+    }.confirmationDialog(title, isPresented: $showDialog) {
+        Button(&quot;Dismiss Dialog&quot;, role: .destructive) {
+
+        }
+        Button(&quot;Save&quot;) {
+
+        }
+        Button(&quot;Cancel&quot;, role: .cancel) {
+
+        }
+        Button(&quot;Print something to console&quot;) {
+            print(&quot;something&quot;)
+        }
+    } message: {
+        Text(&quot;&quot;&quot;
+             Use Dialogs to give users alternatives for
+             completing a task
+            &quot;&quot;&quot;)
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy2v9afnolj309q0lit94.jpg" alt="20220105161606"/></p><h2>How it works</h2><p>.confirmationDialog修饰符用于显示一个confirmationDialog。title用于显示title，第二个参数binding控制是否显示，actions控制action btn, message控制message的显示</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑039-添加action Button到alert中]]></title>
+        <id>/2021/12/12/SwiftUI专辑-039-添加actionButton到alert中</id>
+        <link href="https://gouxin.fun/2021/12/12/SwiftUI专辑-039-添加actionButton到alert中"/>
+        <updated>2021-12-12T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+上个例子显示了Alert的基本用法。我们只显示了一个Ok。如果我们想要多个Btn呢？</p><p>本文将介绍如何添加action button到alert中。</p><h2>Getting ready</h2><p>新建一个SwiftUI项目：<strong>AlertsWithActions</strong></p><h2>How to do it</h2><ol><li>添加2个State</li></ol><pre><code class="language-swift">@State private var changeText = false
+@State private var displayedText = &quot;Tap to Change Text&quot;
+</code></pre><ol start="2"><li>添加一个按钮</li></ol><pre><code class="language-swift">Button(displayedText){
+    changeText = true
+}
+</code></pre><ol start="3"><li>添加alert</li></ol><pre><code class="language-swift">var body: some View {
+    Button(displayedText) {
+        changeText = true
+    }.alert(&quot;Changing Text&quot;, isPresented: $changeText) {
+        Button(&quot;Yea&quot;){
+                displayedText = (displayedText == &quot;Stay Foolish&quot;) ? &quot;Stay Hungry&quot; : &quot;Stay Foolish&quot;
+        }
+        Button(&quot;Do nothing&quot;){}
+    } message: {
+        Text(&quot;Do you want to toggle the text?&quot;)
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy2tnyjnc0j30hi0vugm0.jpg" alt="image-20220105152126983"/></p><h2>How it works</h2><p>alert的actions闭包，可以在里面提供多个按钮，然后单独为每个按钮设置action。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑038-显示alerts]]></title>
+        <id>/2021/12/11/SwiftUI专辑-038-显示alerts</id>
+        <link href="https://gouxin.fun/2021/12/11/SwiftUI专辑-038-显示alerts"/>
+        <updated>2021-12-11T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+一种显示重要信息的常用View是：Alert。</p><p>iOS 13 和 14 显示Alert的方式被废弃了。iOS 15介绍了全新的显示alerts的方式。</p><p>我们两种都看一看。先看iOS15的，再看老版本的。</p><h2>Getting ready</h2><p>首先，新建个SwiftUI项目：<strong>PresentingAlerts</strong></p><h2>How to do it</h2><ol><li>创建一个State, 控制alert的显示和隐藏</li></ol><pre><code class="language-swift">@State private var showSubmitAlert = false
+</code></pre><ol start="2"><li>添加一个Button，点击后，弹出alert</li></ol><pre><code class="language-swift">var body: some View {
+    Button(&quot;show alert&quot;) {
+        self.showSubmitAlert = true
+    }.alert(&quot;Confirm Actions&quot;, isPresented: $showSubmitAlert) {
+        Button(&quot;Ok&quot;, role: .cancel) {
+            print(&quot;clicked ok&quot;)
+        }
+    } message: {
+        Text(&quot;Are you sure you want to submit the form&quot;)
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gy2slzd7mlj309q0k7t8u.jpg" alt="20220105144429"/></p><ol start="3"><li>再看看老的Alert是怎么用的</li></ol><pre><code class="language-swift">Button(&quot;show old alert&quot;) {
+      self.showSubmitAlert = true
+  }.alert(isPresented: $showSubmitAlert) {
+      Alert(title: Text(&quot;Old Confirm Actions&quot;),
+            message: Text(&quot;Are you sure you want to submit the old form&quot;),
+            dismissButton: .default(Text(&quot;ok&quot;)))
+  }
+</code></pre><h2>How it works</h2><h3>iOS 15</h3><p>你通过<strong>.alert</strong> 修饰符，绑定到是否展示，然后提供title，message， actions。</p><h3>iOS 13 and 14</h3><p>你通过<strong>.alert</strong> 修饰符，绑定到是否展示，然后返回一个Alert。</p><p>在这个Alert中设置title， message 和actions</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑037-代码切换TabView的Tab]]></title>
+        <id>/2021/12/10/SwiftUI专辑-037-代码切换TabView的Tab</id>
+        <link href="https://gouxin.fun/2021/12/10/SwiftUI专辑-037-代码切换TabView的Tab"/>
+        <updated>2021-12-10T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+在上一篇文章中，我们介绍了如何点击底部tab，跳转不同界面。然而，我们有时候也想通过代码触发跳转。</p><p>本章，我们将使用一个tap gesture来从一个tab跳转到另一个tab。</p><h2>Getting ready</h2><p>首先创建一个新的SwiftUI项目：<strong>TabViewWithGestures</strong></p><h2>How to do it…</h2><ol><li>添加一个State记录当前选中的tab</li></ol><pre><code class="language-swift">@State private var tabSelected = 0
+</code></pre><ol start="2"><li>添加UI</li></ol><pre><code class="language-swift">var body: some View {
+        TabView(selection: $tabSelected) {
+            Text(&quot;Left Tab. Click to switch to right&quot;)
+                .onTapGesture {
+                    self.tabSelected = 1
+                }.tabItem {
+                    Label(&quot;Left&quot;, systemImage: &quot;l.circle.fill&quot;)
+                }.tag(0)
+            Text(&quot;Right Tab. Click to switch to left&quot;)
+                .onTapGesture {
+                    self.tabSelected = 0
+                }.tabItem {
+                    Label(&quot;Right&quot;, systemImage: &quot;l.circle.fill&quot;)
+                }.tag(1)
+        }
+    }
+
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gy24c173y7j30j012u3z9.jpg" alt="image-20220105004501937"/></p><h2>How it works…</h2><p>要想代码切换tab，我们首先得创建一个存储当前选中tab的State。然后作为TabView的selection参数。</p><p>我们添加.tag()修饰符来指定每个tab。要切换是，为State赋值为对应的tag即可。本例中，我们在onTapGesture中修改了state为第二个tab的tag，因此会自动切换到第二个tab。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑036-使用TabView]]></title>
+        <id>/2021/12/09/SwiftUI专辑-036-使用TabView</id>
+        <link href="https://gouxin.fun/2021/12/09/SwiftUI专辑-036-使用TabView"/>
+        <updated>2021-12-09T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+NavigationView比较适合有层次的数据，但不太适合不想关的数据。TabView就是用来组织这种数据的。</p><h2>Getting ready</h2><p>新建一个SwiftUI项目：<strong>UsingTabViews</strong></p><h2>How to do it…</h2><ol><li>新建一个<strong>HomeView</strong></li></ol><pre><code class="language-swift">let games = [&quot;Doom&quot;, &quot;Final F&quot;,&quot;Cyberpunk&quot;, &quot;avengers&quot;, &quot;animal trivia&quot;, &quot;sudoku&quot;, &quot;snakes and ladders&quot;, &quot;Power rangers&quot;, &quot;ultimate frisbee&quot;,&quot;football&quot;, &quot;soccer&quot;, &quot;much more&quot;]
+
+struct HomeView: View {
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(games, id: \.self) { game in
+                    Text(game).padding()
+                }
+            }.navigationBarTitle(&quot;Best Games for 2021&quot;, displayMode: .inline)
+        }
+    }
+}
+</code></pre><ol start="2"><li>新建一个<strong>CurrenciesView</strong></li></ol><pre><code class="language-swift">struct Currency: Identifiable {
+    let id = UUID()
+    var name: String
+    var image: String
+}
+
+var currencies = [
+    Currency(name: &quot;Dollar&quot;, image: &quot;dollarsign.circle.fill&quot;),
+    Currency(name: &quot;Sterling&quot;, image: &quot;sterlingsign.circle.fill&quot;),
+    Currency(name: &quot;Euro&quot;, image: &quot;eurosign.circle.fill&quot;),
+    Currency(name: &quot;Yen&quot;, image: &quot;yensign.circle.fill&quot;),
+    Currency(name: &quot;Naira&quot;, image: &quot;nairasign.circle.fill&quot;),
+]
+struct CurrenciesView: View {
+    var body: some View {
+        NavigationView {
+            VStack {
+                ForEach(currencies) { currency in
+                    HStack {
+                        Group {
+                            Text(currency.name)
+                            Spacer()
+                            Image(systemName: currency.image)
+                        }.font(Font.system(size: 40, design: .default))
+                        .padding()
+                    }
+                }
+            }.navigationBarTitle(&quot;Currencies&quot;)
+        }
+    }
+}
+</code></pre><ol start="3"><li>打开<strong>ContentView.swift</strong>，使用TabView</li></ol><pre><code class="language-swift">struct ContentView: View {
+    var body: some View {
+        TabView {
+            HomeView().tabItem {
+                Label(&quot;Home&quot;, systemImage: &quot;house.fill&quot;)
+            }
+            CurrenciesView().tabItem {
+                Label(&quot;Currencies&quot;, systemImage: &quot;coloncurrencysign.circle.fill&quot;)
+            }
+        }
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gy23syy5yej30im132dh8.jpg" alt="image-20220105002641933"/></p><h2>How it works…</h2><p>我们使用TabView定义tab的内容。</p><p>使用<strong>.tabItem()</strong> 定义tabbar的内容。</p><p>ios14以后TabView还可以用作<strong>UIPageViewController</strong>。</p><pre><code class="language-swift">TabView {
+
+}.tabViewStyle(.page)
+</code></pre>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑035-使用Focus和Submit]]></title>
+        <id>/2021/12/08/SwiftUI专辑-035-使用Focus和Submit</id>
+        <link href="https://gouxin.fun/2021/12/08/SwiftUI专辑-035-使用Focus和Submit"/>
+        <updated>2021-12-08T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+如果用户必须手动单击每个字段，填写它，然后单击填写下一个，这可能会很乏味。一个更容易和更快的方法是使用键盘上的按钮从一个表单字段跳转到下一个。</p><p>本章，我们将创建一个地址表单，在各个字段之间轻松跳转。</p><h2>Getting ready</h2><p>创建一个新的SwiftUI项目：<strong>FocusAndSubmit</strong></p><h2>How to do it…</h2><ol><li>在ContentView中定义一个输入框类型枚举</li></ol><pre><code class="language-swift">struct ContentView: View {
+    enum AddressField{
+        case streetName
+        case city
+        case state
+        case zipCode
+    }
+    var body: some View {
+        Text(&quot;hello world&quot;)
+    }
+}
+</code></pre><ol start="2"><li>添加一些State，准备和TextField绑定</li></ol><pre><code class="language-swift">@State private var streetName = &quot;&quot;
+@State private var city = &quot;&quot;
+@State private var state = &quot;&quot;
+@State private var zipCode = &quot;&quot;
+</code></pre><ol start="3"><li>添加一个<strong>@FocusState</strong>，控制那个输入框正在输入</li></ol><pre><code class="language-swift">@FocusState private var currentFocus: AddressField?
+</code></pre><ol start="4"><li>构建UI</li></ol><pre><code class="language-swift">var body: some View {
+    VStack {
+        TextField(&quot;Address&quot;, text: $streetName)
+            .focused($currentFocus, equals:.streetName)
+            .submitLabel(.next)
+        TextField(&quot;City&quot;, text: $city)
+            .focused($currentFocus, equals: .city)
+            .submitLabel(.next)
+        TextField(&quot;State&quot;, text: $state)
+            .focused($currentFocus, equals:.state)
+            .submitLabel(.next)
+        TextField(&quot;Zip code&quot;, text: $zipCode)
+            .focused($currentFocus, equals:.zipCode)
+            .submitLabel(.done)
+    }
+}
+</code></pre><ol start="5"><li>添加<strong>.onSubmit</strong>到VStack, 在里面修改currentFocus，控制哪个输入框Foucus。</li></ol><pre><code class="language-swift">.onSubmit {
+   switch currentFocus {
+    case .streetName: currentFocus = .city
+    case .city: currentFocus = .state
+    case .state:currentFocus = .zipCode
+    default:
+        print(&quot;Thanks for providing your address&quot;)
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gy237u8018j30j812m75q.jpg" alt="image-20220105000620065"/></p><p>当点击next时，下一个输入框会聚焦</p><h2>How it works…</h2><p><strong>@FocusState</strong>定义了Foucus的状态变化。</p><p>使用<strong>.focused(_ : equals:)</strong>将View和FoucusState绑定。当聚焦状态改变时，会更新FoucusState，更新FoucusState也会改变对应View的聚焦状态。</p><p>我们使用<strong>.submitLabel()</strong>来控制键盘右下角的submit按钮。当点击按钮时，会触发.onSubmit注册的回调。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑034-开启和禁用Form中的某些items]]></title>
+        <id>/2021/12/07/SwiftUI专辑-034-开启和禁用Form中的某些items</id>
+        <link href="https://gouxin.fun/2021/12/07/SwiftUI专辑-034-开启和禁用Form中的某些items"/>
+        <updated>2021-12-07T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+表单中的某些地方可能有额外的要求，例如最小文本长度或组合大写和小写字符。我们可能想要根据 用户的输入，禁用提交按钮，直到满足所有要求。</p><p>本章，我们将创建一个登录视图，只有当用户在用户名和密码字段中输入一些内容时，提交按钮才会启用。</p><h2>Getting ready</h2><p>新建要给SwiftUI项目<strong>FormFieldDisable</strong></p><h2>How to do it…</h2><ol><li>新建一个<strong>LoginView</strong>, 并添加一些状态</li></ol><pre><code class="language-swift">struct LoginView: View {
+    @State private var username = &quot;&quot;
+    @State private var password = &quot;&quot;
+    var body: some View {
+        Text(&quot;&quot;)
+    }
+}
+</code></pre><ol start="2"><li>实现UI</li></ol><pre><code class="language-swift">VStack {
+    Text(&quot;Dungeons and Wagons&quot;)
+        .fontWeight(.heavy)
+        .foregroundColor(.blue)
+        .font(.largeTitle)
+        .padding(.bottom, 30)
+    Image(systemName: &quot;person.circle&quot;)
+         .font(.system(size: 150))
+         .foregroundColor(.gray)
+         .padding(.bottom,40)
+    Group{
+        TextField(&quot;Username&quot;, text: $username)
+        SecureField(&quot;Password&quot;, text: $password)
+    }.padding().overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.black, lineWidth: 2))
+    Button {
+        print(&quot;Login clicked&quot;)
+    } label: {
+        Text(&quot;Login&quot;)
+            .padding()
+            .background((username.isEmpty || password.isEmpty) ?.gray : Color.blue)
+            .foregroundColor(Color.white)
+            .clipShape(Capsule())            
+    }.disabled(username.isEmpty || password.isEmpty)
+  }
+</code></pre><ol start="3"><li>添加到ContentView中</li></ol><pre><code class="language-swift">struct ContentView: View {
+    var body: some View {
+        LoginView()
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxx7qu61rtj30c80p00t9.jpg" alt="image-20211231185513737"/></p><h2>How it works…</h2><p><strong>.disable（）</strong>可以让按钮不响应事件。</p><p>我们还介绍了Group，将样式同时应用于group中的多个view。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑033-在Form中显示隐藏sections]]></title>
+        <id>/2021/12/06/SwiftUI专辑-033-在Form中显示隐藏sections</id>
+        <link href="https://gouxin.fun/2021/12/06/SwiftUI专辑-033-在Form中显示隐藏sections"/>
+        <updated>2021-12-06T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+Form提供了一种从用户那里获取信息的方法。但是表格很长时，用户在完成时会感到气馁，提交表格的人很少 意味着您的调查数据更少，您的应用程序注册更少，或者提供您收集的任何数据的人更少。</p><p>本章，我们将学习如何根据用户的输入显示/隐藏Form的附加地址部分。</p><h2>Getting ready</h2><p>新建一个SwiftUI项目：<strong>SignUp</strong></p><h2>How to do it…</h2><ol><li>新建一个<strong>SignUpView</strong>，并添加state</li></ol><pre><code class="language-swift">struct SignUpView: View {
+    @State private var fname = &quot;&quot;
+    @State private var lname = &quot;&quot;
+    @State private var street = &quot;&quot;
+    @State private var city = &quot;&quot;
+    @State private var zip = &quot;&quot;
+    @State private var lessThanTwo = false
+    @State private var username = &quot;&quot;
+    @State private var password = &quot;&quot;
+    var body: some View {
+        Text(/*@START_MENU_TOKEN@*/&quot;Hello, World!&quot;/*@END_MENU_TOKEN@*/)
+    }
+}
+</code></pre><ol start="2"><li>添加一个Form</li></ol><pre><code class="language-swift">var body: some View {
+    NavigationView {
+        Form {
+
+        }.navigationTitle(&quot;Sign up&quot;)
+    }
+}
+</code></pre><ol start="3"><li>添加一个section到Form里</li></ol><pre><code class="language-swift">Section(header: Text(&quot;Names&quot;)){
+    TextField(&quot;First Name&quot;, text: $fname)
+    TextField(&quot;Last Name&quot; , text: $lname)
+}
+</code></pre><ol start="4"><li>再添加一个section</li></ol><pre><code class="language-swift">Section(header: Text(&quot;Current Address&quot;)){
+    TextField(&quot;Street Address&quot; , text: $street)
+    TextField(&quot;City&quot; , text: $city)
+    TextField(&quot;Zip&quot; , text: $zip)
+}
+</code></pre><ol start="5"><li>在zip后添加一个Toggle, 如果勾选了，才显示第三个section</li></ol><pre><code class="language-swift">Toggle(isOn: $lessThanTwo){
+    Text(&quot;Have you lived here for 2+ years&quot;)
+}
+</code></pre><ol start="6"><li>添加第三个section，根据是否勾选显示和隐藏</li></ol><pre><code class="language-swift">if !lessThanTwo{
+    Section(header: Text(&quot;Previous Address&quot;)) {
+        TextField(&quot;Street Address&quot; , text: $street)
+        TextField(&quot;City&quot; , text: $city)
+        TextField(&quot;Zip&quot; , text: $zip)
+    }
+}
+</code></pre><ol start="7"><li>在添加一个section</li></ol><pre><code class="language-swift">Section(header:Text(&quot;Create Account Info&quot;)) {
+    TextField(&quot;Create Username&quot; , text: $username)
+    SecureField(&quot;Password&quot;, text: $password)
+}
+</code></pre><ol start="8"><li>最后添加一个提交按钮</li></ol><pre><code class="language-swift">Button(&quot;Submit&quot;) {
+    print(&quot;Form submit action here&quot;)
+}
+</code></pre><p>最终，当我们打开toggle时，不会显示不需要填写的section</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxx755o5a4j30af0l0gm2.jpg" alt="20211231183357"/></p><h2>How it works…</h2><p>我们使用<strong>if</strong>条件语句来显示或隐藏表单中的部分字段。例如，仅当<strong>lessThanTwo</strong>变量的值设置为<strong>true</strong>时，才会显示表单的<strong>Previous Address</strong>部分。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑032-预览mock数据]]></title>
+        <id>/2021/12/05/SwiftUI专辑-032-预览Mock数据</id>
+        <link href="https://gouxin.fun/2021/12/05/SwiftUI专辑-032-预览Mock数据"/>
+        <updated>2021-12-05T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+通常我们获取数据是通过 API 调用。但这可能很耗时，并很快成为瓶颈。更快的选择是仅在构建时提供一些mock数据。</p><p>本章我们将在<strong>Preview Content</strong>文件夹下存储一些json，来模拟Api调用。</p><h2>Getting ready</h2><p>首先新建一个SwiftUI项目<strong>UsingMockDataForPreviews</strong></p><h2>How to do it</h2><ol><li>首先准备一个json文件: insetsData.json</li></ol><pre><code class="language-swift">[
+  {
+      &quot;id&quot;: 1,
+    &quot;imageName&quot;: &quot;honeybee&quot;,
+    &quot;name&quot;: &quot;Honey bee&quot;,
+    &quot;habitat&quot;: &quot;Tropical climates&quot;,
+    &quot;description&quot;: &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Id volutpat lacus laoreet non curabitur gravida arcu ac. Felis imperdiet proin fermentum leo vel. Et netus et malesuada fames. Amet nisl suscipit adipiscing bibendum est ultricies integer.&quot;
+  },
+  {
+      &quot;id&quot;: 2,
+    &quot;imageName&quot;: &quot;greenbrownfly&quot;,
+    &quot;name&quot;: &quot;Green Fly&quot;,
+    &quot;habitat&quot;: &quot;warm and moist climates&quot;,
+    &quot;description&quot;: &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Id volutpat lacus laoreet non curabitur gravida arcu ac. Felis imperdiet proin fermentum leo vel. Et netus et malesuada fames. Amet nisl suscipit adipiscing bibendum est ultricies integer.&quot;
+  },
+  {
+      &quot;id&quot;: 3,
+    &quot;imageName&quot;: &quot;greenbug&quot;,
+    &quot;name&quot;: &quot;Green bug&quot;,
+    &quot;habitat&quot;: &quot;orchards and gardens&quot;,
+    &quot;description&quot;: &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Id volutpat lacus laoreet non curabitur gravida arcu ac. Felis imperdiet proin fermentum leo vel. Et netus et malesuada fames. Amet nisl suscipit adipiscing bibendum est ultricies integer.&quot;
+  },
+  {
+      &quot;id&quot;: 4,
+    &quot;imageName&quot;: &quot;blackbeatle&quot;,
+    &quot;name&quot;: &quot;Black Beatle&quot;,
+    &quot;habitat&quot;: &quot;Tropical climates&quot;,
+    &quot;description&quot;: &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Id volutpat lacus laoreet non curabitur gravida arcu ac. Felis imperdiet proin fermentum leo vel. Et netus et malesuada fames. Amet nisl suscipit adipiscing bibendum est ultricies integer.&quot;
+  },
+  {
+      &quot;id&quot;: 5,
+    &quot;imageName&quot;: &quot;brownspider&quot;,
+    &quot;name&quot;: &quot;Brown Spider&quot;,
+    &quot;habitat&quot;: &quot;warm and moist climates&quot;,
+    &quot;description&quot;: &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Id volutpat lacus laoreet non curabitur gravida arcu ac. Felis imperdiet proin fermentum leo vel. Et netus et malesuada fames. Amet nisl suscipit adipiscing bibendum est ultricies integer.&quot;
+  },
+  {
+      &quot;id&quot;: 6,
+    &quot;imageName&quot;: &quot;bluedragonfly&quot;,
+    &quot;name&quot;: &quot;Blue Dragonfly&quot;,
+    &quot;habitat&quot;: &quot;around lakes and streams&quot;,
+    &quot;description&quot;: &quot;Lorem ipsum dolor sit amet, consecte&quot;
+  },
+  {
+      &quot;id&quot;: 7,
+    &quot;imageName&quot;: &quot;brownblackbutterfly&quot;,
+    &quot;name&quot;: &quot;Brown Black Butterfly&quot;,
+    &quot;habitat&quot;: &quot;deciduous forests&quot;,
+    &quot;description&quot;: &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Id volutpat lacus laoreet non curabitur gravida arcu ac. Felis imperdiet proin fermentum leo vel. Et netus et malesuada fames. Amet nisl suscipit adipiscing bibendum est ultricies integer.&quot;
+  },
+  {
+      &quot;id&quot;: 8,
+    &quot;imageName&quot;: &quot;grasshopper&quot;,
+    &quot;name&quot;: &quot;Grasshopper&quot;,
+    &quot;habitat&quot;: &quot;dry open habitat with lots of grass&quot;,
+    &quot;description&quot;: &quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Id volutpat lacus laoreet non curabitur gravida arcu ac. Felis imperdiet proin fermentum leo vel. Et netus et malesuada fames. Amet nisl suscipit adipiscing bibendum est ultricies integer.&quot;
+  }
+]
+</code></pre><ol start="2"><li>创建一个model和json对应</li></ol><pre><code class="language-swift">struct Insect : Decodable, Identifiable{
+    var id: Int
+    var imageName: String
+    var name:String
+    var habitat:String
+    var description:String
+}
+
+let testInsect = Insect(id: 1, imageName: &quot;grasshopper&quot;, name: &quot;grass&quot;, habitat: &quot;rocks&quot;, description: &quot;none&quot;)
+
+</code></pre><ol start="3"><li>在<strong>ContentView.swift</strong>中增加UI代码,显示数据</li></ol><pre><code class="language-swift">struct ContentView: View {
+    var insects:[Insect] = []
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(insects) { insect in
+                    HStack {
+                        Image(insect.imageName)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .clipShape(Rectangle())
+                            .frame(width: 100, height: 80)
+                        VStack(alignment: .leading) {
+                            Text(insect.name).font(.title)
+                            Text(insect.habitat)
+                        }.padding(.vertical)
+                    }
+                }
+
+            }.navigationBarTitle(&quot;Insects&quot;)
+        }
+    }
+}
+</code></pre><ol start="4"><li>在预览中传入mock数据</li></ol><pre><code class="language-swift">struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView(insects: Self.testInsects)
+    }
+    
+    static var testInsects : [Insect]{
+        guard let url = Bundle.main.url(forResource:&quot;insetsData&quot;, withExtension: &quot;json&quot;),
+            let data = try? Data(contentsOf: url) else{
+                return[]
+        }
+        let decoder  = JSONDecoder()
+        let array = try?decoder.decode([Insect].self, from: data)
+        return array ??  [testInsect]
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxx6iafb9cj30dk0qc0tt.jpg" alt="image-20211231181222575"/></p><h2>How it works</h2><p>在preview中，我们读取json文件，然后转成modle数组，得到mock数据。</p><p>然后将Mock数据传给View显示。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑031-预览UIKit]]></title>
+        <id>/2021/12/04/SwiftUI专辑-031-预览UIKit</id>
+        <link href="https://gouxin.fun/2021/12/04/SwiftUI专辑-031-预览UIKit"/>
+        <updated>2021-12-04T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+如果您喜欢轻松预览 UI 更改，但您的项目又只是UIkit，那么请放心 因为你也可以在构建 UIKit 应用程序时使用这个强大的功能。</p><p>本章，我们将学习如何将UIViewController和UIView包装到 SwiftUI 视图中，然后使用实时预览。</p><h2>Getting ready</h2><p>首先创建个普通storyboard工程：UIKitPreview</p><h2>How to do it</h2><ol><li>新建一个swift文件<strong>ViewControllerPreview</strong>, 遵循UIViewControllerRepresentable</li></ol><pre><code class="language-swift">import UIKit
+import SwiftUI
+struct ViewControllerPreview: UIViewControllerRepresentable {
+    let viewControllerBuilder: () -&gt; UIViewController
+    init(_ viewControllerBuilder: @escaping () -&gt; UIViewController) {
+        self.viewControllerBuilder = viewControllerBuilder
+    }
+
+    func makeUIViewController(context: Context) -&gt; some UIViewController {
+        return self.viewControllerBuilder()
+    }
+    func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+        
+    }
+}
+</code></pre><ol start="2"><li>然后创建一个preview, 然后你就可以使用这个预览任何UIViewController了</li></ol><pre><code class="language-swift">struct ViewControllerPreview_Previews: PreviewProvider {
+    static var previews: some View {
+        ViewControllerPreview {
+            MyViewController()
+        }
+    }
+}
+</code></pre><ol start="3"><li>写个viewcontroller</li></ol><pre><code class="language-swift">import SnapKit
+class MyViewController: UIViewController {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.setupView()
+    }
+    func setupView() {
+        self.view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        self.contaienrView = UIView()
+        self.contaienrView.backgroundColor = UIColor.white
+        self.contaienrView.layer.cornerRadius = 8
+        self.view.addSubview(self.contaienrView)
+        self.contaienrView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.width.equalTo(290)
+            make.height.equalTo(162)
+        }
+        let textColor = UIColor(red: 0x27 / 255.0, green: 0x27 / 255.0, blue: 0x55 / 255.0, alpha: 1.0)
+        self.titleLabel = UILabel()
+        self.titleLabel.font = UIFont.systemFont(ofSize: 15)
+        self.titleLabel.textColor = textColor
+        self.titleLabel.text = &quot;是否清除所有收藏习题记录&quot;
+        self.titleLabel.numberOfLines = 2
+        self.contaienrView.addSubview(self.titleLabel)
+        self.titleLabel.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(20)
+            make.trailing.equalToSuperview().offset(-20)
+            make.top.equalToSuperview().offset(20)
+            make.height.equalTo(45)
+        }
+        
+        self.descLabel = UILabel()
+        self.descLabel.textColor = textColor.withAlphaComponent(0.5)
+        self.descLabel.text = &quot;清除后当前科目无错题记录，此操作不可恢复&quot;
+        self.descLabel.font = UIFont.systemFont(ofSize: 12)
+        self.contaienrView.addSubview(self.descLabel)
+        self.descLabel.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(20)
+            make.trailing.equalToSuperview().offset(-20)
+            make.top.equalTo(self.titleLabel.snp.bottom).offset(4)
+            make.height.equalTo(20)
+        }
+        let sepColor = UIColor(red: 0xF0/255.0, green: 0xF0/255.0, blue: 0xF0/255.0, alpha: 1.0)
+        self.hLine = UIView()
+        self.hLine.backgroundColor = sepColor
+        self.contaienrView.addSubview(self.hLine)
+        self.hLine.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalToSuperview().offset(-49)
+            make.height.equalTo(1)
+        }
+        self.vLine = UIView()
+        self.vLine.backgroundColor = sepColor
+        self.contaienrView.addSubview(self.vLine)
+        self.vLine.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.bottom.equalToSuperview()
+            make.width.equalTo(1)
+            make.height.equalTo(49)
+        }
+        
+        self.clearBtn = UIButton(type: .custom)
+        self.clearBtn.setTitle(&quot;清除&quot;, for: .normal)
+        self.clearBtn.setTitleColor(textColor.withAlphaComponent(0.5), for: .normal)
+        self.clearBtn.titleLabel?.font = UIFont.systemFont(ofSize: 15)
+        self.contaienrView.addSubview(self.clearBtn)
+        self.clearBtn.snp.makeConstraints { make in
+            make.leading.bottom.equalToSuperview()
+            make.trailing.equalTo(self.vLine.snp.leading)
+            make.height.equalTo(49)
+        }
+        self.cancelBtn = UIButton(type: .custom)
+        self.cancelBtn.setTitle(&quot;取消&quot;, for: .normal)
+        self.cancelBtn.setTitleColor(UIColor(red: 0x33/255.0, green: 0x77/255.0, blue: 0xFF/255.0, alpha: 1.0), for: .normal)
+        self.cancelBtn.titleLabel?.font = UIFont.systemFont(ofSize: 15, weight: .medium)
+        self.contaienrView.addSubview(self.cancelBtn)
+        self.cancelBtn.snp.makeConstraints { make in
+            make.trailing.bottom.equalToSuperview()
+            make.leading.equalTo(self.vLine.snp.trailing)
+            make.height.equalTo(49)
+        }
+    }
+    
+    var contaienrView: UIView!
+    var titleLabel: UILabel!
+    var descLabel: UILabel!
+    var hLine: UIView!
+    var vLine: UIView!
+    var clearBtn: UIButton!
+    var cancelBtn: UIButton!
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxx5w8hc5aj30hc0zsdgi.jpg" alt="image-20211231175113346"/></p><h2>How it works</h2><p>如果你想在SwiftUI中预览UIViewController，那么需要包裹成<strong>UIViewControllerRepresentable</strong>。</p><p>要实现<strong>UIViewControllerRepresentable</strong>, 我们需要实现两个方法 <strong>makeUIViewController</strong> 和 <strong>updateUIViewController</strong>.</p><p>makeUIViewController返回UIViewController，你再这里初始化你的viewcontroller。</p><p><strong>updateUIViewController</strong>负责更新状态，我们demo中没有状态需要更新，就留空了。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑030-预览不同设备上的布局]]></title>
+        <id>/2021/12/03/SwiftUI专辑-030-预览不同设备上的布局</id>
+        <link href="https://gouxin.fun/2021/12/03/SwiftUI专辑-030-预览不同设备上的布局"/>
+        <updated>2021-12-03T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+SwiftUI允许我们通过.previewDevice()修饰符，在多种屏幕尺寸上、设备类型同时预览布局。</p><h2>Getting ready</h2><p>首先创建一个新项目：<strong>PreviewOnDifferentDevices</strong></p><h2>How to do it</h2><ol><li>添加一张图片到Preivew Content的xcassets中。</li><li>替换默认的Text为以下代码</li></ol><pre><code class="language-swift">struct ContentView: View {
+    var body: some View {
+          VStack{
+            Image(&quot;friendship&quot;)
+               .resizable()
+               .aspectRatio(contentMode: .fit)
+            Text(&quot;Importance of  Friendship&quot;).font(.title)
+            Text(&quot;Friends helps us deal with stress and make better life choices&quot;)
+                .multilineTextAlignment(.center).padding()
+          }
+    }
+}
+</code></pre><ol start="3"><li>修改preview的代码，在对个设备上同时预览</li></ol><pre><code class="language-swift">struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            ContentView()
+                .previewDevice(.init(rawValue: &quot;iPhone 11 Pro Max&quot;))
+                .previewDisplayName(&quot;Iphone 11 Pro Max&quot;)
+            ContentView()
+                .previewDevice(.init(rawValue: &quot;iPhone 8&quot;))
+                .previewDisplayName(&quot;iPhone 8&quot;)
+            ContentView()
+                .previewLayout(.fixed(width: 568, height: 320))
+                .previewDisplayName(&quot;Custom Size landscape&quot;)
+            
+        }
+    }
+}
+</code></pre><p>最终结果</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxw2mjewzwj30af0hh0t7.jpg" alt="20211230191108"/></p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxw2mqpkigj30af0jz74u.jpg" alt="20211230191123"/></p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxw2myjtu8j30af0710st.jpg" alt="20211230191135"/></p><h2>How it works</h2><p> <strong>.previewDevice()</strong>修饰符能够让你在特定设备上预览。</p><p>如果你不知道名字的话，可以通过模拟器来确定</p><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxw2op9qhzj30jo0w2jub.jpg" alt="image-20211230191436168"/></p><p>如果要看横屏的话，可以通过自定义大小来查看:<strong>.previewLayout()</strong></p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑029-预览View嵌入NavigationView]]></title>
+        <id>/2021/12/02/SwiftUI专辑-029-预览View嵌入NavigationView</id>
+        <link href="https://gouxin.fun/2021/12/02/SwiftUI专辑-029-预览View嵌入NavigationView"/>
+        <updated>2021-12-02T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+有些View自身并不包含NavigationView，但是他又属于NavigationView stack中的一部分。
+这个时候我们要看导航栏的话，就需要运行App并导航到对应界面。
+不过，预览提供了一种节省时间的方式来实时查看 UI 更改，而无需重新构建应用程序。</p><h2>Getting ready</h2><p>我们先创建一个SwiftUI工程：<strong>PreviewingInNavigationView</strong></p><h2>How to do it</h2><ol><li>替换默认的Text为以下代码</li></ol><pre><code class="language-swift">struct ContentView: View {
+    var body: some View {
+        NavigationView {
+            VStack {
+                NavigationLink(destination: SecondView(someText: &quot;Sample text&quot;)) {
+                    Text(&quot;Go to second view&quot;)
+                        .foregroundColor(Color.white)
+                        .padding()
+                        .background(Color.black)
+                        .cornerRadius(25)
+                }
+
+            }.navigationBarTitle(&quot;Previews&quot;, displayMode: .inline)
+        }
+    }
+}
+</code></pre><ol start="2"><li>实现报错的<strong>SecondView</strong></li></ol><pre><code class="language-swift">
+struct SecondView: View {
+    var someText: String
+        var body: some View {
+            Text(someText)
+                .navigationBarTitle(&quot;Second View &quot;, displayMode: .inline)
+        }
+}
+
+///这个preview，并没有看到设置的导航栏title, 我们需要运行后进入这个界面才能看到
+struct SecondView_Previews: PreviewProvider {
+    static var previews: some View {
+        SecondView()
+    }
+}
+</code></pre><ol start="3"><li>修改SecondView_Previews，嵌入NavigationView</li></ol><pre><code class="language-swift">struct SecondView_Previews: PreviewProvider {
+    static var previews: some View {
+        NavigationView {
+            SecondView(someText: &quot;Testting&quot;)
+        }
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gxw231yqswj30dy0r8wew.jpg" alt="image-20211230185348484"/></p><h2>How it works</h2><p>处于导航栈里的界面的<strong>.navigationBarTitle()</strong>，预览是看不见，我们可以修改预览的代码，将其嵌入NavigationView就能看到了。</p>]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[SwiftUI专辑028-预览动态字体dynamicTypeSize]]></title>
         <id>/2021/12/01/SwiftUI专辑-028-预览动态字体dynamicTypeSize</id>
