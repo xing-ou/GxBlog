@@ -1,5 +1,5 @@
 ---
-title: SwiftUI专辑065-@Binding
+title: SwiftUI专辑066-@Binding
 tags: [swiftUI]
 ---
 ![headerimg](./Header.png)
