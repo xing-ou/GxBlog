@@ -5,9 +5,9 @@ tags: [swiftUI]
 
 我们上一篇讲了@State，如果我们有其他VIew要修改我们的State呢？
 
-todos array是struct，是值类型，如果我们传递state到child view，那么传递的是值的copy。当child view修改array时，并不能反映到parent view的array中，所以也看不到变化。
+在TodoList demo 中，todos array是struct，是值类型，如果我们传递state到child view，那么传递的是值的copy。当child view修改array时，并不能反映到parent view的array中，所以也看不到变化。
 
-SwiftUI通过**@Binding**解决这个问题，类似于为值类型(比如 struct)创建引用语意。
+SwiftUI通过**@Binding**解决这个问题，其本质上可以看成是生成一个对get和set方法的封装struct。
 
 我们将沿用上一个TodoList的demo来看看@Binding的使用。
 
@@ -110,4 +110,8 @@ SwiftUI使用**@Binding** 创建一个双向绑定
 - parent的变化会反应到children上
 - children的变化也会反映到parent上
 
-我们在children声明state时，使用@Binding，parent传入时传的是$state，而不是state。$符意味着我们传递的不是值，是引用。类似于 **&** 和 **inout** 。
+我们在children声明state时，使用@Binding，parent传入时传的是$state，而不是state。$操作符的意思是获取State结构体中的projectedValue属性。我们可以看到State结构体的projectedValue正是一个Binding类型。
+
+```swift
+var projectedValue: Binding<Value> { get }
+```

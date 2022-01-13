@@ -3,7 +3,8 @@ title: SwiftUI专辑067-@ObservedObject
 tags: [swiftUI]
 ---
 ![headerimg](./Header.png)
-我们使用@State时有一点我们可能并没有注意到，那就是多数时候都是修饰基础类型，或者struct，如果我们用@State去修饰引用类型呢？这就要小心了，因为改变引用类型内部的变量，SwiftUI并不能感知到，所以你的修改可能并不能反应到UI上。
+
+我们使用@State时有一点我们可能并没有注意到，那就是多数时候都是修饰的都是值类型，如果我们用@State去修饰引用类型呢？这就要小心了，因为改变引用类型内部的变量，SwiftUI并不能感知到，所以你的修改可能并不能反应到UI上。
 
 那我们确实需要修饰引用类型呢？这个时候就需要@ObservedObject。
 
