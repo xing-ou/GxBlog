@@ -2,11 +2,976 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://gouxin.fun/</id>
     <title>Gx'sBlog Blog</title>
-    <updated>2022-01-06T00:00:00.000Z</updated>
+    <updated>2022-01-13T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://gouxin.fun/"/>
     <subtitle>Gx'sBlog Blog</subtitle>
     <icon>https://gouxin.fun/img/favicon.ico</icon>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑070-一个定时器App]]></title>
+        <id>/2022/01/13/SwiftUI专辑-071-一个定时器App</id>
+        <link href="https://gouxin.fun/2022/01/13/SwiftUI专辑-071-一个定时器App"/>
+        <updated>2022-01-13T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+当我们subscribe一个publisher后，这个结果需要存储到某个地方，通常我们都是通过调用<code>.store</code>方法存储在某个 <strong>AnyCancellable Set</strong>中。但是每个都这么用，可能会显得有点重复，我们将用@ResultBuilder来包裹所有的subscribtion，将所有AnyCancellable放到同一个set中。</p><p>我们来看一个定时器的例子。</p><h2>Getting ready</h2><p>首先，新建一个项目：<strong>StopWatch</strong></p><h2>How to do it…</h2><ol><li>构建数据model</li></ol><pre><code class="language-swift">class StopWatchTimer: ObservableObject {
+    @Published var deciseconds: Int = 0
+    @Published var seconds: Int = 0
+    @Published var minutes: Int = 0
+    @Published var started = false
+    private var cancellableSet: Set&lt;AnyCancellable&gt; = []
+
+    func start() {
+    }
+
+    func stop() {
+    }
+}
+</code></pre><ol start="2"><li>实现start和stop</li></ol><pre><code class="language-swift">func stop() {
+    cancellableSet = []
+    started = false
+}
+
+func start() {
+    cancellableSet.store {
+        Timer.publish(every: 0.1, on: RunLoop.main)
+            .autoconnect()
+            .sink { _ in
+                self.deciseconds = (self.deciseconds + 1)%10
+            }
+        Timer.publish(every: 1.0, on: RunLoop.main)
+            .autoconnect()
+            .sink { _ in
+                self.seconds = (self.seconds + 1)%60
+            }
+        Timer.publish(every: 60, on: RunLoop.main)
+            .autoconnect()
+            .sink { _ in
+                self.minutes = (self.minutes + 1)%60
+            }
+    }
+  started = true
+}
+</code></pre><ol start="3"><li>实现<code>cancellableSet.store</code>方法</li></ol><pre><code class="language-swift">typealias CancellableSet = Set&lt;AnyCancellable&gt;
+extension CancellableSet {
+    mutating func store(@CancellableBuilder _ cancellables: () -&gt; [AnyCancellable]) {
+        formUnion(cancellables())
+    }
+
+    @resultBuilder
+    struct CancellableBuilder {
+        static func buildBlock(_ cancellables:AnyCancellable...) -&gt; [AnyCancellable] {
+            return cancellables
+        }
+    }
+}
+
+</code></pre><ol start="4"><li>实现UI</li></ol><pre><code class="language-swift">extension Int {
+    var formatted: String {
+        String(format: &quot;%02d&quot;, self)
+    }
+}
+
+@available(iOS 15.0, *)
+struct ContentView: View {
+    @StateObject private var timer = StopWatchTimer()
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 0) {
+                Text(&quot;\(timer.minutes.formatted)&quot;)
+                    .font(.system(size: 80))
+                    .frame(width: 100)
+                Text(&quot;:&quot;)
+                    .font(.system(size: 80))
+                Text(&quot;\(timer.seconds.formatted)&quot;)
+                    .font(.system(size: 80))
+                    .frame(width: 100)
+                Text(&quot;:&quot;)
+                    .font(.system(size: 80))
+                Text(&quot;\(timer.deciseconds.formatted)&quot;)
+                    .font(.system(size: 80))
+                    .frame(width: 100)
+            }
+            Button {
+                if timer.started {
+                    timer.stop()
+                } else {
+                    timer.start()
+                }
+            } label: {
+                Text(timer.started ? &quot;Stop&quot; : &quot;Start&quot;)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 16)
+                    .frame(width: 100)
+                    .background(timer.started ? Color.red : Color.green)
+                    .cornerRadius(5)
+            }
+        }
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gyc7hms97sj30bw0oqgly.jpg" alt="image-20220113180947904"/></p><h2>How it works…</h2><p>首先我们学习了<code>Timer.publish</code>，知道了如何生成时间。</p><p>然后<strong>.autoconnect()</strong>让publisher立马开始。</p><p>最后，我们使用了@ResultBuilder，这样在builder闭包中的多个subscribe产生的<strong>AnyCancellable</strong>就会被收集起来放到cancellableSet中。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑070-Combine简介]]></title>
+        <id>/2022/01/12/SwiftUI专辑-070-Combine简介</id>
+        <link href="https://gouxin.fun/2022/01/12/SwiftUI专辑-070-Combine简介"/>
+        <updated>2022-01-12T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+我们还是来看个<strong>CoreLocation</strong>的例子。</p><h2>Getting ready</h2><p>新建一个项目：<strong>CombineCoreLocationManager</strong></p><p><strong>PROJECT</strong> &gt; <strong>Info</strong>中添加获取定位权限Key：<strong>NSLocationWhenInUseUsageDescription</strong></p><h2>How to do it…</h2><ol><li>首先实现个LocationManager，封装一下CLLocationManager。</li></ol><pre><code class="language-swift">import CoreLocation
+import SwiftUI
+class LocationManager: NSObject {
+    enum LocationError: String, Error {
+        case restricted
+        case denied
+        case unknown
+    }
+
+    private let locationManager = CLLocationManager()
+
+    override init() {
+        super.init()
+        self.locationManager.delegate = self
+        self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        self.locationManager.requestWhenInUseAuthorization()
+    }
+
+    func start() {
+        self.locationManager.startUpdatingLocation()
+    }
+}
+</code></pre><ol start="2"><li>目前为止和Combine还没什么关系，我们继续添加2个Publisher</li></ol><pre><code class="language-swift">class LocationManager: NSObject {
+  ...
+  let statusPublisher = PassthroughSubject&lt;CLAuthorizationStatus, LocationError&gt;()
+    let locationPublisher = PassthroughSubject&lt;CLLocation?, Never&gt;()
+  ...
+}
+
+</code></pre><ol start="3"><li>然后我们实现CLLocationManagerDelegate，把回调的value转发给publisher</li></ol><pre><code class="language-swift">extension LocationManager: CLLocationManagerDelegate {
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        switch manager.authorizationStatus {
+        case .restricted: self.statusPublisher.send(completion: .failure(.restricted))
+        case .denied: self.statusPublisher.send(completion: .failure(.denied))
+        case .notDetermined, .authorizedAlways,.authorizedWhenInUse:
+            self.statusPublisher.send(manager.authorizationStatus)
+        @unknown default:
+            self.statusPublisher.send(completion: .failure(.unknown))
+        }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
+        locationPublisher.send(location)
+    }
+}
+</code></pre><ol start="3"><li>创建一个<strong>LocationViewModel</strong>，用于提供界面显示的数据</li></ol><pre><code class="language-swift">extension Optional where Wrapped == CLLocation {
+    var latitudeDescription: String {
+        guard let self = self else {
+            return &quot;-&quot;
+        }
+        return String(format: &quot;%0.4f&quot;, self.coordinate.latitude)
+    }
+
+    var longitudeDescription: String {
+        guard let self = self else {
+            return &quot;-&quot;
+        }
+        return String(format: &quot;%0.4f&quot;, self.coordinate.longitude)
+    }
+}
+
+class LocationViewModel: ObservableObject {
+    @Published
+    private var status: CLAuthorizationStatus = .notDetermined
+    @Published
+    private var currentLocation: CLLocation?
+    @Published
+    var errorMessage = &quot;&quot;
+    private let locationManager = LocationManager()
+
+    private var cancellableSet: Set&lt;AnyCancellable&gt; = []
+    init() {
+        self.locationManager
+            .statusPublisher
+            .debounce(for: 0.5, scheduler: RunLoop.main)
+            .removeDuplicates()
+            .sink { completion in
+                switch completion {
+                case .finished: break
+                case let .failure(error):
+                    self.errorMessage = error.rawValue
+                }
+            } receiveValue: { self.status = $0 }
+            .store(in: &amp;self.cancellableSet)
+
+        self.locationManager.locationPublisher
+            .debounce(for: 0.5, scheduler: RunLoop.main)
+            .removeDuplicates(by: self.lessThanOneMeter)
+            .assign(to: \.currentLocation, on: self)
+            .store(in: &amp;self.cancellableSet)
+    }
+
+    private func lessThanOneMeter(_ lhs: CLLocation?, _ rhs: CLLocation?) -&gt; Bool {
+        if lhs == nil &amp;&amp; rhs == nil {
+            return true
+        }
+        guard let lhr = lhs,
+              let rhr = rhs else {
+            return false
+        }
+        return lhr.distance(from: rhr) &lt; 1
+    }
+
+    func startUpdating() {
+        self.locationManager.start()
+    }
+
+    // 准备UI数据
+    var thereIsAnError: Bool {
+        !self.errorMessage.isEmpty
+    }
+
+    var latitude: String {
+        self.currentLocation.latitudeDescription
+    }
+
+    var longitude: String {
+        self.currentLocation.longitudeDescription
+    }
+
+    var statusDescription: String {
+        switch self.status {
+        case .notDetermined: return &quot;notDetermined&quot;
+        case .authorizedWhenInUse: return &quot;authorizedWhenInUse&quot;
+        case .authorizedAlways: return &quot;authorizedAlways&quot;
+        case .restricted: return &quot;restricted&quot;
+        case .denied: return &quot;denied&quot;
+        @unknown default: return &quot;unknown&quot;
+        }
+    }
+}
+</code></pre><ol start="4"><li>然后再ContentView中使用</li></ol><pre><code class="language-swift">struct ContentView: View {
+    @StateObject var locationViewModel = LocationViewModel()
+    var body: some View {
+        Group {
+            if locationViewModel.thereIsAnError {
+                Text(&quot;Location Service terminated with error:\(locationViewModel.errorMessage)&quot;)
+            } else {
+                Text(&quot;Status:\(locationViewModel.statusDescription)&quot;)
+                HStack {
+                    Text(&quot;Latitude: \(locationViewModel.latitude)&quot;)
+                    Text(&quot;Longitude:\(locationViewModel.longitude)&quot;)
+                }
+            }
+        }.padding(.horizontal, 24)
+        .task {
+            locationViewModel.startUpdating()
+        }
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gyc5m0w4i6j30b40b5q3a.jpg" alt="Figure_10.4_B17962"/></p><h2>How it works…</h2><p>首先你可能注意到我们 <strong>@Published</strong> 修饰的是 <strong>private</strong>变量，你可能感到奇怪，通常我们都是设置为Public，这样能够让外部访问，不过我们这里是ViewModel，数据需要被加工后才能使用，所以我们隐藏原始数据，暴露加工后的数据。</p><p>首先，我们在LocationManager中定义了2个publisher，他们是Subject。subject是管理输入的，有一个<code>.send</code>方法来发送event。常用的subject是：<strong>CurrentValueSubject</strong> 和 <strong>PassthroughSubject</strong>。</p><p>CurrentValueSubject有初始值，自己维护改变的值，即使没有任何subscribers。</p><p>PassthroughSubject没有初始值，如果没有subscribers，收到的值会被抛弃。</p><pre><code class="language-swift">//可以类比RxSwift的onEvent, onError, onCompleted
+// 发送event
+statusPublisher.send(status)
+//发送finish
+statusPublisher.send(completion: .finish)
+//发送失败
+statusPublisher.send(completion: .failure(.restricted))
+</code></pre><p>然后我们再来看看subscribe，我们在Init方法中做的subscribe。</p><pre><code class="language-swift">locationManager.locationPublisher
+    // 节流
+    .debounce(for: 0.5, scheduler: RunLoop.main)
+    // 移除重复
+    .removeDuplicates(by: lessThanOneMeter)
+    // 相当于rxswift的 subscribe
+    .assign(to: \.currentLocation, on: self)
+    // 相当于rxswift的 addToDisposeBag()
+    .store(in: &amp;cancellableSet)// cancellableSet相当于DisposeBag
+</code></pre><p><code>sink</code>可以同时接受completion状态和recivedValue，可以更精确的处理数据。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑069-@EnvironmentObject]]></title>
+        <id>/2022/01/11/SwiftUI专辑-069-@EnvironmentObject</id>
+        <link href="https://gouxin.fun/2022/01/11/SwiftUI专辑-069-@EnvironmentObject"/>
+        <updated>2022-01-11T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+有时我们必须在多个视图之间共享数据，比如：ThemeManager。</p><p>如果你通过View层级一层一层传递，那实在是太烦了。</p><p>SwiftUI 通过 <strong>Environment</strong> 的概念来解决这个问题, 在那添加公共对象(通常都是ObservableObject), 这些对象会在View chain中共享 。</p><p>我们来看一个例子。</p><h2>Getting ready</h2><p>首先，创建一个新的项目：<strong>SongPlayer</strong></p><p>再找6张图片，作为歌曲封面，添加到项目的<strong>Assets</strong>下。</p><h2>How to do it…</h2><ol><li>创建Song的Model</li></ol><pre><code class="language-swift">struct Song: Identifiable, Equatable {
+    var id = UUID()
+    let artist: String
+    let name: String
+    let cover: String
+}
+</code></pre><ol start="2"><li>让我们添加个播放器，保存当前播放的歌曲，并提供一个播放方法</li></ol><pre><code class="language-swift">class MusicPlayer: ObservableObject {
+    @Published var currentSong: Song?
+    func pressButton(song: Song) {
+        if currentSong == song {
+            currentSong = nil
+        } else {
+            currentSong = song
+        }
+    }
+}
+</code></pre><ol start="3"><li>实现一个播放按钮</li></ol><pre><code class="language-swift">struct PlayButton: View {
+    @EnvironmentObject
+    private var musicPlayer: MusicPlayer
+    let song: Song
+    private var buttonText: String {
+        if song == musicPlayer.currentSong {
+            return &quot;stop&quot;
+        } else {
+            return &quot;play&quot;
+        }
+    }
+
+    var body: some View {
+        Button {
+            musicPlayer.pressButton(song: song)
+        } label: {
+            Image(systemName: buttonText)
+                .font(.system(.largeTitle))
+                .foregroundColor(.black)
+        }
+    }
+}
+</code></pre><ol start="4"><li>实现播放列表的cell</li></ol><pre><code class="language-swift">struct SongView: View {
+    @EnvironmentObject
+    private var musicPlayer: MusicPlayer
+    let song: Song
+    var body: some View {
+        HStack {
+            NavigationLink(destination:PlayerView(song: song)) {
+                Image(song.cover)
+                    .renderingMode(.original)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 100, height: 100)
+                VStack(alignment: .leading) {
+                    Text(song.name)
+                    Text(song.artist).italic()
+                }
+            }
+
+            Spacer()
+
+            PlayButton(song: song)
+
+        }.buttonStyle(PlainButtonStyle())
+    }
+}
+</code></pre><ol start="5"><li>实现播放详情View</li></ol><pre><code class="language-swift">struct PlayerView: View {
+    @EnvironmentObject
+    private var musicPlayer: MusicPlayer
+    let song: Song
+    var body: some View {
+        VStack {
+            Image(song.cover)
+                .renderingMode(.original)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 300, height: 300)
+            HStack {
+                Text(song.name)
+                Text(song.artist).italic()
+            }
+            PlayButton(song: song)
+        }
+    }
+}
+</code></pre><ol start="6"><li>实现一个mini播放器VIew</li></ol><pre><code class="language-swift">struct MiniPlayerView: View {
+    @EnvironmentObject
+    private var musicPlayer: MusicPlayer
+
+    var body: some View {
+        if let currentSong = musicPlayer.currentSong {
+            SongView(song: currentSong)
+                .padding(.all, 24)
+        } else {
+            EmptyView()
+        }
+    }
+}
+</code></pre><ol start="7"><li>在ContentView中准备好数据，显示播放列表</li></ol><pre><code class="language-swift">struct ContentView: View {
+    @EnvironmentObject
+    private var musicPlayer: MusicPlayer
+
+    private let songs = [
+        Song(artist: &quot;Luke&quot;, name: &quot;99&quot;, cover: &quot;cover0&quot;),
+        Song(artist: &quot;Foxing&quot;, name: &quot;No Trespassing&quot;, cover: &quot;cover1&quot;),
+        Song(artist: &quot;Breaking Benjamin&quot;, name: &quot;Phobia&quot;, cover: &quot;cover2&quot;),
+        Song(artist: &quot;J2&quot;, name: &quot;Solenoid&quot;, cover: &quot;cover3&quot;),
+        Song(artist: &quot;Wildflower Clothing&quot;, name: &quot;Lightning Bottles&quot;, cover: &quot;cover4&quot;),
+        Song(artist: &quot;The Broken Spirits&quot;, name: &quot;Rubble&quot;, cover: &quot;cover5&quot;),
+    ]
+
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            NavigationView {
+                List(self.songs) { song in
+                    SongView(song: song)
+                }
+                .listStyle(.plain)
+                .navigationTitle(&quot;Music Player&quot;)
+            }
+            MiniPlayerView()
+                .background(.gray)
+                .offset(y: 44)
+        }
+    }
+}
+</code></pre><ol start="8"><li>设置preview的environmentObject，这样在预览中就能看到</li></ol><pre><code class="language-swift">struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView().environmentObject(MusicPlayer())
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gyb27lxasgj30b407ewf5.jpg" alt="Figure_9.9_B17962"/></p><h2>How it works…</h2><p>每个View都会被他的ancestors设置Environment，然后view可以从Environment中获取value，只需要标记为@EnvironmentObject。</p><p>你可以把Environment认为是一个HashMap，key是对象的类型，value是对于的值。</p><p>由此，我们可以推断在<strong>Environment </strong>不能有两个相同类型的对象，不过这通常不是问题，我们有别的方法解决。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑068-@StateObject]]></title>
+        <id>/2022/01/10/SwiftUI专辑-068-@StateObject</id>
+        <link href="https://gouxin.fun/2022/01/10/SwiftUI专辑-068-@StateObject"/>
+        <updated>2022-01-10T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+一开始<strong>@ObservedObject</strong>是被用来把逻辑从View中分离出去的。</p><p>apple期望我们从外部传入那个对象，而不是在View内部创建这个对象。因为在内部创建的话，就将ObservedObject的生命周期和view的生命周期绑定在了一起，View销毁，ObservedObject也会被销毁。</p><p>但是实际情况是，我们的View很有可能会被不断的销毁和重建，这种销毁和重建并不是我们的逻辑，而是SwiftUI刷新界面的规则，我们无法干预。随着View的销毁和重建，内部的state也被重置了，这是一个很奇怪的行为。</p><p>apple意识到了这一点，加了个新的<strong>@StateObject</strong>修饰符来解决这个问题。</p><p>本文将演示这种奇怪的行为，并介绍如何使用@StateObject。</p><h2>Getting ready</h2><p>首先，创建一个新的项目<strong>Counter</strong></p><h2>How to do it…</h2><ol><li>首先，我们新建一个Counter，相当于一个ViewModel</li></ol><pre><code class="language-swift">class Counter: ObservableObject {
+    @Published var value: Int = 0
+    func inc() {
+        value += 1
+    }
+
+    func dec() {
+        value -= 1
+    }
+}
+</code></pre><ol start="2"><li>构建我们的计数器ConterView</li></ol><pre><code class="language-swift">struct CounterView: View {
+    @ObservedObject var counter = Counter()
+  // @StateObject var counter = Counter()
+    var body: some View {
+        VStack(spacing: 12) {
+            Text(&quot;\(counter.value)&quot;)
+            HStack(spacing: 12){
+                Button {
+                    counter.dec()
+                } label: {
+                    Text(&quot;-&quot;)
+                        .padding()
+                        .foregroundColor(.white)
+                        .background(.red)
+                }
+                Button {
+                    counter.inc()
+                } label: {
+                    Text(&quot;+&quot;)
+                        .padding()
+                        .foregroundColor(.white)
+                        .background(.red)
+                }
+            }
+        }
+    }
+}
+</code></pre><ol start="3"><li>在ContentView中使用我们的额CounterView，并加个按钮刷新界面</li></ol><pre><code class="language-swift">struct ContentView: View {
+    @State var refreshedAt: Date = Date()
+    var body: some View {
+        VStack(spacing:12) {
+            Text(&quot;Refresh at &quot;) + Text(refreshedAt.formatted(date: .omitted, time: .standard) )
+            CounterView()
+            Button {
+                refreshedAt = Date()
+            } label: {
+                Text(&quot;Refresh&quot;)
+                    .padding()
+                    .foregroundColor(.white)
+                    .background(.blue)
+            }
+        }
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gyazyfczwuj30by0osmxf.jpg" alt="image-20220112170337738"/></p><h2>How it works...</h2><p>当我们点击加号，再点击refresh，我们发现计数器的值归零了。这不是我们期望的，我们只想要更新时间。</p><p>这个的原因是，当我们点击按钮，更新refreshedAt，这会重新render body，这意味着SwiftUI会销毁当前的View，重新构建，CounterView也重新构建了，内部的value被重置了。</p><p>现在我们将counter改为@StateObject：</p><pre><code class="language-swift">@StateObject var counter = Counter()
+</code></pre><p>当我们点击加号，再点击refresh，一切正常，计数器的值保留了。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑067-@ObservedObject]]></title>
+        <id>/2022/01/09/SwiftUI专辑-067-@ObservedObject</id>
+        <link href="https://gouxin.fun/2022/01/09/SwiftUI专辑-067-@ObservedObject"/>
+        <updated>2022-01-09T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/></p><p>我们使用@State时有一点我们可能并没有注意到，那就是多数时候都是修饰的都是值类型，如果我们用@State去修饰引用类型呢？这就要小心了，因为改变引用类型内部的变量，SwiftUI并不能感知到，所以你的修改可能并不能反应到UI上。</p><p>那我们确实需要修饰引用类型呢？这个时候就需要@ObservedObject。</p><p>@ObservedObject修饰的对象需要遵循<strong>ObservableObject</strong>协议，同时需要被监听的属性还需要用<strong>@Published</strong>修饰。</p><p>这在将Foundation的一些对象桥接到SwiftUI中会非常有用。本文我们将用<strong>CoreLocation</strong>为例来演示一下@ObservedObject。</p><h2>Getting ready</h2><p>首先，新建一个SwiftUI工程：<strong>SwiftUICoreLocation</strong></p><p><strong>PROJECT</strong> &gt; <strong>Info</strong> 中添加获取定位的key：<strong>NSLocationWhenInUseUsageDescription</strong>，并设置一个提示信息。</p><h2>How to do it…</h2><p>我们准备将<strong>CLLocationManager</strong>包装为<strong>ObservableObject</strong>，然后暴露两个属性</p><ul><li>location的状态</li><li>当前location</li></ul><ol><li>首先，我们创建一个LocationManager</li></ol><pre><code class="language-swift">class LocationManager: NSObject, ObservableObject {
+    private let locationManager = CLLocationManager()
+    @Published var status: CLAuthorizationStatus?
+    @Published var current: CLLocation?
+    override init() {
+        super.init()
+        self.locationManager.delegate = self
+        self.locationManager.distanceFilter = 10
+        self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        self.locationManager.requestWhenInUseAuthorization()
+        self.locationManager.startUpdatingLocation()
+    }
+}
+
+extension LocationManager: CLLocationManagerDelegate {
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        self.status = manager.authorizationStatus
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
+        self.current = location
+    }
+}
+
+extension Optional where Wrapped == CLAuthorizationStatus {
+    var description: String {
+        guard let self = self else {
+            return &quot;unknown&quot;
+        }
+        switch self {
+        case .notDetermined: return &quot;notDetermined&quot;
+        case .authorizedWhenInUse: return &quot;authorizedWhenInUse&quot;
+        case .authorizedAlways: return &quot;authorizedAlways&quot;
+        case .restricted: return &quot;restricted&quot;
+        case .denied: return &quot;denied&quot;
+        @unknown default: return &quot;unknown&quot;
+        }
+    }
+}
+
+extension Optional where Wrapped == CLLocation {
+    var latitudeDescription: String {
+        guard let self = self else {
+            return &quot;-&quot;
+        }
+        return &quot;\(self.coordinate.latitude)&quot;
+    }
+    var longitudeDescription: String {
+        guard let self = self else {
+            return &quot;-&quot;
+        }
+        return &quot;\(self.coordinate.longitude)&quot;
+    }
+}
+</code></pre><ol start="2"><li>使用我们的LocationManager</li></ol><pre><code class="language-swift">struct ContentView: View {
+    @ObservedObject var locationManager = LocationManager()
+    var body: some View {
+        VStack {
+            Text(&quot;Status: \(locationManager.status.description)&quot;)
+            HStack {
+                Text(&quot;Latitude: \(locationManager.current.latitudeDescription)&quot;)
+                Text(&quot;Longitude: \(locationManager.current.longitudeDescription)&quot;)
+
+            }
+        }
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gyavuq6giyj30c40omaad.jpg" alt="image-20220112144140755"/></p><h2>How it works…</h2><p>你可以认为<strong>@Published</strong>是一种自动的property observer，当value改变时，能够发出一个通知。</p><p>而你用<strong>@ObservedObject</strong> 修饰的会接受到通知，并重新渲染UI。</p><p><strong>@Published</strong> 是 <strong>Combine</strong> publisher的一个语法糖，我们之后会了解他。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑066-@Binding]]></title>
+        <id>/2022/01/08/SwiftUI专辑-066-@Binding</id>
+        <link href="https://gouxin.fun/2022/01/08/SwiftUI专辑-066-@Binding"/>
+        <updated>2022-01-08T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+我们上一篇讲了@State，如果我们有其他VIew要修改我们的State呢？</p><p>在TodoList demo 中，todos array是struct，是值类型，如果我们传递state到child view，那么传递的是值的copy。当child view修改array时，并不能反映到parent view的array中，所以也看不到变化。</p><p>SwiftUI通过<strong>@Binding</strong>解决这个问题，其本质上可以看成是生成一个对get和set方法的封装struct。</p><p>我们将沿用上一个TodoList的demo来看看@Binding的使用。</p><h2>Getting ready</h2><p>沿用上一个TodoList的项目，如果你新建项目的话，可以拷贝如下代码到项目。</p><pre><code class="language-swift">struct Todo: Identifiable {
+    let id = UUID()
+    let description: String
+    var done: Bool
+}
+
+@available(iOS 15.0, *)
+struct ContentView: View {
+    @State var todos = [
+        Todo(description: &quot;review the first chapter&quot;, done: false),
+        Todo(description: &quot;buy wine&quot;, done: false),
+        Todo(description: &quot;paint kitchen&quot;, done: false),
+        Todo(description: &quot;cut the grass&quot;, done: false),
+    ]    
+    var body: some View {
+        List($todos) { $todo in
+            HStack {
+                Text(todo.description).strikethrough(todo.done)
+                Spacer()
+                Image(systemName:todo.done ? &quot;checkmark.square&quot; : &quot;square&quot;)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                todo.done.toggle()
+            }
+        }
+    }
+}
+</code></pre><h2>How to do it…</h2><ol><li>创建一个新的View来添加新的todo</li></ol><pre><code class="language-swift">@available(iOS 15.0, *)
+struct InputTodoView: View {
+    @Binding var todos: [Todo]
+    @State private var newTodoDescription: String = &quot;&quot;
+    var body: some View {
+        HStack {
+            TextField(&quot;Todo&quot;, text: $newTodoDescription)
+                .textFieldStyle(.roundedBorder)
+            Spacer()
+            Button {
+                guard !newTodoDescription.isEmpty else { return }
+                todos.append(Todo(description: newTodoDescription, done: false))
+                newTodoDescription = &quot;&quot;
+            } label: {
+                Text(&quot;Add&quot;)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .foregroundColor(.white)
+                    .background(.green)
+                    .cornerRadius(5)
+            }
+        }.frame(height: 60)
+        .padding(.horizontal, 24)
+        .padding(.bottom, 30)
+        .background(Color.gray)
+    }
+}
+</code></pre><ol start="2"><li>将InputTodoView添加到界面上</li></ol><pre><code class="language-swift">var body: some View {
+    ZStack(alignment: .bottom) {
+        List($todos) { $todo in
+            HStack {
+                Text(todo.description).strikethrough(todo.done)
+                Spacer()
+                Image(systemName:todo.done ? &quot;checkmark.square&quot; : &quot;square&quot;)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                todo.done.toggle()
+            }
+        }
+        InputTodoView(todos: $todos)
+    }.edgesIgnoringSafeArea(.bottom)        
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gyapo5ymqsj309q0jdq3i.jpg" alt="Figure_9.2_B17962"/></p><h2>How it works…</h2><p>就像我们开头说的那样，children要修改parent的state，parent直接吧state传递给children是不行的，因为传递的是值的copy。</p><p>SwiftUI使用<strong>@Binding</strong> 创建一个双向绑定</p><ul><li>parent的变化会反应到children上</li><li>children的变化也会反映到parent上</li></ul><p>我们在children声明state时，使用@Binding，parent传入时传的是$state，而不是state。$操作符的意思是获取State结构体中的projectedValue属性。我们可以看到State结构体的projectedValue正是一个Binding类型。</p><pre><code class="language-swift">var projectedValue: Binding&lt;Value&gt; { get }
+</code></pre><h2>深入了解@Binding</h2><p>我们首先来看看，Binding结构体的Api</p><pre><code class="language-swift">@frozen @propertyWrapper @dynamicMemberLookup struct Binding&lt;Value&gt;
+// Creating a Binding
+init&lt;V&gt;(Binding&lt;V&gt;)
+init(get: @escaping () -&gt; Value, set: @escaping (Value, Transaction) -&gt; Void)
+init(get: @escaping () -&gt; Value, set: @escaping (Value) -&gt; Void)
+</code></pre><p>我们可以看到2点</p><ul><li>Binding是能够进行dynamicMemberLookup，也就是说我们能够使用<code>$state.someproperty</code>这样的方式来进行访问，这返回什么呢？得看他的subscript是怎么实现的，我们稍后再看</li><li>我们看到初始化方法，就是get和set方法，正如开头说的那样。可以把Binding看成是get和set方法的一个封装。</li></ul><p>有了这两点了解，我们来实现一个我们自己的@MyBinding。</p><p>首先，定义一个property wrapper，包含一个get和set方法。</p><pre><code class="language-swift">@propertyWrapper
+struct MyBinding&lt;T&gt; {
+    private let getValue: () -&gt; T
+    private let setValue: (T) -&gt; Void
+    var wrappedValue: T {
+        get {
+            return getValue()
+        }
+        nonmutating set {
+            setValue(newValue)
+        }
+    }
+    
+    var projectedValue: Self { self }
+    
+    init(getValue: @escaping () -&gt; T, setValue: @escaping (T) -&gt; Void) {
+        self.getValue = getValue
+        self.setValue = setValue
+    }
+}
+</code></pre><h3>补全@MyState</h3><p>我们来用一下试一试，补全下上一篇文章的@MyState</p><pre><code class="language-swift">final class Box&lt;T&gt;: ObservableObject {
+    @Published var value: T
+    init(_ value: T) {
+        self.value = value
+    }
+}
+// highlight-start
+@propertyWrapper
+struct MyBinding&lt;T&gt; {
+    private let getValue: () -&gt; T
+    private let setValue: (T) -&gt; Void
+    var wrappedValue: T {
+        get {
+            return getValue()
+        }
+        nonmutating set {
+            setValue(newValue)
+        }
+    }
+    
+    var projectedValue: Self { self }
+    
+    init(getValue: @escaping () -&gt; T, setValue: @escaping (T) -&gt; Void) {
+        self.getValue = getValue
+        self.setValue = setValue
+    }
+}
+// highlight-end
+@propertyWrapper
+struct MyState&lt;T&gt;: DynamicProperty {
+    @ObservedObject var box: Box&lt;T&gt;
+    var wrappedValue: T {
+        get {
+            return box.value
+        }
+        nonmutating set {
+            box.value = newValue
+        }
+    }
+  // highlight-start
+    var projectedValue: MyBinding&lt;T&gt; {
+        return MyBinding {
+            return box.value
+        } setValue: { newValue in
+            box.value = newValue
+        }
+    }
+  // highlight-end
+    init(wrappedValue: T) {
+        self._box = ObservedObject(wrappedValue: Box&lt;T&gt;(wrappedValue))
+    }
+}
+// highlight-start
+struct ChildView: View {
+  //使用我们自己MyBinding
+    @MyBinding var text: String
+    var body: some View {
+        VStack {
+            Text(&quot;this is children: \(text)&quot;)
+            Button {
+                text = &quot;\(Int.random(in: 200...300))&quot;
+            } label: {
+                Text(&quot;change from child&quot;)
+            }
+        }
+    }
+}
+// highlight-end
+@available(iOS 15.0, *)
+struct ContentView: View {
+    @MyState var text = &quot;hello world123&quot;
+    var body: some View {
+        VStack {
+            Text(&quot;\(text)&quot;)
+            Button {
+                text = &quot;\(Int.random(in: 0...100))&quot;
+            } label: {
+                Text(&quot;change&quot;)
+            }
+            ChildView(text: $text)
+        }
+    }
+}
+
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gybwbbyagxg306a0ckmy0.gif" alt="Untitled"/></p><p>现在我们已经补全了@MyState，能够使用$text了。</p><h3>实现dynamicMemberLookup</h3><p>Ok，我们刚刚能够使用<code>$text</code>了，但是如果我们想要用<code>$state.somePropert</code>呢, 我们试一试</p><pre><code class="language-swift">struct ChildView: View {
+  // highlight-start
+  //我们改下chidlrenView，显示字符串的数量，也就是text.count
+    @MyBinding var textCount: Int
+    // highlight-end
+    var body: some View {
+        VStack {
+            Text(&quot;this show textCount: \(textCount)&quot;)
+        }
+    }
+}
+
+struct ContentView: View {
+    @MyState var text = &quot;hello world123&quot;
+    var body: some View {
+        VStack {
+            Text(&quot;\(text)&quot;)
+            Button {
+                text = &quot;\(Int.random(in: 0...100))&quot;
+            } label: {
+                Text(&quot;change&quot;)
+            }
+            // highlight-start
+          // 改下传参，但是报错了，因为我们的MyBinding不支持这种语法
+            ChildView(textCount: $text.count)
+            // highlight-end
+        }
+    }
+}
+</code></pre><p>所以，我们用dynamicMemberLookup修饰下MyBinding。</p><pre><code class="language-swift">@propertyWrapper
+// highlight-start
+@dynamicMemberLookup
+// highlight-end
+struct MyBinding&lt;T&gt; {
+    ...
+  // highlight-start
+    subscript&lt;Sub&gt;(dynamicMember keyPath: WritableKeyPath&lt;T, Sub&gt;) -&gt; MyBinding&lt;Sub&gt; {
+        return MyBinding&lt;Sub&gt; {
+            return self.wrappedValue[keyPath: keyPath]
+        } setValue: { newValue in
+            self.wrappedValue[keyPath: keyPath] = newValue
+        }
+    }
+  // highlight-end
+}
+</code></pre><p>我们来用一下：</p><pre><code class="language-swift">struct ChildView: View {
+    @MyBinding var name: String
+    var body: some View {
+        VStack {
+            Text(&quot;name is: \(name)&quot;)
+            Button {
+                name = &quot;child\(Int.random(in: 1...100))&quot;
+            } label: {
+                Text(&quot;点击修改name&quot;)
+            }
+        }
+    }
+}
+
+struct Person {
+    var name = &quot;&quot;
+    var age = 20
+}
+
+@available(iOS 15.0, *)
+struct ContentView: View {
+    @MyState var person = Person(name:&quot;hello&quot;)
+    var body: some View {
+        VStack {
+            Text(&quot;person name:\(person.name) age: \(person.age)&quot;)
+            Button {
+                person.name = &quot;parent\(Int.random(in: 200...300))&quot;
+            } label: {
+                Text(&quot;change&quot;)
+            }
+            ChildView(name: $person.name)
+        }
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gybzwh2oflg306a0ckq3z.gif" alt="Untitled"/></p><p>不错，我们成功使用了<code>$person.name</code>。</p><p>至此，我们对Binding已经有了一定的了解，也知道了$操作符的原理，以及$state.someProperty的原理。</p>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SwiftUI专辑065-@State]]></title>
+        <id>/2022/01/07/SwiftUI专辑-065-@State</id>
+        <link href="https://gouxin.fun/2022/01/07/SwiftUI专辑-065-@State"/>
+        <updated>2022-01-07T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[headerimg]]></summary>
+        <content type="html"><![CDATA[<p><img src="./Header.png" alt="headerimg"/>
+@State是一个property wrapper。他负责read/write一个SwiftUI管理的value，当我们write新的value时，SwiftUI会重新计算body。</p><p>我们来看一个TodoList的demo。</p><h2>Getting ready</h2><p>首先，新建一个项目<strong>StaticTodoList</strong></p><h2>How to do it…</h2><ol><li>新建一个Todo的model</li></ol><pre><code class="language-swift">struct Todo: Identifiable {
+    let id = UUID()
+    let description: String
+    var done: Bool
+}
+</code></pre><ol start="2"><li>我们准备一点数据</li></ol><pre><code class="language-swift">@State var todos = [
+    Todo(description: &quot;review the first chapter&quot;, done: false),
+    Todo(description: &quot;buy wine&quot;, done: false),
+    Todo(description: &quot;paint kitchen&quot;, done: false),
+    Todo(description: &quot;cut the grass&quot;, done: false),
+]
+</code></pre><ol start="3"><li>显示出来</li></ol><pre><code class="language-swift">var body: some View {
+    List($todos) { $todo in
+        HStack {
+            Text(todo.description).strikethrough(todo.done)
+            Spacer()
+            Image(systemName:todo.done ? &quot;checkmark.square&quot; : &quot;square&quot;)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            todo.done.toggle()
+        }
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNly1gyaplbkxypj309q0jndg6.jpg" alt="Figure_9.1_B17962"/></p><h2>How it works…</h2><p>注意我们使用的是$todo，而不是todo，只有用$todo才能改变todo.done，不然todo是immutable的，尝试修改todo会报编译错误。</p><p>然后我们使用了<code>.contentShape(Rectangle())</code>，这是必须的，不然只有文字和图片能够相应onTapGesture，Spacer的区域不能响应点击事件。</p><h2>深入@State</h2><p>首先@State修饰后的value并不是value本身，而是一个State结构体， 这个结构体包裹着value，负责value的read和write。</p><p>我们要get这个value，可以直接使用定义的变量名，他会返回State结构体的wrappedValue字段。</p><p>你只能在View内部访问state属性，因此通常我们都将state声明为private，防止外部访问到这些state。</p><p>如果你想要将state传递给层级中的其他view，那么你需要在前面加上$，$操作符会返回State结构体的projectedValue字段。</p><p>我们可以自己来实现一个简单的@MyState。</p><p>我们先定义一个property wrapper，定义完成后，我们就可以用@MyState了</p><pre><code class="language-swift">@propertyWrapper
+struct MyState&lt;T&gt; {
+    var value: T
+    var wrappedValue: T {
+        get {
+            return value
+        }
+        set {
+            value = newValue
+        }
+    }
+}
+</code></pre><p>我们先尝试使用</p><pre><code class="language-swift">struct ContentView: View {
+   //会报错，因为，如果我们想要这么使用，还需要为@MyState实现一个 init(wrappedValue:)的初始化方法
+    @MyState var text = &quot;hello world&quot;
+    var body: some View {
+        Text(&quot;hello world&quot;)
+    }
+}
+@propertyWrapper
+struct MyState&lt;T&gt; {
+  ...
+  init(wrappedValue: T) {
+    value = wrappedValue
+  }
+}
+
+</code></pre><p>我们再尝试使用一下, 能够显示text</p><pre><code class="language-swift">struct ContentView: View {
+    @MyState var text = &quot;hello world123&quot;
+    var body: some View {
+        Text(&quot;\(text)&quot;)
+    }
+}
+</code></pre><p>那我们再尝试一下，加个按钮修改text，能够自动改变Text么</p><pre><code class="language-swift">struct ContentView: View {
+    @MyState var text = &quot;hello world123&quot;
+    var body: some View {
+        VStack {
+            Text(&quot;\(text)&quot;)
+            Button {
+              // 编译报错，提示Cannot assign to property: &#x27;self&#x27; is immutable
+              // 原因在于设置text实际上是调用wrappedValue的set方法，我们定义的MyState是结构体
+              // 修改结构体需要mutating，而set方法又不能用mutating修饰
+                            // 不过我们可以通过使用nonmutating修饰set方法，告诉编译器我们不会修改结构体
+                text = &quot;\(Int.random(in: 0...100))&quot;
+            } label: {
+                Text(&quot;change&quot;)
+            }
+        }
+    }
+}
+
+struct MyState&lt;T&gt; {
+    ...
+    var wrappedValue: T {
+       nonmutating set {
+            value = newValue//加上之后，编译器错误就转移到了这里，因为我们确实改变了结构体
+        }
+      ...
+    }
+}
+
+</code></pre><p>我们可以构建个引用类型，用这个引用类型再包裹T，这样就不会修改结构体了</p><pre><code class="language-swift">final class Box&lt;T&gt; {
+    var value: T
+    init(_ value: T) {
+        self.value = value
+    }
+}
+
+@propertyWrapper
+struct MyState&lt;T&gt; {
+    var box: Box&lt;T&gt;
+    var wrappedValue: T {
+        get {
+            return box.value
+        }
+        nonmutating set {
+            box.value = newValue
+        }
+    }
+    init(wrappedValue: T) {
+        box = Box&lt;T&gt;(wrappedValue)
+    }
+}
+</code></pre><p>好的，我们解决了编译问题，运行下，点按钮，发现Text仍然没有改变，打断点发现set方法是调用了的，看来我们还缺少一种方法，在value更新的情况下通知SwiftUI重新渲染UI。遗憾的是苹果并没有提供手动更新UI的能力。更新的能力被封装在了@State、@ObservedObject、@StateObject、@EnvironmentObject内部。我们选择@ObservedObject来模拟。</p><pre><code class="language-swift">@propertyWrapper
+struct MyState&lt;T&gt;: DynamicProperty {
+    @ObservedObject var box: Box&lt;T&gt;
+    var wrappedValue: T {
+        get {
+            return box.value
+        }
+        nonmutating set {
+            box.value = newValue
+        }
+    }
+    init(wrappedValue: T) {
+        self._box = ObservedObject(wrappedValue: Box&lt;T&gt;(wrappedValue))
+    }
+}
+
+final class Box&lt;T&gt;: ObservableObject {
+    @Published var value: T
+    init(_ value: T) {
+        self.value = value
+    }
+}
+</code></pre><p><img src="https://tva1.sinaimg.cn/large/008i3skNgy1gybv1mqr89g306a0ck3yz.gif" alt="Untitled"/></p><p>Ok，通过实现MyState，我们熟悉了propertyWrapper，也对@State有了一定的了解，不过我们的@MyState还有个东西没实现，那就是projectedValue, 如果我们使用$text，将会报错，因为我们没有实现projectedValue。我们将在学习@Binding中了解其原理，并补全实现。</p>]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[SwiftUI专辑064-创建一个card stack]]></title>
         <id>/2022/01/06/SwiftUI专辑-064-实现点赞动画</id>
