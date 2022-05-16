@@ -1,10 +1,10 @@
-import useThemeContext from "@theme/hooks/useThemeContext";
+import {useColorMode} from '@docusaurus/theme-common';
 import React, { useEffect, useRef } from 'react'
 
 export const UtterancesComments: React.FC = () => {
-  const { isDarkTheme } = useThemeContext()
+  const { colorMode } = useColorMode()
   const elementRef = useRef<HTMLDivElement>(null)
-  const theme = isDarkTheme ? 'github-dark' : 'github-light'
+  const theme = colorMode == 'dark' ? 'github-dark' : 'github-light'
 
   // first load
   useEffect(() => {
