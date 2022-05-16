@@ -66,7 +66,7 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
-        additionalLanguages: ['swift', 'objectivec']
+        additionalLanguages: ['swift', 'objectivec', 'dart']
       },
     }),
     plugins: [
