@@ -236,7 +236,7 @@ void main() {
 }
 ```
 
-#### Abstract methods
+#### 抽象方法
 
 抽象方法只能出现在抽象类中。
 
@@ -252,7 +252,7 @@ class EffectiveDoer extends Doer {
 }
 ```
 
-### Abstract classes
+### 抽象类
 
 用`abstract`关键字定义抽象类，通常抽象类用于定义接口。
 
@@ -295,6 +295,8 @@ void main() {
   print(greetBob(Impostor()));
 }
 ```
+
+dart是没有interface来定义接口的，通常实现接口都是abstract class 的隐式接口来达到同样的效果。
 
 ###  继承
 
@@ -353,9 +355,9 @@ class A {
 }
 ```
 
-###  Extension methods
+###  Extension
 
-类似swift的extension，可以在不知道源码的情况下为对象添加方法
+类似swift的extension，可以在不知道源码的情况下为对象添加方法，不能添加实例变量。可以添加静态方法和静态变量，但是不能直接在原Class上直接调用，需要用Extension的名字调用。
 
 ```dart
 extension NumberParsing on String {
@@ -367,7 +369,21 @@ extension NumberParsing on String {
     return double.parse(this);
   }
 }
+```
 
+```dart
+class Person {
+  var age = 0;
+}
+extension PersonExtension on Person {
+  static void sayHello() {
+    print("age is ");
+  }
+  static var address = "";
+}
+
+PersonExtension.sayHello();// extension 名称下调用
+PersonExtension.address;// extension 名称下调用
 ```
 
 ### 枚举类型
@@ -378,12 +394,54 @@ extension NumberParsing on String {
 enum Color { red, green, blue }
 ```
 
+我们没办法直接像其他语言一样给枚举赋值，比如在swift中，我们可以这样
+
+```swift
+enum Color : Int {
+  red = 100
+  blue = 200
+  yellow = 300
+}
+```
+
+```dart
+//我们可以通过添加方法来达到同样的效果
+enum Color {
+  red,
+  blue,
+  yellow;
+
+  int value() {
+    switch (this) {
+      case Color.red:
+        return 100;
+      case Color.blue:
+        return 200;
+      case Color.yellow:
+        return 300;
+    }
+  }
+}
+```
+
+```dart
+//或者使用之后的增强枚举
+enum Color {
+  red(100),
+  blue(200),
+  yellow(300);
+
+  const Color(this.value);
+  final int value;
+}
+```
+
 #### 声明增强枚举
 
 dart允许枚举像class一样定义实例变量、方法和常量构造器。但是有些限制：
 
 - 实例变量必须都是 `final`
-- 定义的构造器都必须是 constant constructor。
+- 定义的构造器都必须是 const constructor。
 - Factory constructors只能返回固定的已知的枚举实例。
 - 不能继承
 - 不能重载  `index`, `hashCode`, `==`.
