@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkgx_blog=self.webpackChunkgx_blog||[]).push([[6758],{8547:function(e){e.exports=JSON.parse('{"allTagsPath":"/tags","slug":"/tags/combine","name":"Combine","count":2,"permalink":"/tags/combine"}')}}]);

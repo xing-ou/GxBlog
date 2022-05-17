@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkgx_blog=self.webpackChunkgx_blog||[]).push([[2279],{87496:function(a){a.exports=JSON.parse('{"label":"dart","permalink":"/tags/dart","allTagsPath":"/tags","count":8}')}}]);

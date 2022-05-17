@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkgx_blog=self.webpackChunkgx_blog||[]).push([[2030],{47066:function(a){a.exports=JSON.parse('{"label":"pod","permalink":"/tags/pod","allTagsPath":"/tags","count":1}')}}]);

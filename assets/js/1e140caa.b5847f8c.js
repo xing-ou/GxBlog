@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkgx_blog=self.webpackChunkgx_blog||[]).push([[5941],{24742:function(e){e.exports=JSON.parse('{"permalink":"/tags/swift-ui/page/4","page":4,"postsPerPage":10,"totalPages":8,"totalCount":80,"previousPage":"/tags/swift-ui/page/3","nextPage":"/tags/swift-ui/page/5","blogDescription":"Blog","blogTitle":"Blog"}')}}]);

@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkgx_blog=self.webpackChunkgx_blog||[]).push([[342],{67086:function(a){a.exports=JSON.parse('{"label":"cocoapods","permalink":"/tags/cocoapods","allTagsPath":"/tags","count":1}')}}]);

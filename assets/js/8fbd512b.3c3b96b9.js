@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkgx_blog=self.webpackChunkgx_blog||[]).push([[5873],{15:function(a){a.exports=JSON.parse('{"label":"async","permalink":"/tags/async","allTagsPath":"/tags","count":5}')}}]);
