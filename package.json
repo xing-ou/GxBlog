@@ -7,7 +7,7 @@
     "start": "docusaurus start --locale zh-cn",
     "build": "docusaurus build --locale zh-cn",
     "swizzle": "docusaurus swizzle",
-    "deploy": "GIT_USER=xing-ou docusaurus deploy --locale zh-cn",
+    "deploy": "USE_SSH=true docusaurus deploy --locale zh-cn",
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
