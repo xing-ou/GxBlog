@@ -11,7 +11,7 @@ import {
   ThemeClassNames,
   translateTagsPageTitle,
 } from '@docusaurus/theme-common';
-import { Link } from '@docusaurus/router';
+import { Redirect } from '@docusaurus/router';
 
 function BlogTagsListPage(props) {
   const {tags, sidebar} = props;
@@ -28,7 +28,7 @@ function BlogTagsListPage(props) {
       sidebar={sidebar}>
       <div className="margin-bottom--lg">
       <h1>文档类文章标签</h1>
-      <div><Link to="/docs/tags">点击这里查看文档类文章(书籍阅读)tags</Link></div>     
+      <div><Redirect to="/docs/tags">点击这里查看文档类文章(书籍阅读)tags</Redirect></div>     
       </div>
       <h1>Blog类文章标签</h1>
       <TagsListByLetter tags={Object.values(tags)} />
