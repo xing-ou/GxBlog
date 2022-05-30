@@ -73,3 +73,13 @@ FractionalOffset(0.2, 0.6)代表，FlutterLogo的(0.2, 0.6)和Align的(0.2, 0.6)
 
 他们对其后FlutterLogo的位置是(24.0, 72.0) - (12.0, 36.0) = (12.0, 36.0)。
 
+## Center
+
+Center就是Align。因为Align的默认对其就是Center。所以Center的行为和Align是类似的。
+
+```dart
+class Center extends Align {
+  const Center({ super.key, super.widthFactor, super.heightFactor, super.child });
+}
+```
+
