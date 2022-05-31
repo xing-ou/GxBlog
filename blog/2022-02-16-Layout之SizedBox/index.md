@@ -39,3 +39,18 @@ ColoredBox(
 
 
 
+## SizedOverflowBox
+
+指定size，但是会将原来的约束传递给child，可能导致child溢出。
+
+```dart
+Container(
+  width: 200,
+  height: 200,
+  color: Colors.red,
+  alignment: Alignment.center,
+  child: ColoredBox(color: Colors.green,child: SizedOverflowBox(size: Size(100,100),child: Text("helloworldhelloworldhelloworldhelloworld"),))
+)
+```
+
+![IMG_877EEE9869DB-1](https://tva1.sinaimg.cn/large/e6c9d24egy1h2rfwsubokj20zo0snabf.jpg)
